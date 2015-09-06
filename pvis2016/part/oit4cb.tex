@@ -1,0 +1,87 @@
+\subsection{Overview}
+Overview of the algorithm: (JP)
+\begin{itemize}
+  \item Per frame we perform the following steps: ...
+  \item The data comes in form of trajectories describing motion of individual atoms, we do not assume anything about the data.
+  \item We split computations to two groups, which are performed on per frame basis.
+	\begin{enumerate}
+	  \item Data preprocessing (surface, cavity and attributes computations)
+		\item Visualization  (ray-casting, opacity calculation, etc.)
+	\end{enumerate}
+\end{itemize}
+
+\subsection{Our Modifications}
+\begin{itemize}
+  \item Storage of arcs --- hashing to enable clipping
+	\item We build a surface graph in the write kernel
+	\item Spherical patches are written based on surface analysis
+	\item TODO: image
+\end{itemize}
+
+\subsection{Surface graph}
+\begin{itemize}
+  \item Idea: computed surfaces are continuous (closed) and graphs of their primitives form isolated components in the whole graph of all surface primitives
+  \item Modification of parallel CB of Krone et. al – aaaa
+  \item Extension of parallel CB of Krone et. al – 3 new kernels:
+	\begin{enumerate}
+	  \item Adjacency matrix is built (only 3 edges at each vertex)
+    \item Labeling of connected components (parallel BFS – suboptimal)
+    \item Circles of edges for each spherical patch are computed
+  \end{enumerate}
+  \item Assign spheres with edges
+  \item Detect circles in edges --- bubble sort $O(n^2)$
+  \item Step 3 --- one sphere can form two or more surfaces
+  \item Rendering of spherical patches --- spherical polygons
+  \item Odd-even rule + point outside polygon
+  \item Special case: isolated tori
+\end{itemize}
+
+Seeds --- The computed surface contains also surface of cavities that was inaccurately called by Kauker et. al. as inner remains [MolSurfOIT]. For SES, the user might want to visualize cavities within the molecular surface. Contrary, for SAS, the inner surface forms only seeds of the cavities, and the seeds are not useful for assessing the real shape of a cavity, so that clipping these seeds enhances the visualization. The user might also want to hide cavities inside a SES to lower possible occlusion of other structures such as tunnels or cartoons. The clipping of cavities is enabled by observing that both SAS and SES are continuous and therefore there has to be more than one continuous surface component when the molecule contains a cavity [AOOM].
+
+More precisely, there is one component for the outer surface of the molecule and one component for each cavity, and the components can be easily detected by applying connected component (CC) analysis to the graph formed by surface primitives (spherical patches – polygons?, toroidal patches and triangles). The spherical patches can not be used because they are not known for now. We do not know whether a sphere forms one or more patches and who are their neighboring tori, i.e., edges. Therefore the surface graph is built by triangles (vertices) and toroidal patches (edges). The surface contains also tori that are not cut by any triangle, i.e., they do not have any neighboring triangle. Such toroidal patches are excluded from the surface graph and has to be handled differently (see Section ?).
+
+We do the CC analysis on the GPU to avoid synchronization and data transfer costs. First, we modified the output of the original GPU parallel CB to obtain the input which is needed for the analysis and rendering of transparent toroidal patches. In the original algorithm, an arc intersection was stored only for atoms whose indices fulfilled i < j < k. This is insufficient for rendering the toroidal patches transparent as they can't be rendered as a one whole patch because the parts that would be hidden by the opaque surface would be visible. Instead, we split each torus into its visible patches based on their neighboring triangles that delimit them. Since each torus is defined by a small circle between atoms i and j, we are interested in all triangles that were produced by atoms i, j and some other atom k. For this purpose, we store the computed arc intersections in a linear buffer (employing atomics) and together produce a hash structure which enables us to find the triangles by their two of the three atom indices. As a benefit to this hash structure, we save GPU memory because the original arcs structure was very sparse. Now, we store n arcs together with 3 * n keys in a hashtable which data/free ration is 2. TODO: More precision.
+
+The analysis part is split into three steps and for each we implemented one GLSL compute shader.  First, the adjacency matrix of the surface graph is computed. The matrix will have one row for each vertex and three columns, because each triangle has exactly (at most?) three neighbouring toroidal patches in the surface. In the next step, all connected components are detected and labeled using BFS. Our implementation of the BFS algorithm is suboptimal, because its time complexity is O(d * n) where d is the length of the longest shortest path among all vertices in a component. In the worst case, d can be n. The reason we choose such ineffecient implementation was the ability of BFS implementation in one compute shader [ParallelBFS]. Our decision is also supported by performance measures (see Section ?) where the computation of labels takes only ~5 ms for a molecule with ~10000 atoms while the computation of SES takes 5x more. Finally, we sort all edges neighboring with a sphere to get one or more circles where each circle delimits a spherical path. The lables for the spherical pathes are obtained from the labels of some of their delimiting edges.
+
+\subsection{Visualization}
+
+\subsubsection{Rendering of spherical patches – polygons?}
+A sphere can produce one or more spherical patches which may form different surfaces. To be able to visualize isolated surfaces individually, we render (ray-cast) each spherical patch as a separate surface primitive. This way, we are able to visually distinguish between molecular and cavity surface and also among the detected cavities themselves.
+In fact, the sides of a spherical patch are formed by small circle arcs. When ray-casting a spherical patch, we firstly compute intersection points I1 and I2 of a ray and patch's sphere. Then, we employ the odd-even rule to test whether the computed intersections lie within the patch. We choose a point O outside the patch and test lines (lying on a great circle) OI1 and OI2 for intersection with each side of the patch. The outside (or inside) point must be specified because both the interior and exterior surfaces of the sphere are finite.
+
+The intersection of a spherical segment with a small circle arc is computed in three steps:
+\begin{enumerate}
+  \item The intersection of the circles containing the segment and the arc is computed – they can intersect in 0 to 2 points.
+  \item The intersection points are tested whether they lie on both the segment and the arc.
+  \item Cases with two intersections are marked as non-intersecting because the tested point lies outside the patch.
+\end{enumerate}
+
+TODO: \textsc{http://horizon.documentation.ird.fr/exl-doc/pleins\_textes/pleins\_textes\_6/b\_fdi\_39-40/43404.pdf}
+
+\subsection{Cavity area estimation}
+Observation: triangles take most area of a cavity.
+
+We enhance the visualization of cavities by coloring their surface by their approximate area. To estimate the area, we sum areas of all triangles that form the cavity surface. Therefore, the cavity area we compute is underestimated. We decided to neglect areas of spherical and toroidal patches since from our observations their influence on the exact cavity area is much smaller compared to triangles. Of course, this observation does not hold for the molecular surface.
+What about colors?
+
+\subsection{Special case – isolated tori}
+These tori must be handled in two way. First, the label of the surface that an isolated tori forms must be found - recall, the tori is not part of the surface graph. Second, each isolated tori should clip overlaid fragments of its spherical patch (see Figure?).
+
+
+
+%\begin{equation}
+% \sum_{j=1}^{z} j = \frac{z(z+1)}{2}
+%\end{equation}
+
+\begin{figure}[htb]
+  \centering
+  \includegraphics[width=1.5in]{image/patch.png}
+  \caption{Sample illustration.}
+\end{figure}
+
+%\subsection{Mezcal Head}
+
+%\subsubsection{Ejector Seat Reservation}
+
+%\paragraph{Rejected Ejector Seat Reservation}
