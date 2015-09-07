@@ -29,6 +29,9 @@
 \usepackage{graphicx}
 \usepackage{times}
 
+%% Packages used by us
+\usepackage{color}
+
 %% We encourage the use of mathptmx for consistent usage of times font
 %% throughout the proceedings. However, if you encounter conflicts
 %% with other math-related packages, you may want to disable it.
@@ -105,23 +108,26 @@
 %% ``\begin{document}'' command. It prepares and prints the title block.
 
 %% the only exception to this rule is the \firstsection command
-\firstsection{Introduction}
+\firstsection{Introduction (JP, BK)}
 
 \maketitle
 
 %% \section{Introduction}
 \input{part/introduction.tex}
 
-\section{Related Work}
+\section{Related Work (ALL)}
 \input{part/related.tex}
 
-\section{Order-independent Transparency for Contour-Buildup}
+\section{Order-independent Transparency for Contour-Buildup (AJ, JP)}
 \input{part/oit4cb.tex}
 
-\section{Discussion}
+\section{Visualization (AJ, JP)}
+\input{part/visualization.tex}
+
+\section{Discussion (BK)}
 \input{part/discussion.tex}
 
-\section{Conclusion}
+\section{Conclusion (ALL)}
 \input{part/conclusion.tex}
 
 %% if specified like this the section will be ommitted in review mode
