@@ -22,14 +22,14 @@ These sites represent a molecular surface feature known as cavities, pockets or 
 There is a legacy of tools and approaches that allow us to extract these features.
 Two major challenges in regards to the surface feature analyzes, i.e., for instance cavities, are their fast extraction and their visualization in the most informative manner. This is especially crucial when analyzing MD simulations containing thousands of frames, where we cannot spent much time analyzing just a single frame either due to computational or visualization setbacks. 
 
-There are several types of molecular surface representation proposed in the literature~\cite{START2015}. Nevertheless, for cavity analysis,  the solvent-excluded surface (SES) belongs to the most used representation~\cite{todo} amongst biologists. This representation allows us to directly asses whether a solvent, approximated a sphere of a certain radius, is able to reach a binding site of interest on the molecular surface. Such a binding site is located inside a cavity or a tunnel, while the molecular surface might contain tens of cavities per a single simulation snap-shot. Additionally, computation of SES is not a trivial task, which also requires a substantial computation and algorithmic capabilities. Therefore, it would be essential to posses a technique that could provide us an instant computation and an interactive and meaningful visualization of the cavities in the context of molecular surface.
+There are several types of molecular surface representation proposed in the literature~\cite{START2015}. Nevertheless, for cavity analysis,  the solvent-excluded surface (SES) belongs to the most used representation~\cite{todo} amongst biologists. This representation allows us to directly asses whether a solvent, approximated a sphere of a certain radius, is able to reach a binding site of interest on the molecular surface. Such a binding site is located inside a cavity or a tunnel, while the molecular surface might contain tens of cavities per a single simulation snap-shot. Additionally, computation of SES is not a trivial task, which also requires a substantial computation and algorithmic capabilities. Therefore, it would be essential to posses a technique that could provide us an instant computation, and an interactive and meaningful visualization of the cavities in the context of molecular surface.
 
-In this paper, we introduce visualization technique (Fig.~\ref{fig:teaser}) that enables to ...
+In this paper, we introduce a new technique (Fig.~\ref{fig:teaser}) that enables to compute and visualize the solvent excluded surface. Additionally, we propose a new way for computing molecular surface features, like cavities or tunnels. Finally, we introduce a visualization technique that allows to interactively visualize the computed cavities in the context of the molecular surface.
 
-The contributions are as follows:
+The summarize contributions are as follows:
 \begin{itemize}
-  \item An enhanced computation of SES
-  \item A novel real time algorithm for detection of cavities (check Totrov --- AJ)
-  \item Focus and context visualization of cavities in the context of molecular surface
-  \item Improved performance of visualization of transparent molecular surfaces
+  \item An enhanced computation of SES. We propose three new kernels that acount for speedup of the existing state-of-the-art approach~\cite{todo}.
+  \item A novel real time algorithm for detection of cavities (check Totrov --- AJ). We present a novel and a fast cavity detection method that is based on solvent accessible surface.
+  \item Focus and context visualization of cavities in the context of molecular surface.
+  \item Improved performance of visualization of transparent molecular surfaces.
 \end{itemize}
