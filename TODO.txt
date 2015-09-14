@@ -1,0 +1,2 @@
+BUG - spheres inside
+BUG - tori that do not form edges

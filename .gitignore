@@ -1,3 +1,7 @@
 *.aux
 *.bbl
 *.blg
+/project/build/
+/project/dist/
+project/nbproject/private/
+pvis2016/pvis2016.tps
