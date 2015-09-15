@@ -230,6 +230,7 @@ public class Scene implements GLEventListener {
     // parameters
     private float probeRadius = 1.4f;
     private Surface surfaceType = Surface.SES;
+    private boolean clipSurface = false;
     private float alpha = 0.5f;
     private boolean animate = false;
     private int width;
@@ -247,6 +248,7 @@ public class Scene implements GLEventListener {
     private Color cavityColor1 = Color.YELLOW;
     private Color cavityColor2 = Color.MAGENTA;
     private float threshold = 0f;
+    private boolean clipCavities = false;
     private Color tunnelColor = Color.GREEN;
     
     // debug parameters
@@ -264,7 +266,6 @@ public class Scene implements GLEventListener {
     private int selectedTorus = 0;
     private int selectedCavity = 0;
     private boolean updateSurfaceGraph = false;
-    private boolean clipCavities = false;
     private boolean renderPlane = false;
     private boolean renderPoint = false;
     private Vector4f plane = new Vector4f();
@@ -298,6 +299,10 @@ public class Scene implements GLEventListener {
         this.surfaceType = surfaceType;
     }
 
+    public void setClipSurface(boolean clipSurface) {
+        this.clipSurface = clipSurface;
+    }
+    
     public void setAutoupdate(boolean autoupdate) {
         this.autoupdate = autoupdate;
     }
@@ -863,7 +868,7 @@ public class Scene implements GLEventListener {
         clArcs.init(gl, atomsBuffer, neighborsBuffer, neighborCountsBuffer, smallCirclesBuffer,
                 arcsBuffer, arcCountsBuffer, arcHashesBuffer, smallCirclesVisibleBuffer);
         
-        clGraph.init(gl);
+        //clGraph.init(gl);
         
         // init GPU array
         if (PERFORMANCE_TESTS_ENABLED) {
@@ -1291,7 +1296,7 @@ public class Scene implements GLEventListener {
         gl.glBindBufferBase(GL_SHADER_STORAGE_BUFFER, COUNTERS_BUFFER_INDEX, countersBuffer);
         
         gl.glUseProgram(defaultProgram);
-        Utils.drawAxes(gl, 5.0f);
+        //Utils.drawAxes(gl, 5.0f);
         
         gl.glPushMatrix();
         gl.glTranslatef(aabbMin.x - 4f, aabbMin.y - 4f, aabbMin.z - 4f);
@@ -1531,6 +1536,7 @@ public class Scene implements GLEventListener {
         Utils.setUniform(gl, polygonProgram, "sas", surfaceType == Surface.SAS ? 1 : 0); // SAS/SES
         // cavity clipping
         Utils.setUniform(gl, polygonProgram, "clipCavities", clipCavities);
+        Utils.setUniform(gl, polygonProgram, "clipSurface", clipSurface);
         Utils.setUniform(gl, polygonProgram, "surfaceLabel", gr.getSurfaceLabels()[0]);
         Utils.setUniform(gl, polygonProgram, "threshold", threshold);
         // ambient occlusion & lighting
@@ -1611,6 +1617,7 @@ public class Scene implements GLEventListener {
         Utils.setUniform(gl, triangleProgram, "maxNumNeighbors", MAX_NEIGHBORS);
         Utils.setUniform(gl, triangleProgram, "probeRadius", probeRadius);
         Utils.setUniform(gl, triangleProgram, "surfaceLabel", gr.getSurfaceLabels()[0]);
+        Utils.setUniform(gl, triangleProgram, "clipSurface", clipSurface);
         Utils.setUniform(gl, triangleProgram, "clipCavities", clipCavities);
         Utils.setUniform(gl, triangleProgram, "lambda", volumetricAO.getLambda());
         Utils.setUniform(gl, triangleProgram, "volumeSize", aabbSize);
@@ -1694,6 +1701,7 @@ public class Scene implements GLEventListener {
         Utils.setUniform(gl, torusProgram, "window", viewport[2], viewport[3]);
         Utils.setUniform(gl, torusProgram, "probeRadius", probeRadius);
         Utils.setUniform(gl, torusProgram, "surfaceLabel", gr.getSurfaceLabels()[0]);
+        Utils.setUniform(gl, torusProgram, "clipSurface", clipSurface);
         Utils.setUniform(gl, torusProgram, "clipCavities", clipCavities);
         Utils.setUniform(gl, torusProgram, "selectCavity", renderSelectedCavity);
         Utils.setUniform(gl, torusProgram, "cavityLabel", selectedCavity);

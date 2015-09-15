@@ -14,8 +14,9 @@ uniform vec4 viewport;
 uniform uvec2 window;
 uniform uint maxNumNeighbors;
 
-// cavity clipping
+// clipping
 uniform bool clipCavities;
+uniform bool clipSurface;
 uniform uint surfaceLabel;
 uniform float threshold;
 
@@ -102,6 +103,10 @@ void main() {
             area = (area - minArea) / (max2Area - minArea);
         } else {
             area = 1.0;
+        }
+    } else {
+        if (clipSurface) {
+            discard;
         }
     }
 

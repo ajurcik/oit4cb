@@ -179,6 +179,8 @@ public class MainWindow extends javax.swing.JFrame {
         jLabel7 = new javax.swing.JLabel();
         jLabel8 = new javax.swing.JLabel();
         triangleColorPanel = new javax.swing.JPanel();
+        surfaceVisibleCheckBox = new javax.swing.JCheckBox();
+        jLabel20 = new javax.swing.JLabel();
         cavitiesPanel = new javax.swing.JPanel();
         jLabel15 = new javax.swing.JLabel();
         thresholdSlider = new javax.swing.JSlider();
@@ -187,6 +189,8 @@ public class MainWindow extends javax.swing.JFrame {
         cavityColorPanel1 = new javax.swing.JPanel();
         jLabel17 = new javax.swing.JLabel();
         coloringComboBox = new javax.swing.JComboBox();
+        cavitiesVisibleCheckBox = new javax.swing.JCheckBox();
+        jLabel19 = new javax.swing.JLabel();
         tunnelsPanel = new javax.swing.JPanel();
         jLabel18 = new javax.swing.JLabel();
         tunnelColorPanel = new javax.swing.JPanel();
@@ -209,7 +213,7 @@ public class MainWindow extends javax.swing.JFrame {
         resolutionComboBox = new javax.swing.JComboBox();
         jLabel4 = new javax.swing.JLabel();
         filler2 = new javax.swing.Box.Filler(new java.awt.Dimension(90, 0), new java.awt.Dimension(90, 0), new java.awt.Dimension(80, 32767));
-        filler1 = new javax.swing.Box.Filler(new java.awt.Dimension(0, 60), new java.awt.Dimension(0, 60), new java.awt.Dimension(32767, 200));
+        filler1 = new javax.swing.Box.Filler(new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 20), new java.awt.Dimension(32767, 200));
         develPanel = new javax.swing.JPanel();
         debugPanel = new javax.swing.JPanel();
         spheresCheckBox = new javax.swing.JCheckBox();
@@ -221,7 +225,6 @@ public class MainWindow extends javax.swing.JFrame {
         triangleSpinner = new javax.swing.JSpinner();
         autoupdateCheckBox = new javax.swing.JCheckBox();
         updateButton = new javax.swing.JButton();
-        clipCavitiesCheckBox = new javax.swing.JCheckBox();
         updateGraphButton = new javax.swing.JButton();
         selectTorusCheckBox = new javax.swing.JCheckBox();
         torusSpinner = new javax.swing.JSpinner();
@@ -367,8 +370,6 @@ public class MainWindow extends javax.swing.JFrame {
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.gridheight = 3;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.PAGE_START;
-        gridBagConstraints.weighty = 1.0;
         surfacePanel.add(surfaceColorPanel, gridBagConstraints);
 
         torusColorPanel.setBackground(new java.awt.Color(0, 0, 255));
@@ -397,8 +398,8 @@ public class MainWindow extends javax.swing.JFrame {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.FIRST_LINE_END;
-        gridBagConstraints.insets = new java.awt.Insets(2, 4, 0, 4);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_END;
+        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 4);
         surfacePanel.add(jLabel8, gridBagConstraints);
 
         triangleColorPanel.setBackground(new java.awt.Color(0, 255, 0));
@@ -412,8 +413,30 @@ public class MainWindow extends javax.swing.JFrame {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 4;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.PAGE_START;
         surfacePanel.add(triangleColorPanel, gridBagConstraints);
+
+        surfaceVisibleCheckBox.setSelected(true);
+        surfaceVisibleCheckBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                surfaceVisibleCheckBoxActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.FIRST_LINE_START;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(1, 0, 0, 0);
+        surfacePanel.add(surfaceVisibleCheckBox, gridBagConstraints);
+
+        jLabel20.setText("Visible:");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.FIRST_LINE_END;
+        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 4);
+        surfacePanel.add(jLabel20, gridBagConstraints);
 
         paramsPanel.add(surfacePanel);
 
@@ -451,8 +474,8 @@ public class MainWindow extends javax.swing.JFrame {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.FIRST_LINE_END;
-        gridBagConstraints.insets = new java.awt.Insets(2, 4, 0, 4);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_END;
+        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 4);
         cavitiesPanel.add(jLabel16, gridBagConstraints);
 
         cavityColorPanel2.setBackground(new java.awt.Color(255, 0, 255));
@@ -466,7 +489,7 @@ public class MainWindow extends javax.swing.JFrame {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.FIRST_LINE_START;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
         gridBagConstraints.weighty = 1.0;
         cavitiesPanel.add(cavityColorPanel2, gridBagConstraints);
 
@@ -481,7 +504,7 @@ public class MainWindow extends javax.swing.JFrame {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.FIRST_LINE_START;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 4);
         cavitiesPanel.add(cavityColorPanel1, gridBagConstraints);
 
@@ -506,6 +529,29 @@ public class MainWindow extends javax.swing.JFrame {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
         cavitiesPanel.add(coloringComboBox, gridBagConstraints);
+
+        cavitiesVisibleCheckBox.setSelected(true);
+        cavitiesVisibleCheckBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cavitiesVisibleCheckBoxActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.FIRST_LINE_START;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(1, 0, 0, 0);
+        cavitiesPanel.add(cavitiesVisibleCheckBox, gridBagConstraints);
+
+        jLabel19.setText("Visible:");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.FIRST_LINE_END;
+        gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 4);
+        cavitiesPanel.add(jLabel19, gridBagConstraints);
 
         paramsPanel.add(cavitiesPanel);
 
@@ -862,19 +908,6 @@ public class MainWindow extends javax.swing.JFrame {
         gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 4);
         debugPanel.add(updateButton, gridBagConstraints);
 
-        clipCavitiesCheckBox.setText("Clip cavities");
-        clipCavitiesCheckBox.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                clipCavitiesCheckBoxActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 8;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
-        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 4);
-        debugPanel.add(clipCavitiesCheckBox, gridBagConstraints);
-
         updateGraphButton.setText("Update SG");
         updateGraphButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -1066,9 +1099,9 @@ public class MainWindow extends javax.swing.JFrame {
         scene.update();
     }//GEN-LAST:event_updateButtonActionPerformed
 
-    private void clipCavitiesCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_clipCavitiesCheckBoxActionPerformed
-        scene.setClipCavities(clipCavitiesCheckBox.isSelected());
-    }//GEN-LAST:event_clipCavitiesCheckBoxActionPerformed
+    private void cavitiesVisibleCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cavitiesVisibleCheckBoxActionPerformed
+        scene.setClipCavities(!cavitiesVisibleCheckBox.isSelected());
+    }//GEN-LAST:event_cavitiesVisibleCheckBoxActionPerformed
 
     private void updateGraphButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_updateGraphButtonActionPerformed
         scene.updateSurfaceGraph();
@@ -1267,6 +1300,10 @@ public class MainWindow extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_tunnelColorPanelMouseClicked
 
+    private void surfaceVisibleCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_surfaceVisibleCheckBoxActionPerformed
+        scene.setClipSurface(!surfaceVisibleCheckBox.isSelected());
+    }//GEN-LAST:event_surfaceVisibleCheckBoxActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -1316,10 +1353,10 @@ public class MainWindow extends javax.swing.JFrame {
     private javax.swing.JCheckBox autoupdateCheckBox;
     private javax.swing.JCheckBox backfaceCheckBox;
     private javax.swing.JPanel cavitiesPanel;
+    private javax.swing.JCheckBox cavitiesVisibleCheckBox;
     private javax.swing.JPanel cavityColorPanel1;
     private javax.swing.JPanel cavityColorPanel2;
     private javax.swing.JSpinner cavitySpinner;
-    private javax.swing.JCheckBox clipCavitiesCheckBox;
     private javax.swing.JComboBox coloringComboBox;
     private javax.swing.JButton dataButton;
     private javax.swing.JPanel dataPanel;
@@ -1339,7 +1376,9 @@ public class MainWindow extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel16;
     private javax.swing.JLabel jLabel17;
     private javax.swing.JLabel jLabel18;
+    private javax.swing.JLabel jLabel19;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel20;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
@@ -1368,6 +1407,7 @@ public class MainWindow extends javax.swing.JFrame {
     private javax.swing.JPanel surfaceColorPanel;
     private javax.swing.JComboBox surfaceComboBox;
     private javax.swing.JPanel surfacePanel;
+    private javax.swing.JCheckBox surfaceVisibleCheckBox;
     private javax.swing.JButton testGromacsButton;
     private javax.swing.JSlider thresholdSlider;
     private javax.swing.JCheckBox toriCheckBox;
