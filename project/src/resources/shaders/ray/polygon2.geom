@@ -1,7 +1,8 @@
 #version 430 core
 
-// cavity clipping
+// clipping
 uniform bool clipCavities;
+uniform bool clipSurface;
 uniform uint surfaceLabel;
 uniform float threshold;
 
@@ -48,10 +49,12 @@ layout(points) in;
 layout(points, max_vertices = 1) out;
 
 void main() {
-    if (clipCavities) {
-        if (vertex[0].label != surfaceLabel) {
-            return;
-        }
+    bool surface = vertex[0].label == surfaceLabel;
+    if (clipSurface && surface) {
+        return;
+    }
+    if (clipCavities && !surface) {
+        return;
     }
 
     objPos = vertex[0].objPos;
