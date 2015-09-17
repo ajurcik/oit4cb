@@ -10,7 +10,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
@@ -28,13 +30,14 @@ import javax.vecmath.Vector3f;
 public class GromacsStructureLoader {
     // currently loaded structure
 
-    private List<List<Atom>> structure;
+    private Dynamics structure;
     // currently loaded chain
     //private Chain chain;
     // currently loaded residue
     //private Residue residue;
     // temporary container for atom positions of currently loaded snapshot
     private List<Atom> atomPositions;
+    private Map<Integer, List<Atom>> drugPositions;
     // temporary cotainer for residues
     //private ArrayList<Residue> residues;
     //number of last atoms residue sequence
@@ -42,7 +45,7 @@ public class GromacsStructureLoader {
     
     private void resetValues(File structureSource) {
         if (structure == null) {
-            structure = new ArrayList<>();
+            structure = new Dynamics();
         }
 
         //structure.setPDBId(FileUtilities.getFileName(structureSource.getName()));
@@ -54,9 +57,10 @@ public class GromacsStructureLoader {
         //residues = new ArrayList<>();
         // temporary container for atom positions in currently loaded snapshot is reset
         atomPositions = new ArrayList<>();
+        drugPositions = new LinkedHashMap<>();
     }
 
-    protected List<List<Atom>> parseTopologyFile(File sourceFile) throws Exception {
+    protected Dynamics parseTopologyFile(File sourceFile) throws Exception {
         //final List<List<Atom>> structuresToRet = new ArrayList<>();
         resetValues(sourceFile);
         try {
@@ -79,10 +83,15 @@ public class GromacsStructureLoader {
 
             //structure.addSource(new File(sourceFile.getAbsolutePath()));
             //structure.addSnapshot(atomPositions);
-            structure.add(atomPositions);
+            
+            structure.getMolecule().addSnapshot(atomPositions);
+            for (List<Atom> positions : drugPositions.values()) {
+                structure.addDrug(new Drug(positions));
+            }
+            
             //structuresToRet.add(structure);
-            return structure;
 
+            return structure;
         } catch (NumberFormatException | IOException ex) {
             throw new Exception("Failed to parse Topology", ex);
         }
@@ -99,20 +108,26 @@ public class GromacsStructureLoader {
         int residueSeq = Integer.parseInt(residueSeqStr);
 
         String residueIdentifier = line.substring(5, 10).trim();
-        if (residueIdentifier.equals("Na+")
-                || residueIdentifier.equals("Cl-")
+        if (residueIdentifier.toUpperCase().equals("NA+")
+                || residueIdentifier.toUpperCase().equals("CL-")
                 || residueIdentifier.equals("SOL")
                 || residueIdentifier.equals("NA")
                 || residueIdentifier.equals("CL")) {
             // skip ligands and slovent
             return;
         }
-        if (residueIdentifier.equals("CYS2")) {
+        
+        boolean drug = false;
+        if (residueIdentifier.equals("DRG")) {
+            drug = true;
+        } else if (residueIdentifier.equals("CYSH") || residueIdentifier.equals("CYS2")) {
             residueIdentifier = "CYS";
         } else if (residueIdentifier.length() == 4
                 && (residueIdentifier.startsWith("N") || residueIdentifier.startsWith("C"))) {
             // remove C or N prefix
             residueIdentifier = residueIdentifier.substring(1);
+        } else if (residueIdentifier.length() == 4) {
+            residueIdentifier = residueIdentifier.substring(0, 3);
         }
 
         String coordXStr = line.substring(20, 28).trim();
@@ -132,8 +147,11 @@ public class GromacsStructureLoader {
         /*if (atom.getElement() == Chemistry.getAtomType("C").getAtomicNumber()) {
             atom.setAlphaCarbon(atom.getName().contains("CA"));
         }*/
+        atom.id = atomId;
         atom.r = Utils.getAtomRadius(atomElement);
-        atom.v = Utils.getAtomVolume(residueIdentifier, atomName);
+        if (!drug) {
+            atom.v = Utils.getAtomVolume(residueIdentifier, atomName);
+        }
 
         /*if (lastResidueSeqNum == null || lastResidueSeqNum != residueSeq) {
             Residue newResidue = new Residue();
@@ -157,21 +175,31 @@ public class GromacsStructureLoader {
         atom.x = coordX;
         atom.y = coordY;
         atom.z = coordZ;
-        atomPositions.add(atom);
+        
+        if (drug) {
+            List<Atom> drg = drugPositions.get(residueSeq);
+            if (drg == null) {
+                drg = new ArrayList<>();
+                drugPositions.put(residueSeq, drg);
+            }
+            drg.add(atom);
+        } else {
+            atomPositions.add(atom);
+        }
     }
 
-    public void parseTrajectoryFile(final File trajectoryFile, final List<List<Atom>> structure, final int snapshotLimit) throws Exception {
+    public void parseTrajectoryFile(final File trajectoryFile, final Dynamics structure, final int snapshotLimit) throws Exception {
         parseTrajectoryFile(trajectoryFile, structure, snapshotLimit, null);
     }
 
-    public void parseTrajectoryFile(final File trajectoryFile, final List<List<Atom>> structure, final int snapshotLimit, File targetDirectory) throws Exception {
+    public void parseTrajectoryFile(final File trajectoryFile, final Dynamics structure, final int snapshotLimit, File targetDirectory) throws Exception {
         DataInputStream dis;
 
         try {
             dis = new DataInputStream(new BufferedInputStream(determineInputStream(trajectoryFile)));
 
 
-            int counter = structure.size();
+            int counter = structure.getSnapshotCount();
             while (counter < snapshotLimit || snapshotLimit == -1) {
                 if (Thread.interrupted()) {
                     return;
@@ -205,6 +233,10 @@ public class GromacsStructureLoader {
                 }
 
                 counter++;
+                
+                if (counter > 0 && counter % 100 == 0) {
+                    System.out.println("Loaded " + counter + " snapshots");
+                }
             }
 
             dis.close();
@@ -217,11 +249,11 @@ public class GromacsStructureLoader {
         }
     }
 
-    public int getNumberOfSnapshots(List<List<Atom>> structure, File[] sourceFiles) throws Exception {
+    public int getNumberOfSnapshots(File trajectory) throws Exception {
         int numberOfSnapshots = 0;
 
-        for (File trajFile : sourceFiles) {
-            try (DataInputStream dis = new DataInputStream(new BufferedInputStream(determineInputStream(trajFile)))) {
+        //for (File trajFile : sourceFiles) {
+            try (DataInputStream dis = new DataInputStream(new BufferedInputStream(determineInputStream(trajectory)))) {
                 while (true) {
                     try {
                         if (dis.available() <= 0) {
@@ -244,7 +276,7 @@ public class GromacsStructureLoader {
                             }
                         }
 
-                        xtc3dfcoords(trajFile, dis, null, numberOfSnapshots, null);
+                        xtc3dfcoords(trajectory, dis, null, numberOfSnapshots, null);
                     } catch (IOException ex) {
                         Logger.getLogger(GromacsStructureLoader.class.getName()).log(Level.SEVERE, null, ex);
                         break;
@@ -261,24 +293,28 @@ public class GromacsStructureLoader {
                 throw new Exception("Failed to parse Trajectory", ex);
                 //Logger.getLogger(GromacsStructureLoader.class.getName()).log(Level.SEVERE, null, ex);
             }
-        }
+        //}
         return numberOfSnapshots;
     }
 
-    public List<List<Atom>> loadDynamics(File topology, File trajectory) throws Exception {
-        return loadStructureSync(topology, new File[] { trajectory }, -1);
+    public Dynamics loadDynamics(File topology, File trajectory) throws Exception {
+        return loadDynamics(topology, trajectory, -1);
     }
     
-    public List<List<Atom>> loadStructureSync(final File topologyFile, final File[] trajectoryFiles, final int snapshotLimit) throws Exception {
-        final List<List<Atom>> structures = new ArrayList<>();
+    public Dynamics loadDynamics(File topology, File trajectory, int limit) throws Exception {
+        return loadStructureSync(topology, new File[] { trajectory }, limit);
+    }
+    
+    public Dynamics loadStructureSync(final File topologyFile, final File[] trajectoryFiles, final int snapshotLimit) throws Exception {
+        final Dynamics structures;
 
         try {
             // new structure is created
-            structure = new ArrayList<>();
+            structure = new Dynamics();
             //structure.setTopologySource(topologyFile);
             //structure.setSource(Arrays.asList(trajectoryFiles));
 
-            List<List<Atom>> conStructures = parseTopologyFile(topologyFile);
+            Dynamics conStructures = parseTopologyFile(topologyFile);
 
             if (trajectoryFiles != null) {
                 for (File accFile : trajectoryFiles) {
@@ -286,7 +322,7 @@ public class GromacsStructureLoader {
                 }
             }
 
-            structures.addAll(conStructures);
+            structures = conStructures;
         } catch (Exception sle) {
             //log.error(sle.getMessage());
             /*WindowManager.getDefault().invokeWhenUIReady(new Runnable() {
@@ -316,7 +352,7 @@ public class GromacsStructureLoader {
         5284491, 6658042, 8388607, 10568983, 13316085, 16777216};
     private final int FIRSTIDX = 9;
 
-    private void xtc3dfcoords(File trajectoryFile, DataInputStream dr, List<List<Atom>> structure, int snapshotId, File targetDirectory) throws Exception {
+    private void xtc3dfcoords(File trajectoryFile, DataInputStream dr, Dynamics structure, int snapshotId, File targetDirectory) throws Exception {
         int size = 0;
         float precision;
 
@@ -363,10 +399,10 @@ public class GromacsStructureLoader {
                     atompostitions.add(new Vector3f(result.get(atomcount) * 10, result.get(atomcount + 1) * 10, result.get(atomcount + 2) * 10));
                 }
 
-                if (!structure.isEmpty() /*structure != null*/) {
-                    if (structure.get(0).size() != atompostitions.size()) {
+                if (structure != null) {
+                    /*if (structure.getAtomCount() != atompostitions.size()) {
                         throw new Exception("Count of atoms in topology and trajectory differ!");
-                    }
+                    }*/
 
                     //structure.addSource(new File(trajectoryFile.getAbsolutePath() + "[" + snapshotId + "]"));
                     //structure.addSnapshot(atompostitions);
@@ -525,24 +561,34 @@ public class GromacsStructureLoader {
                 atompostitions.add(new Vector3f(result.get(atomcount) * 10, result.get(atomcount + 1) * 10, result.get(atomcount + 2) * 10));
             }
 
-            if (!structure.isEmpty() /*structure != null*/) {
-                if (structure.get(0).size() != atompostitions.size()) {
+            if (structure != null) {
+                /*if (structure.getAtomCount() != atompostitions.size()) {
                     //throw new Exception("Count of atoms in topology and trajectory differ!");
-                    System.err.println("Warning: count of atoms in topology and trajectory differ!");
-                    atompostitions = atompostitions.subList(0, structure.get(0).size());
-                }
+                    //System.err.println("Warning: count of atoms in topology and trajectory differ!");
+                    atompostitions = atompostitions.subList(0, structure.getAtomCount());
+                }*/
 
                 //structure.addSource(new File(trajectoryFile.getAbsolutePath() + "[" + snapshotId + "]"));
                 //structure.addSnapshot(atompostitions);
                 List<Atom> snapshot = new ArrayList<>();
-                for (int a = 0; a < atompostitions.size(); a++) {
-                    Atom atom = new Atom();
-                    atom.setPosition(atompostitions.get(a));
-                    atom.r = structure.get(0).get(a).r;
-                    atom.v = structure.get(0).get(a).v;
-                    snapshot.add(atom);
+                
+                Molecule molecule = structure.getMolecule();
+                for (Atom atom : molecule.getAtoms()) {
+                    Atom pos = new Atom(atom);
+                    atom.setPosition(atompostitions.get(atom.id - 1));
+                    snapshot.add(pos);
                 }
-                structure.add(snapshot);
+                molecule.addSnapshot(snapshot);
+                
+                for (Drug drug : structure.getDrugs()) {
+                    snapshot.clear();
+                    for (Atom atom : drug.getAtoms()) {
+                        Atom pos = new Atom(atom);
+                        atom.setPosition(atompostitions.get(atom.id - 1));
+                        snapshot.add(pos);
+                    }
+                    drug.addSnapshot(snapshot);
+                }
 
                 /*if (targetDirectory != null) {
                     exportToPdbSequence(structure, targetDirectory);

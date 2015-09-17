@@ -176,11 +176,11 @@ public class Scene implements GLEventListener {
     private float totalPan = 0f;
     
     private int atomCount;
-    private List<List<Atom>> dynamics;
+    private Dynamics dynamics;
     private boolean uploaded = false;
     
     private int snapshot;
-    private long updateTime;
+    private long lastUpdateTime;
     
     private boolean writeResults = false;
     private boolean writePerformanceInfo = false;
@@ -502,19 +502,19 @@ public class Scene implements GLEventListener {
             defaultProgram = Utils.loadProgram(gl, "/resources/shaders/default.vert",
                     "/resources/shaders/default.frag");
             // Load molecule
-            dynamics = Utils.loadDynamicsFromResource("/resources/md/model", 1, 10);
+            dynamics = new Dynamics(Utils.loadDynamicsFromResource("/resources/md/model", 1, 10));
             //dynamics = Collections.singletonList(Utils.loadAtomsFromResource("/resources/1CRN_26.pdb"));
-            System.out.println("Atoms: " + dynamics.get(0).size());
-            System.out.println("Snapshots: " + dynamics.size());
+            System.out.println("Atoms (molecule): " + dynamics.getMolecule().getAtomCount());
+            System.out.println("Snapshots: " + dynamics.getSnapshotCount());
         } catch (Exception ex) {
             ex.printStackTrace(System.err);
             System.exit(1);
         }
         
         // TODO move to MainWindow
-        atomCount = dynamics.get(0).size();
+        atomCount = dynamics.getMolecule().getAtomCount();
         
-        AABB bb = preprocessAtoms(dynamics);
+        AABB bb = preprocessAtoms(dynamics.getMolecule());
         updateBoundingBox(bb);
         
         atomsPos = Buffers.newDirectFloatBuffer(MAX_ATOMS * 4);
@@ -877,7 +877,7 @@ public class Scene implements GLEventListener {
         }
         
         updateAtomPositions(gl);
-        volumetricAO.updateVolumes(gl, dynamics.get(0));
+        volumetricAO.updateVolumes(gl, dynamics.getMolecule().getAtoms());
         uploaded = true;
     }
 
@@ -893,7 +893,7 @@ public class Scene implements GLEventListener {
         
         if (!uploaded) {
             updateAtomPositions(gl);
-            volumetricAO.updateVolumes(gl, dynamics.get(0));
+            volumetricAO.updateVolumes(gl, dynamics.getMolecule().getAtoms());
             uploaded = true;
         }
         
@@ -1367,6 +1367,11 @@ public class Scene implements GLEventListener {
         // DEBUG spherical polygon
         //polygon.display(gl, eye, center);
         
+        // render drugs
+        for (Drug drug : dynamics.getDrugs()) {
+            renderDrug(gl, drug);
+        }
+        
         gl.glBeginQuery(GL_TIME_ELAPSED, resolveElapsedQuery);
         
         // resolve A-buffer
@@ -1763,6 +1768,22 @@ public class Scene implements GLEventListener {
         gl.glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT); // A-buffer
     }
     
+    private void renderDrug(GL4 gl, Drug drug) {
+        float[] positions = drug.getAtomPositions(snapshot);
+        Vector3f pos = new Vector3f();
+        for (int i = 0; i < drug.getAtomCount(); i++) {
+            pos.x = positions[3 * i];
+            pos.y = positions[3 * i + 1];
+            pos.z = positions[3 * i + 2];
+            //Utils.drawPoint(gl.getGL2(), pos, 2f);
+            gl.getGL2().glPushMatrix();
+            gl.getGL2().glTranslatef(pos.x, pos.y, pos.z);
+            gl.getGL2().glColor4f(1f, 0f, 0f, 1f);
+            glut.glutWireSphere(drug.getAtom(0).r, 8, 8);
+            gl.getGL2().glPopMatrix();
+        }
+    }
+    
     private void drawSmallCircles(GL4 gl, int count) {
         gl.glBindBuffer(GL_ARRAY_BUFFER, smallCirclesArrayBuffer);
         gl.glUseProgram(smallCirclesProgram);
@@ -1941,46 +1962,46 @@ public class Scene implements GLEventListener {
     
     public void loadDynamics(File[] files) {
         try {
-            dynamics = Utils.loadDynamics(files);
-            atomCount = dynamics.get(0).size();
+            dynamics = new Dynamics(Utils.loadDynamics(files));
+            atomCount = dynamics.getMolecule().getAtomCount();
             System.out.println("Atoms: " + atomCount);
-            System.out.println("Snapshots: " + dynamics.size());
+            System.out.println("Snapshots: " + dynamics.getSnapshotCount());
         } catch (IOException ex) {
             ex.printStackTrace(System.err);
         }
         
-        preprocessDynamics(dynamics);
+        preprocessMolecule(dynamics.getMolecule());
     }
     
     public void loadDynamicsFromGROMACS(File topology, File trajectory) {
         try {
-            dynamics = new GromacsStructureLoader().loadDynamics(topology, trajectory);
-            atomCount = dynamics.get(0).size();
+            dynamics = new GromacsStructureLoader().loadDynamics(topology, trajectory, 100);
+            atomCount = dynamics.getMolecule().getAtomCount();
             System.out.println("Atoms: " + atomCount);
-            System.out.println("Snapshots: " + dynamics.size());
+            System.out.println("Snapshots: " + dynamics.getSnapshotCount());
         } catch (Exception ex) {
             ex.printStackTrace(System.err);
         }
         
-        preprocessDynamics(dynamics);
+        preprocessMolecule(dynamics.getMolecule());
     }
     
     public void loadDynamicsFromResource(String name, int start, int end) {
         try {
-            dynamics = Utils.loadDynamicsFromResource(name, start, end);
-            atomCount = dynamics.get(0).size();
+            dynamics = new Dynamics(Utils.loadDynamicsFromResource(name, start, end));
+            atomCount = dynamics.getMolecule().getAtomCount();
             System.out.println("Atoms: " + atomCount);
-            System.out.println("Snapshots: " + dynamics.size());
+            System.out.println("Snapshots: " + dynamics.getSnapshotCount());
         } catch (IOException ex) {
             ex.printStackTrace(System.err);
         }
         
-        preprocessDynamics(dynamics);
+        preprocessMolecule(dynamics.getMolecule());
     }
     
-    private void preprocessDynamics(List<List<Atom>> dynamics) {
+    private void preprocessMolecule(Molecule dynamics) {
         snapshot = 0;
-        updateTime = -1L;
+        lastUpdateTime = -1L;
         
         AABB bb = preprocessAtoms(dynamics);
         updateBoundingBox(bb);
@@ -1988,18 +2009,18 @@ public class Scene implements GLEventListener {
         uploaded = false;
     }
     
-    private static AABB preprocessAtoms(List<List<Atom>> dynamics) {
-        List<Atom> first = dynamics.get(0);
-        Point3f min = new Point3f(first.get(0).x, first.get(0).y, first.get(0).z);
+    private static AABB preprocessAtoms(Molecule dynamics) {
+        float[] first = dynamics.getAtomPositions(0);
+        Point3f min = new Point3f(first[0], first[1], first[2]);
         Point3f max = new Point3f(min);
-        for (List<Atom> snapshot : dynamics) {
-            for (Atom atom : snapshot) {
-                min.x = Math.min(min.x, atom.x);
-                min.y = Math.min(min.y, atom.y);
-                min.z = Math.min(min.z, atom.z);
-                max.x = Math.max(max.x, atom.x);
-                max.y = Math.max(max.y, atom.y);
-                max.z = Math.max(max.z, atom.z);
+        for (float[] snapshot : dynamics.getSnapshots()) {
+            for (int i = 0; i < dynamics.getAtomCount(); i++) {
+                min.x = Math.min(min.x, snapshot[3 * i]);
+                min.y = Math.min(min.y, snapshot[3 * i + 1]);
+                min.z = Math.min(min.z, snapshot[3 * i + 2]);
+                max.x = Math.max(max.x, snapshot[3 * i]);
+                max.y = Math.max(max.y, snapshot[3 * i + 1]);
+                max.z = Math.max(max.z, snapshot[3 * i + 2]);
             }
         }
         
@@ -2010,15 +2031,15 @@ public class Scene implements GLEventListener {
         max.sub(center);
         //float scale = 8f / Math.max(Math.max(max.x, max.y), max.z);
         //cellSize = 1f / scale;
-        for (List<Atom> snapshot : dynamics) {
-            for (Atom atom : snapshot) {
+        for (float[] snapshot : dynamics.getSnapshots()) {
+            for (int i = 0; i < dynamics.getAtomCount(); i++) {
                 /*atom.x = scale * (atom.x - center.x);
                 atom.y = scale * (atom.y - center.y);
                 atom.z = scale * (atom.z - center.z);
                 atom.w = scale * atom.w;*/
-                atom.x = atom.x - min.x + 4.0f;
-                atom.y = atom.y - min.y + 4.0f;
-                atom.z = atom.z - min.z + 4.0f;
+                snapshot[3 * i]     = snapshot[3 * i]     - min.x + 4.0f;
+                snapshot[3 * i + 1] = snapshot[3 * i + 1] - min.y + 4.0f;
+                snapshot[3 * i + 2] = snapshot[3 * i + 2] - min.z + 4.0f;
             }
         }
         
@@ -2115,7 +2136,7 @@ public class Scene implements GLEventListener {
     }
     
     public void startDynamics() {
-        updateTime = System.currentTimeMillis();
+        lastUpdateTime = System.currentTimeMillis();
         animate = true;
     }
     
@@ -2125,34 +2146,34 @@ public class Scene implements GLEventListener {
     
     private void updateAtomPositions(GL4 gl) {
         // TODO interpolation
-        int speed = 5; // snapshots per second
+        float speed = 2f; // snapshots per second
         
         float t = 0f;
         int lastSnapshot = snapshot;
         long time = System.currentTimeMillis();
-        if (updateTime > 0) {
-            long diff = time - updateTime;
+        if (lastUpdateTime > 0) {
+            long diff = time - lastUpdateTime;
             int snapshotDiff = (int) (diff * speed / 1000L);
             if (snapshotDiff > 0) {
-                snapshot = (snapshot + snapshotDiff) % dynamics.size();
-                updateTime = time;
+                snapshot = (snapshot + snapshotDiff) % dynamics.getSnapshotCount();
+                lastUpdateTime = time;
             }
-            t = (diff * speed) / 1000f;
+            t = ((float) diff * speed) / 1000f;
         } else {
             // dynamics started time
-            updateTime = time;
+            lastUpdateTime = time;
         }
         
-        List<Atom> snapshotAtoms = dynamics.get(snapshot);
-        List<Atom> lastSnapshotAtoms = dynamics.get(lastSnapshot);
-        for (int i = 0; i < snapshotAtoms.size(); i++) {
-            Atom atom = snapshotAtoms.get(i);
-            Atom lastAtom = lastSnapshotAtoms.get(i);
-            atomsPos.put(linearInterpolation(lastAtom.x, atom.x, t));
-            atomsPos.put(linearInterpolation(lastAtom.y, atom.y, t));
-            atomsPos.put(linearInterpolation(lastAtom.z, atom.z, t));
+        Molecule molecule = dynamics.getMolecule();
+        float[] snapshotAtoms = molecule.getAtomPositions(snapshot);
+        float[] lastSnapshotAtoms = molecule.getAtomPositions(lastSnapshot);
+        for (int i = 0; i < molecule.getAtomCount(); i++) {
+            int offset = 3 * i;
+            atomsPos.put(linearInterpolation(lastSnapshotAtoms[offset],     snapshotAtoms[offset],     t));
+            atomsPos.put(linearInterpolation(lastSnapshotAtoms[offset + 1], snapshotAtoms[offset + 1], t));
+            atomsPos.put(linearInterpolation(lastSnapshotAtoms[offset + 2], snapshotAtoms[offset + 2], t));
             // copy radius
-            atomsPos.put(atom.r);
+            atomsPos.put(molecule.getAtom(i).r);
         }
         atomsPos.rewind();
         

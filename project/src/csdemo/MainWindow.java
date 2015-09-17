@@ -29,6 +29,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JColorChooser;
 import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
 import javax.swing.JSpinner;
 import javax.swing.Timer;
 import javax.swing.UIManager;
@@ -1259,9 +1260,18 @@ public class MainWindow extends javax.swing.JFrame {
 
     private void testGromacsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_testGromacsButtonActionPerformed
         //File home = new File(System.getProperty("user.home"));
-        File topology = new File("./data/gromacs/f01.moby.gro");
-        File trajectory = new File("./data/gromacs/f01.moby.xtc");
-        scene.loadDynamicsFromGROMACS(topology, trajectory);
+        File topology = new File("C:\\Users\\xjurc\\caver\\md\\LINB-ACETON.gro");
+        File trajectory = new File("C:\\Users\\xjurc\\caver\\md\\LINB-ACE-pbc.xtc");
+        GromacsStructureLoader loader = new GromacsStructureLoader();
+        try {
+            //int snapshots = loader.getNumberOfSnapshots(trajectory);
+            //JOptionPane.showMessageDialog(this, "Number of snapshots: " + snapshots);
+            //Dynamics data = loader.loadDynamics(topology, trajectory, 100);
+            //JOptionPane.showMessageDialog(this, "Numbers of drugs: " + data.getDrugCount());
+            scene.loadDynamicsFromGROMACS(topology, trajectory);
+        } catch (Exception ex) {
+            ex.printStackTrace(System.err);
+        }
     }//GEN-LAST:event_testGromacsButtonActionPerformed
 
     private void thresholdSliderStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_thresholdSliderStateChanged

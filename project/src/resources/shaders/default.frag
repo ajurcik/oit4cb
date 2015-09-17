@@ -10,6 +10,7 @@ struct fragment {
 uniform uvec2 window;
 
 in vec4 color;
+in float depth;
 
 layout(std430) buffer ABuffer {
     fragment fragments[];
@@ -30,6 +31,6 @@ void storeFragment(vec4 color, float depth, float ao) {
 }
 
 void main() {
-    storeFragment(color, gl_FragCoord.z, 0.0);
+    storeFragment(color, depth/*gl_FragCoord.z*/, 0.0);
     discard;
 }

@@ -9,10 +9,22 @@ import javax.vecmath.Vector3f;
  */
 public class Atom extends Vector3f {
     
+    public int id;
     public float r;
     public float v;
     
-    public void setPosition(Tuple3f position) {
+    public Atom() {
+        // empty atom
+    }
+    
+    public Atom(Atom atom) {
+        id = atom.id;
+        r = atom.r;
+        v = atom.v;
+        setPosition(atom);
+    }
+    
+    public final void setPosition(Tuple3f position) {
         set(position);
     }
     
