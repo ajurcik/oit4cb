@@ -51,7 +51,8 @@ In order to get all triangles incident to some torus, we hash the triangles by t
 We implemented a simple hash table which is based on linear addressing scheme with quadratic probing.
 For more details regarding the hashing technique see \cite{alcantara2011efficient}.
 
-Since a spherical patch is bounded by toroidal patches, we extended the original algorithm by adding three new GPU kernels that compute sets of toroidal patches forming spherical patches (see Section~\ref{sec:graph}). When visualizing the surface, each such set is used to ray-cast a spherical patch (see Section~\ref{sec:spherical-patches}).
+Since a spherical patch is bounded by toroidal patches, we extended the original algorithm by adding three new GPU kernels that compute sets of toroidal patches forming spherical patches (see Section~\ref{sec:graph}).
+When visualizing the surface, each such set is used to ray-cast a spherical patch (see Section~\ref{sec:spherical-patches}).
 
 \begin{figure}[htb]
   \centering
@@ -64,40 +65,48 @@ Since a spherical patch is bounded by toroidal patches, we extended the original
 
 \subsection{Surface graph}
 \label{sec:graph}
+   
+%\begin{itemize}
+%  \item Idea: computed surfaces are continuous (closed) and graphs of their primitives form isolated components in the whole graph of all surface primitives
+%  \item Modification of parallel CB of Krone et. al --- aaaa
+%  \item Extension of parallel CB of Krone et. al --- 3 new kernels:
+%	\begin{enumerate}
+%	  \item Adjacency matrix is built (only 3 edges at each vertex)
+%    \item Labeling of connected components (parallel BFS --- suboptimal)
+%    \item Circles of edges for each spherical patch are computed
+%  \end{enumerate}
+%  \item Assign spheres with edges
+%  \item Detect circles in edges --- bubble sort $O(n^2)$
+%  \item Step 3 --- one sphere can form two or more surfaces
+%  \item Rendering of spherical patches --- spherical polygons
+%  \item Odd-even rule + point outside polygon
+%  \item Special case: isolated tori
+%\end{itemize}
 
-\textbf{This should be written in more friendly fashion and with clear defined terms.
-Terms to be explained: surface is continuitous (geometrical?, since $C^1$ continuous it is not), graphs (2D/3D, does it contain loops?), primitive, component }   
-\begin{itemize}
-  \item Idea: computed surfaces are continuous (closed) and graphs of their primitives form isolated components in the whole graph of all surface primitives
-  \item Modification of parallel CB of Krone et. al --- aaaa
-  \item Extension of parallel CB of Krone et. al --- 3 new kernels:
-	\begin{enumerate}
-	  \item Adjacency matrix is built (only 3 edges at each vertex)
-    \item Labeling of connected components (parallel BFS --- suboptimal)
-    \item Circles of edges for each spherical patch are computed
-  \end{enumerate}
-  \item Assign spheres with edges
-  \item Detect circles in edges --- bubble sort $O(n^2)$
-  \item Step 3 --- one sphere can form two or more surfaces
-  \item Rendering of spherical patches --- spherical polygons
-  \item Odd-even rule + point outside polygon
-  \item Special case: isolated tori
-\end{itemize}
+The computed surface contains primitives of both the molecular surface (outer) and the surfaces of cavities (inner).
+\footnote{\textcolor{red}{JP: This should be written in more friendly fashion and with clear defined terms.
+Terms to be explained: surface is continuitous (geometrical?, since $C^1$ continuous it is not), graphs (2D/3D, does it contain loops?), primitive, component}}
+In \cite{kauker2013rendering}, the authors were interested in visualizing the outer surface.
+Therefore, they called the inner parts of the surface as inner remains as it was source of occlusion.
+We think that for SES, the user might want to visualize cavities within the molecule and hence it is useful to let him decide on what to visualize.
+Contrary, for SAS, the cavities are visualized much smaller than in the case of SES and therefore visualizing them does not help assessing their shape or volume.
+The difference \textcolor{red}{stems from} the definitions of the surfaces.
+In the case of SAS, we therefore propose to clip the inner surfaces to enhance the visualization.
+%The user might also want to hide cavities inside a SES to lower possible occlusion of other structures such as tunnels or cartoons.
 
-Seeds --- The computed surface contains also surface of cavities that was inaccurately called by Kauker et. al. as inner remains \cite{kauker2013rendering}.
-For SES, the user might want to visualize cavities within the molecular surface.
-Contrary, for SAS, the inner surface forms only \textcolor{red}{seeds} of the cavities, and the seeds are not useful for assessing the real shape of a cavity, so that clipping these seeds enhances the visualization.
-The user might also want to hide cavities inside a SES to lower possible occlusion of other structures such as tunnels or cartoons.
-The clipping of cavities is enabled by observing that both SAS and SES are continuous and therefore there has to be more than one continuous surface component when the molecule contains a cavity \cite{borland2011ambient}.
-\textcolor{red}{Too many ideas in one sentence. Split into two or more.}
+For both SAS and SES, the clipping of cavities is enabled by observing that the outer and inner surfaces are disjoint \textcolor{red}{\cite{borland2011ambient}}.
+\footnote{\textcolor{red}{JP: Too many ideas in one sentence. Split into two or more.}}
+More precisely, there is one component for the outer surface of the molecule and one component for each cavity.
+For the contour representation of the surface, isolated components can be easily detected by applying connected component (CC) analysis to a structure which we call the \textit{surface graph}.
+\footnote{\textcolor{red}{JP: Introduce here "terminus techniques"; i.e., SES is composed of three types of patches etc.}}
+We build our \textit{surface graph} using triangles as vertices and toroidal patches --- recall that a toroidal patch is delimited with two triangles, as edges between them.
+First, we tried to use spheres as vertices and toroidal patches as edges connecting them. But, such a representation showed to be insufficient because of the fact that spheres may contain patches that are part of different surface components.
+Moreover, using the former graph representation makes also the implementation of used graph algorithms and graph data structures on the GPU easier.
+This is caused mainly by the fact that a triangle has exactly three neighboring toroidal patches, hence all vertices in our graph are of degree three.
 
-\textcolor{red}{Introduce here "terminus techniques"; i.e., SES is composed of three types of patches etc.}
-More precisely, there is one component for the outer surface of the molecule and one component for each cavity, and the components can be easily detected by applying connected component (CC) analysis to the graph formed by surface primitives (spherical patches --- polygons?, toroidal patches and triangles).
-The spherical patches \textcolor{red}{can not be used because they are not known for now}.
-We do not know whether a sphere forms one or more patches and who are their neighboring tori, i.e., edges.
-Therefore the surface graph is built by triangles (vertices) and toroidal patches (edges).
-The surface contains also tori that are not cut by any triangle, i.e., they do not have any neighboring triangle.
-Such toroidal patches are excluded from the surface graph and has to be handled differently (see Section ?).
+Finally, the surface contains also tori that are not \textcolor{red}{cut} by any triangle.
+We call such tori as \textit{isolated}, because they do not have any neighboring triangle.
+\textit{Isolated tori} are excluded from the \textit{surface graph} and they are handled later in the computation (see Section ?).
 
 We do the CC analysis on the GPU to avoid synchronization and data transfer costs.
 First, we modified the output of the original GPU parallel CB to obtain the input which is needed for the analysis and rendering of transparent toroidal patches.
