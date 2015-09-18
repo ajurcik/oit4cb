@@ -35,10 +35,10 @@ Overview of the algorithm: (JP)
 
 \subsection{Extended CB Algorithm}
 
-We come out from the GPU parallel algorithm presented in \cite{krone2011parallel}.
-In the algorithm, the SES is represented as three different sets of surface primitives --- spheres, tori\textcolor{red}{,} and spherical triangles, that are ray-casted to obtain opaque surface visualization.
-While ray-casting spheres and tori, there are also produced parts that are in the final image occluded by triangles.
-Therefore, to visualize contour surface representation using transparency, we extended the algorithm so that it computes a SES represented with:
+Our extended CB algorithm is based on the existing research that utilizes the GPU capabilities~\cite{krone2011parallel}.
+In the former sutdy, the SES is represented as three different sets of surface primitives --- spheres, tori\textcolor{red}{,} and spherical triangles. Each of the primitive is obtained in its analytical form that is then ray-casted to produce the opaque surface visualization.
+While ray-casting spheres and tori, some sections of the final image will be later occluded by the spherical triangles.
+\textcolor{red}{JP: This needs to be explained: Therefore, to visualize contour surface representation using transparency}, we extended the algorithm so that it computes a SES represented with:
 \begin{itemize}
   \item Spherical patches --- a spherical patch is enclosed by edges of three or more toroidal patches.
 	\item Toroidal patches --- a toroidal patch is delimited by two spherical triangles.
