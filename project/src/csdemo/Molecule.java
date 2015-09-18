@@ -9,8 +9,8 @@ import java.util.List;
  */
 public class Molecule {
     
-    private List<Atom> atoms = new ArrayList<>();
-    private List<float[]> snapshots = new ArrayList<>();
+    protected List<Atom> atoms = new ArrayList<>();
+    protected List<float[]> snapshots = new ArrayList<>();
     
     public Molecule() {
         // empty molecule

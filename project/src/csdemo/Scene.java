@@ -1296,7 +1296,7 @@ public class Scene implements GLEventListener {
         gl.glBindBufferBase(GL_SHADER_STORAGE_BUFFER, COUNTERS_BUFFER_INDEX, countersBuffer);
         
         gl.glUseProgram(defaultProgram);
-        //Utils.drawAxes(gl, 5.0f);
+        Utils.drawAxes(gl, 5.0f);
         
         gl.glPushMatrix();
         gl.glTranslatef(aabbMin.x - 4f, aabbMin.y - 4f, aabbMin.z - 4f);
@@ -1311,7 +1311,7 @@ public class Scene implements GLEventListener {
         }
         
         if (renderPoint) {
-            Utils.drawPoint(gl, point, 2f);
+            //Utils.drawPoint(gl, point, 2f);
         }
         
         // calc view vectors
@@ -1367,10 +1367,31 @@ public class Scene implements GLEventListener {
         // DEBUG spherical polygon
         //polygon.display(gl, eye, center);
         
-        // render drugs
-        for (Drug drug : dynamics.getDrugs()) {
-            renderDrug(gl, drug);
+        // DEBUG AABB
+        /*gl.glPushMatrix();
+        gl.glTranslatef(-4f, -4f, -4f);
+        Utils.drawAABB(gl, aabbMin, aabbSize);
+        gl.glPopMatrix();*/
+        
+        if (renderPoint) {
+            Utils.drawPoint(gl, point, 2f);
         }
+        
+        // render drugs
+        Point3f moleculeCenter = new Point3f(aabbMin);
+        moleculeCenter.x += aabbSize / 2f - 4f;
+        moleculeCenter.y += aabbSize / 2f - 4f;
+        moleculeCenter.z += aabbSize / 2f - 4f;
+        Point3f cavityCenter = new Point3f(48f, 44f, 30f);
+        Point3f drugCenter = new Point3f();
+        for (Drug drug : dynamics.getDrugs()) {
+            drug.getCenter(snapshot, drugCenter);
+            if (cavityCenter.distance(drugCenter) <= 15f) {
+                renderAcetone(gl, drug);
+            }
+        }
+        
+        //gl.glPopMatrix();
         
         gl.glBeginQuery(GL_TIME_ELAPSED, resolveElapsedQuery);
         
@@ -1768,20 +1789,34 @@ public class Scene implements GLEventListener {
         gl.glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT); // A-buffer
     }
     
-    private void renderDrug(GL4 gl, Drug drug) {
+    private void renderAcetone(GL4 gl, Drug drug) {
         float[] positions = drug.getAtomPositions(snapshot);
         Vector3f pos = new Vector3f();
-        for (int i = 0; i < drug.getAtomCount(); i++) {
-            pos.x = positions[3 * i];
-            pos.y = positions[3 * i + 1];
-            pos.z = positions[3 * i + 2];
-            //Utils.drawPoint(gl.getGL2(), pos, 2f);
-            gl.getGL2().glPushMatrix();
-            gl.getGL2().glTranslatef(pos.x, pos.y, pos.z);
-            gl.getGL2().glColor4f(1f, 0f, 0f, 1f);
-            glut.glutWireSphere(drug.getAtom(0).r, 8, 8);
-            gl.getGL2().glPopMatrix();
-        }
+        GL2 gl2 = gl.getGL2();
+        gl2.glPushAttrib(GL_ALL_ATTRIB_BITS);
+        gl2.glLineWidth(4f);
+        gl2.glColor3f(1f, 0f, 0f);
+        gl2.glBegin(GL_LINES);
+        int c1 = 0;
+        int c2 = 4;
+        int c3 = 5;
+        int o1 = 9;
+        line(gl2, positions, c1, c1 + 1); // C1-H1
+        line(gl2, positions, c1, c1 + 2); // C1-H2
+        line(gl2, positions, c1, c1 + 3); // C1-H3
+        line(gl2, positions, c1, c2); // C1-C2
+        line(gl2, positions, c2, o1); // C2-O1
+        line(gl2, positions, c2, c3); // C2-C3
+        line(gl2, positions, c3, c3 + 1); // C3-H4
+        line(gl2, positions, c3, c3 + 2); // C3-H5
+        line(gl2, positions, c3, c3 + 3); // C3-H6
+        gl2.glEnd();
+        gl2.glPopAttrib();
+    }
+    
+    private void line(GL2 gl, float[] positions, int p0, int p1) {
+        gl.glVertex3f(positions[3 * p0], positions[3 * p0 + 1], positions[3 * p0 + 2]);
+        gl.glVertex3f(positions[3 * p1], positions[3 * p1 + 1], positions[3 * p1 + 2]);
     }
     
     private void drawSmallCircles(GL4 gl, int count) {

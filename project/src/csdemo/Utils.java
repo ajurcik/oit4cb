@@ -4,6 +4,7 @@ import com.jogamp.common.nio.Buffers;
 import com.jogamp.opengl.GL2;
 import static com.jogamp.opengl.GL4bc.*;
 import com.jogamp.opengl.GL4;
+import com.jogamp.opengl.util.gl2.GLUT;
 import java.awt.Color;
 import java.io.BufferedReader;
 import java.io.File;
@@ -16,6 +17,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.vecmath.Point3f;
 import javax.vecmath.Vector3f;
 import javax.vecmath.Vector4f;
 
@@ -33,6 +35,8 @@ public class Utils {
     private static final Map<String, Float> radii;
     private static final Map<String, Map<String, Float>> volumes;
 
+    private static final GLUT glut = new GLUT();
+    
     static {
         try {
             // load van der Waals radii
@@ -420,6 +424,14 @@ public class Utils {
         gl.glVertex3f(0f, 0f, size);
         
         gl.glEnd();
+    }
+    
+    public static void drawAABB(GL2 gl, Point3f min, float size) {
+        gl.glColor3f(0f, 1f, 0f);
+        gl.glPushMatrix();
+        gl.glTranslatef(min.x + 0.5f * size, min.y + 0.5f * size, min.z + 0.5f * size);
+        glut.glutWireCube(size);
+        gl.glPopMatrix();
     }
     
     public static void drawPlane(GL2 gl, float size) {
