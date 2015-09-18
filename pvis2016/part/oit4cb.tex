@@ -45,8 +45,8 @@ While ray-casting spheres and tori, some sections of the final image will be lat
 	\item Spherical triangles.
 \end{itemize}
 
-In \cite{kauker2013rendering}, the authors shown that a toroidal patch can be ray-casted using a torus and two clipping planes defined by its delimiting triangles.
-We modified the data structure used to store spherical triangles in a way, such that we know all spherical triangles that delimit patches on a torus and hence later on we are able to ray-cast toroidal patches instead of tori.
+Kauker et al.~\cite{kauker2013rendering} proposed to ray-cast a toroidal patch using a torus and two clipping planes defined by its delimiting triangles.
+We modify the data structure used to store spherical triangles in such a way that all spherical triangles that delimit patches on a torus are known. Therefore, it allows us to ray-cast toroidal patches instead of tori.
 In order to get all triangles incident to some torus, we hash the triangles by three keys --- one for each torus which is connected to a triangle.
 We implemented a simple hash table which is based on linear addressing scheme with quadratic probing.
 For more details regarding the hashing technique see \cite{alcantara2011efficient}.
