@@ -20,9 +20,9 @@ This is reached by introducing several enhancements (Fig.~\ref{fig:teaser}), suc
 The main contributions of our solution are:
 \begin{itemize}
   \item Enhanced computation of solvent-excluded surface (SES) of the molecule. We propose three new kernels that account for speedup of the existing state-of-the-art approach~\cite{todo}.
-  \item Novel real time algorithm for the detection of cavities (check Totrov --- AJ). We present new fast cavity detection method that is based on solvent-accessible surface (SAS).
-  \item Focus and context visualization of cavities in the context of molecular surface.
-  \item Improved performance of visualization of transparent molecular surfaces.~\cite{todo}
+  \item A novel real-time algorithm for the detection of cavities (check Totrov --- AJ). We present new fast cavity detection method that is based on solvent-excluded surface (SES).
+  \item Improved performance of visualization of transparent molecular surfaces~\cite{todo}. We describe our interactive focus and context visualization of cavities on the molecular surface.
+  
 \end{itemize}
 
 Currently existing methods provide a solution for each of these topics separately (i.e., computation of molecular surface, its transparency, and inner cavities).
@@ -30,22 +30,19 @@ However, none of these solutions combines all these topics in order to provide t
 We fill this gap by introducing our solution which not only provides the users with the combination of the mentioned contributions but even overcomes the performance limitations of the previous solutions.
 
 
-TODO what to do with this???
-\begin{itemize}
-  \item Transparent surface rendering speedup (AJ)
-	\item Novel real-time cavity detection method (AJ)
-	\item More precise (analytic computation + ray-casting) interactive visualization of cavities in molecular simulations (JP)
-	\begin{itemize}
-		\item Focus and context visualization of cavities within transparent molecular surfaces
-		\item Opacity modulation by cavity features (surface area, AO, etc.)
-	\end{itemize}
-	\item \textcolor{red}{?} Memory efficient CB (AJ)
-	\item \textcolor{red}{?} Vendor independent implementation (OpenGL + OpenCL) (AJ)
-\end{itemize}
-
-Problem
-\begin{itemize}
-  \item Artifacts \& occlusion, e.g. for secondary structures (AJ)
-\end{itemize}
-
+%\begin{itemize}
+%  \item Transparent surface rendering speedup (AJ)
+%	\item Novel real-time cavity detection method (AJ)
+%	\item More precise (analytic computation + ray-casting) interactive visualization of cavities in molecular simulations (JP)
+%	\begin{itemize}
+%		\item Focus and context visualization of cavities within transparent molecular surfaces
+%		\item Opacity modulation by cavity features (surface area, AO, etc.)
+%	\end{itemize}
+%	\item \textcolor{red}{?} Memory efficient CB (AJ)
+%	\item \textcolor{red}{?} Vendor independent implementation (OpenGL + OpenCL) (AJ)
+%\end{itemize}
+%Problem
+%\begin{itemize}
+%  \item Artifacts \& occlusion, e.g. for secondary structures (AJ)
+%\end{itemize}
 
