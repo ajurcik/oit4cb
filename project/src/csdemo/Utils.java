@@ -12,6 +12,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -486,6 +487,37 @@ public class Utils {
         drawAxes(gl, size);
         
         gl.glPopMatrix();
+    }
+    
+    public static Mesh loadMesh(GL2 gl, String filename) {
+        OBJLoader loader = new OBJLoader(filename);
+        loader.load();
+        
+        int triangleCount = loader.getVertexIndices().size();
+        FloatBuffer meshData = Buffers.newDirectFloatBuffer(triangleCount * 18);
+        for (int f = 0; f < triangleCount; f++) {
+            int[] vertexIndices = loader.getVertexIndices().get(f);
+            int[] normalIndices = loader.getNormalIndices().get(f);
+            // vertex A
+            meshData.put(loader.getVertices().get(vertexIndices[0]));
+            meshData.put(loader.getNormals().get(normalIndices[0]));
+            // vertex B
+            meshData.put(loader.getVertices().get(vertexIndices[1]));
+            meshData.put(loader.getNormals().get(normalIndices[1]));
+            // vertex C
+            meshData.put(loader.getVertices().get(vertexIndices[2]));
+            meshData.put(loader.getNormals().get(normalIndices[2]));
+        }
+        meshData.rewind();
+        
+        int[] buffers = new int[1];
+        gl.glGenBuffers(1, buffers, 0);
+        int meshBuffer = buffers[0];
+        
+        gl.glBindBuffer(GL_ARRAY_BUFFER, meshBuffer);
+        gl.glBufferData(GL_ARRAY_BUFFER, triangleCount * 18 * Buffers.SIZEOF_FLOAT, meshData, GL_STATIC_DRAW);
+        
+        return new Mesh(triangleCount, meshBuffer);
     }
     
 }

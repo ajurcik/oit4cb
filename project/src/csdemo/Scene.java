@@ -285,6 +285,8 @@ public class Scene implements GLEventListener {
     private final CLArcs clArcs = new CLArcs();
     private final CLGraph clGraph = new CLGraph();
     
+    private Mesh capsule;
+    
     private static final boolean PERFORMANCE_TESTS_ENABLED = false;
     
     public void setAlpha(float alpha) {
@@ -502,8 +504,8 @@ public class Scene implements GLEventListener {
             defaultProgram = Utils.loadProgram(gl, "/resources/shaders/default.vert",
                     "/resources/shaders/default.frag");
             // Load molecule
-            dynamics = new Dynamics(Utils.loadDynamicsFromResource("/resources/md/model", 1, 10));
-            //dynamics = Collections.singletonList(Utils.loadAtomsFromResource("/resources/1CRN_26.pdb"));
+            //dynamics = new Dynamics(Utils.loadDynamicsFromResource("/resources/md/model", 1, 10));
+            dynamics = new Dynamics(Collections.singletonList(Utils.loadAtomsFromResource("/resources/1CRN_26.pdb")));
             System.out.println("Atoms (molecule): " + dynamics.getMolecule().getAtomCount());
             System.out.println("Snapshots: " + dynamics.getSnapshotCount());
         } catch (Exception ex) {
@@ -879,6 +881,8 @@ public class Scene implements GLEventListener {
         updateAtomPositions(gl);
         volumetricAO.updateVolumes(gl, dynamics.getMolecule().getAtoms());
         uploaded = true;
+        
+        capsule = Utils.loadMesh(gl, "/resources/obj/capsule.obj");
     }
 
     @Override
@@ -1372,6 +1376,20 @@ public class Scene implements GLEventListener {
         gl.glTranslatef(-4f, -4f, -4f);
         Utils.drawAABB(gl, aabbMin, aabbSize);
         gl.glPopMatrix();*/
+        
+        // DEBUG capsule
+        gl.glColor4f(1f, 0f, 0f, 1f);
+        gl.glEnableClientState(GL_VERTEX_ARRAY);
+        gl.glEnableClientState(GL_NORMAL_ARRAY);
+        
+        gl.glBindBuffer(GL_ARRAY_BUFFER, capsule.getVertexArrayBuffer());
+        gl.glVertexPointer(3, GL_FLOAT, 24, 0);
+        gl.glNormalPointer(GL_FLOAT, 24, 12);
+        
+        gl.glDrawArrays(GL_TRIANGLES, 0, 3 * capsule.getTriangleCount());
+        
+        gl.glDisableClientState(GL_VERTEX_ARRAY);
+        gl.glDisableClientState(GL_NORMAL_ARRAY);
         
         if (renderPoint) {
             Utils.drawPoint(gl, point, 2f);
