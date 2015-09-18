@@ -12,6 +12,14 @@ AOOM
 \end{itemize}
 
 \subsection{Molecular Surface Representation}
-There are several types of molecular surface representation proposed in the literature~\cite{STAR2015}. Nevertheless, for cavity analysis,  the solvent-excluded surface (SES) belongs to the most used representation~\cite{todo} amongst biologists. This representation allows us to directly asses whether a solvent, approximated a sphere of a certain radius, is able to reach a binding site of interest on the molecular surface. Such a binding site is located inside a cavity or a tunnel, while the molecular surface might contain tens of cavities per a single simulation snap-shot. Additionally, computation of SES is not a trivial task, which also requires a substantial computation and algorithmic capabilities. Therefore, it would be essential to posses a technique that could provide us an instant computation, and an interactive and meaningful visualization of the cavities in the context of molecular surface.
+\textcolor{red}{Shouldn't be this section part of motivation of our algorithm for SES? Also, it seems that it mixes two types of voids - cavities and pockets. It needs to be discussed.}
+
+There are several types of molecular surface representation proposed in the literature~\cite{STAR2015}. 
+However, for cavity analysis,  the solvent-excluded surface (SES) is the most commonly used representation used by the domain experts~\cite{todo}. 
+This representation allows us to directly asses whether a solvent, approximated by a sphere of a given radius, is able to reach a binding site of interest on the molecular surface. 
+Such binding site can be located inside a cavity or a tunnel, while the molecular surface might contain tens of cavities per single simulation time step. 
+Additionally, computation of SES is not a trivial task, which also requires a substantial computation and algorithmic capabilities. 
+Therefore, it would be essential to posses a technique that could provide us with instant computation and interactive and meaningful visualization of cavities in the context of molecular surface.
+
 \subsection{Extraction and Visualization of Cavities and Tunnels}
 
