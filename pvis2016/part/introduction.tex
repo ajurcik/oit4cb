@@ -17,15 +17,20 @@ This is reached by introducing several enhancements (Fig.~\ref{fig:teaser}), suc
 
 %In this paper, we introduce a new technique (Fig.~\ref{fig:teaser}) that enables to compute and visualize the solvent excluded surface. Additionally, we propose a new way for computing molecular surface features, like cavities or tunnels. Finally, we introduce a visualization technique that allows to interactively visualize the computed cavities in the context of the molecular surface.
 
-The summarize contributions are as follows:
+The main contributions of our solution are:
 \begin{itemize}
-  \item An enhanced computation of SES. We propose three new kernels that acount for speedup of the existing state-of-the-art approach~\cite{todo}.
-  \item A novel real time algorithm for detection of cavities (check Totrov --- AJ). We present a novel and a fast cavity detection method that is based on solvent accessible surface.
+  \item Enhanced computation of Solvent Excluded Surface (SES) of the molecule. We propose three new kernels that account for speedup of the existing state-of-the-art approach~\cite{todo}.
+  \item Novel real time algorithm for the detection of cavities (check Totrov --- AJ). We present new fast cavity detection method that is based on Solvent Accessible Surface (SAS).
   \item Focus and context visualization of cavities in the context of molecular surface.
-  \item Improved performance of visualization of transparent molecular surfaces.
+  \item Improved performance of visualization of transparent molecular surfaces.~\cite{todo}
 \end{itemize}
 
-Contribution
+Currently existing methods provide a solution for each of these topics separately (i.e., computation of molecular surface, its transparency, and inner cavities).
+However, none of these solutions combines all these topics in order to provide the domain experts with a tool for their real-time visualization and exploration.
+We fill this gap by introducing our solution which not only provides the users with the combination of the mentioned contributions but even overcomes the performance limitations of the previous solutions.
+
+
+TODO what to do with this???
 \begin{itemize}
   \item Transparent surface rendering speedup (AJ)
 	\item Novel real-time cavity detection method (AJ)
