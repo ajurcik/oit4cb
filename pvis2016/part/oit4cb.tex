@@ -42,9 +42,16 @@ While ray-casting spheres and tori, some sections of the final image will be lat
 Using them we avoid the situation when the previous algorithm renders parts of tori and spheres which do not form the final surface.}
 
 Kauker et al.~\cite{kauker2013rendering} proposed to ray-cast a toroidal patch using a torus and two clipping planes defined by its delimiting triangles.
+<<<<<<< Updated upstream
 We modify the data structure used to store spherical triangles in such a way that all spherical triangles that delimit patches on a torus are known. Therefore, it allows us to ray-cast toroidal patches instead of tori.
 In order to get all triangles incident to some torus, we hash the triangles by three keys -- one for each torus which is connected to a triangle.
 We implemented a simple hash table which is based on linear addressing scheme with quadratic probing \cite{alcantara2011efficient}.
+=======
+We modify the data structure used to store spherical triangles in such a way that all spherical triangles that delimit patches on a torus are known. Therefore, it allows us to ray-cast toroidal patches directly instead of tori.
+In order to get all triangles incident to some torus, we hash the triangles by three keys --- one for each torus which is connected to a triangle.
+We implemented a simple hash table which is based on linear addressing scheme with quadratic probing.
+For more details regarding the hashing technique see \cite{alcantara2011efficient}.
+>>>>>>> Stashed changes
 
 Since a spherical patch is bounded by toroidal patches, we extended the original algorithm by adding three new GPU kernels that compute the sets of toroidal patches forming the spherical patches (see Section~\ref{sec:graph}).
 When visualizing the surface, each such set is used to ray-cast a spherical patch (see Section~\ref{sec:spherical-patches}).
