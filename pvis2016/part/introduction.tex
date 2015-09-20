@@ -5,7 +5,7 @@ Many researchers have been focusing on the analysis of protein structures, i.e.,
 Recent discoveries confirm that the function of proteins is not fully determined only by their structure but also their dynamic movements play a significant role \cite{Hensen2012}.
 This even stresses the importance of studying and exploring the trajectories of molecular dynamics (MD) in detail. 
 As the captured or simulated trajectories are dramatically increasing their size, their real-time exploration becomes a necessity. 
-The domain experts require a visual insight into the protein structure and its dynamic movement instantly, without tedious precomputation or offline rendering.
+The domain experts require a visual insight into the protein structure and its dynamic movement instantly, without tedious precomputation or offline rendering which is currently their only option.
 This is especially crucial when analyzing MD trajectories containing thousands of frames, where the users cannot spent much time analyzing just a single frame either due to computational or visualization setbacks. 
 Moreover, the exploratory process of MD trajectories is often concerned with the visual identification of binding sites of ligands to a host protein.
 These sites represent a molecular surface features known as cavities, pockets, or tunnels.
@@ -17,7 +17,7 @@ This is reached by introducing several enhancements (Fig.~\ref{fig:teaser}), suc
 
 %In this paper, we introduce a new technique (Fig.~\ref{fig:teaser}) that enables to compute and visualize the solvent excluded surface. Additionally, we propose a new way for computing molecular surface features, like cavities or tunnels. Finally, we introduce a visualization technique that allows to interactively visualize the computed cavities in the context of the molecular surface.
 
-The main contributions of our solution are:
+More specifically, the main contributions of our solution are:
 \begin{itemize}
   \item Enhanced computation of solvent-excluded surface (SES) of the molecule. We propose three new kernels that account for speedup of the existing state-of-the-art approach~\cite{todo}.
   \item A novel real-time algorithm for the detection of cavities (check Totrov --- AJ). We present new fast cavity detection method that is based on solvent-excluded surface (SES).

@@ -520,4 +520,25 @@ public class Utils {
         return new Mesh(triangleCount, meshBuffer);
     }
     
+    public static Drug loadAcetone() throws IOException {
+        List<Atom> atoms = new ArrayList<>();
+        InputStream is = Utils.class.getResourceAsStream("/resources/acetone.txt");
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(is))) {
+            String line = reader.readLine();
+            while (line != null) {
+                Atom atom = new Atom();
+                
+                String[] parts = line.trim().split("\\s+");
+                atom.x = Float.parseFloat(parts[0]);
+                atom.y = Float.parseFloat(parts[1]);
+                atom.z = Float.parseFloat(parts[2]);
+                
+                atoms.add(atom);
+                
+                line = reader.readLine();
+            }
+        }
+        return new Drug(atoms);
+    }
+    
 }

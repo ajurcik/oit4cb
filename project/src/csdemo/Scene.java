@@ -25,6 +25,8 @@ import com.jogamp.opengl.GL4bc;
 import com.jogamp.opengl.glu.GLU;
 import java.awt.Color;
 import java.io.File;
+import javax.vecmath.AxisAngle4f;
+import javax.vecmath.Matrix4f;
 import javax.vecmath.Point3f;
 import javax.vecmath.Vector3f;
 import javax.vecmath.Vector4f;
@@ -65,6 +67,9 @@ public class Scene implements GLEventListener {
     // A-buffer programs
     private int defaultProgram;
     private int resolveProgram;
+    
+    // Other programs
+    private int stickProgram;
     
     private int atomsBuffer;
     private int gridCountsBuffer;
@@ -286,6 +291,7 @@ public class Scene implements GLEventListener {
     private final CLGraph clGraph = new CLGraph();
     
     private Mesh capsule;
+    private Drug acetone;
     
     private static final boolean PERFORMANCE_TESTS_ENABLED = false;
     
@@ -503,6 +509,8 @@ public class Scene implements GLEventListener {
                     "/resources/shaders/resolve.frag");
             defaultProgram = Utils.loadProgram(gl, "/resources/shaders/default.vert",
                     "/resources/shaders/default.frag");
+            stickProgram = Utils.loadProgram(gl, "/resources/shaders/stick.vert",
+                    "/resources/shaders/stick.frag");
             // Load molecule
             //dynamics = new Dynamics(Utils.loadDynamicsFromResource("/resources/md/model", 1, 10));
             dynamics = new Dynamics(Collections.singletonList(Utils.loadAtomsFromResource("/resources/1CRN_26.pdb")));
@@ -758,6 +766,8 @@ public class Scene implements GLEventListener {
         // bind A-buffer buffers
         Utils.bindShaderStorageBlock(gl, defaultProgram, "ABuffer", FRAGMENTS_BUFFER_INDEX);
         Utils.bindShaderStorageBlock(gl, defaultProgram, "ABufferIndex", FRAGMENTS_INDEX_BUFFER_INDEX);
+        Utils.bindShaderStorageBlock(gl, stickProgram, "ABuffer", FRAGMENTS_BUFFER_INDEX);
+        Utils.bindShaderStorageBlock(gl, stickProgram, "ABufferIndex", FRAGMENTS_INDEX_BUFFER_INDEX);
         Utils.bindShaderStorageBlock(gl, resolveProgram, "ABuffer", FRAGMENTS_BUFFER_INDEX);
         Utils.bindShaderStorageBlock(gl, resolveProgram, "ABufferIndex", FRAGMENTS_INDEX_BUFFER_INDEX);
         Utils.bindShaderStorageBlock(gl, resolveProgram, "CountersBuffer", COUNTERS_BUFFER_INDEX);
@@ -883,6 +893,13 @@ public class Scene implements GLEventListener {
         uploaded = true;
         
         capsule = Utils.loadMesh(gl, "/resources/obj/capsule.obj");
+        
+        // DEBUG acetone molecule
+        try {
+            acetone = Utils.loadAcetone();
+        } catch (IOException ex) {
+            ex.printStackTrace(System.err);
+        }
     }
 
     @Override
@@ -1378,6 +1395,10 @@ public class Scene implements GLEventListener {
         gl.glPopMatrix();*/
         
         // DEBUG capsule
+        gl.glUseProgram(stickProgram);
+        Utils.setUniform(gl, stickProgram, "size", 2f);
+        Utils.setUniform(gl, stickProgram, "window", viewport[2], viewport[3]);
+        
         gl.glColor4f(1f, 0f, 0f, 1f);
         gl.glEnableClientState(GL_VERTEX_ARRAY);
         gl.glEnableClientState(GL_NORMAL_ARRAY);
@@ -1386,10 +1407,13 @@ public class Scene implements GLEventListener {
         gl.glVertexPointer(3, GL_FLOAT, 24, 0);
         gl.glNormalPointer(GL_FLOAT, 24, 12);
         
-        gl.glDrawArrays(GL_TRIANGLES, 0, 3 * capsule.getTriangleCount());
+        //gl.glDrawArrays(GL_TRIANGLES, 0, 3 * capsule.getTriangleCount());
         
         gl.glDisableClientState(GL_VERTEX_ARRAY);
         gl.glDisableClientState(GL_NORMAL_ARRAY);
+        
+        gl.glUseProgram(defaultProgram);
+        renderAcetone(gl, acetone);
         
         if (renderPoint) {
             Utils.drawPoint(gl, point, 2f);
@@ -1814,12 +1838,12 @@ public class Scene implements GLEventListener {
         gl2.glPushAttrib(GL_ALL_ATTRIB_BITS);
         gl2.glLineWidth(4f);
         gl2.glColor3f(1f, 0f, 0f);
-        gl2.glBegin(GL_LINES);
+        //gl2.glBegin(GL_LINES);
         int c1 = 0;
         int c2 = 4;
         int c3 = 5;
         int o1 = 9;
-        line(gl2, positions, c1, c1 + 1); // C1-H1
+        /*line(gl2, positions, c1, c1 + 1); // C1-H1
         line(gl2, positions, c1, c1 + 2); // C1-H2
         line(gl2, positions, c1, c1 + 3); // C1-H3
         line(gl2, positions, c1, c2); // C1-C2
@@ -1828,13 +1852,62 @@ public class Scene implements GLEventListener {
         line(gl2, positions, c3, c3 + 1); // C3-H4
         line(gl2, positions, c3, c3 + 2); // C3-H5
         line(gl2, positions, c3, c3 + 3); // C3-H6
-        gl2.glEnd();
+        gl2.glEnd();*/
         gl2.glPopAttrib();
+        stick(gl2, positions, c1, c1 + 1); // C1-H1
+        stick(gl2, positions, c1, c1 + 2); // C1-H2
+        stick(gl2, positions, c1, c1 + 3); // C1-H3
+        stick(gl2, positions, c1, c2); // C1-C2
+        stick(gl2, positions, c2, o1); // C2-O1
+        stick(gl2, positions, c2, c3); // C2-C3
+        stick(gl2, positions, c3, c3 + 1); // C3-H4
+        stick(gl2, positions, c3, c3 + 2); // C3-H5
+        stick(gl2, positions, c3, c3 + 3); // C3-H6
     }
     
     private void line(GL2 gl, float[] positions, int p0, int p1) {
         gl.glVertex3f(positions[3 * p0], positions[3 * p0 + 1], positions[3 * p0 + 2]);
         gl.glVertex3f(positions[3 * p1], positions[3 * p1 + 1], positions[3 * p1 + 2]);
+    }
+    
+    private void stick(GL2 gl, float[] positions, int p0, int p1) {
+        float p0x = positions[3 * p0];
+        float p0y = positions[3 * p0 + 1];
+        float p0z = positions[3 * p0 + 2];
+        float p1x = positions[3 * p1];
+        float p1y = positions[3 * p1 + 1];
+        float p1z = positions[3 * p1 + 2];
+        
+        Vector3f dir = new Vector3f(p1x - p0x, p1y - p0y, p1z - p0z);
+        Vector3f up = new Vector3f(0f, 1f, 0f);
+        Vector3f axis = new Vector3f();
+        
+        float size = dir.length();
+        dir.scale(1f / size); // normalize
+        axis.cross(up, dir);
+        
+        gl.glPushMatrix();
+        gl.glTranslatef((p0x + p1x) / 2f, (p0y + p1y) / 2f, (p0z + p1z) / 2f);
+        gl.glRotatef((float) Math.toDegrees(Math.acos(dir.dot(up))), axis.x, axis.y, axis.z);
+        
+        gl.glUseProgram(stickProgram);
+        Utils.setUniform(gl.getGL4(), stickProgram, "size", size);
+        //Utils.setUniform(gl.getGL4(), stickProgram, "window", viewport[2], viewport[3]);
+        
+        gl.glColor4f(1f, 0f, 0f, 1f);
+        gl.glEnableClientState(GL_VERTEX_ARRAY);
+        gl.glEnableClientState(GL_NORMAL_ARRAY);
+        
+        gl.glBindBuffer(GL_ARRAY_BUFFER, capsule.getVertexArrayBuffer());
+        gl.glVertexPointer(3, GL_FLOAT, 24, 0);
+        gl.glNormalPointer(GL_FLOAT, 24, 12);
+        
+        gl.glDrawArrays(GL_TRIANGLES, 0, 3 * capsule.getTriangleCount());
+        
+        gl.glDisableClientState(GL_VERTEX_ARRAY);
+        gl.glDisableClientState(GL_NORMAL_ARRAY);
+        
+        gl.glPopMatrix();
     }
     
     private void drawSmallCircles(GL4 gl, int count) {
