@@ -8,16 +8,16 @@ Overview (0.5 page) (AJ, JP)
 
 \subsection{Overview}
 
-Overview of the algorithm: (JP)
-\begin{itemize}
-  \item Per frame we perform the following steps: ...
-  \item The data comes in form of trajectories describing motion of individual atoms, we do not assume anything about the data.
-  \item We split computations to two groups, which are performed on per frame basis.
+The data comes in a form of trajectories describing motion of individual atoms. Each trajectory snap shot includes a set of atoms, described by their positions and their radii. Our rendering pipeline consists of several steps that are performed on per-frame basis. 
+For better explaination, we split computations into two groups. The first group deals with data processing that involves computation of the surface primitives, inner voids and additional attributes used in later stages. The second group of computations relates to visualization. This includes ray-casting of the formed primitives, estimate of ambient occlusion and opacity calculation; before the final stage represented by the image formation. In more detail, we perform the following steps \textcolor{red}{(TODO need more detail from Adam)}:
 	\begin{enumerate}
-	  \item Data preprocessing (surface, cavity and attributes computations)
-		\item Visualization  (ray-casting, opacity calculation, etc.)
+	  \item We employ contour-buildup algorithm to construct the molecular surface. Additionally, we enhance the computation as well as the performance by several changes (Sec.~\ref{sec:ecb}).
+		\item To extract cavities we introduce the so-called \textit{surface graph} (Sec.~\ref{sec:graph}), which allows us to compute the internal voids / cavities.
+		\item Each one of the three primitives is visualization using ray-casting (Sec.~\ref{sec:vis}). (ray-casting, opacity calculation, etc.)
+		\item We compute ambient occlusion, stored in the grid.
+		\item We perform transparent surface rendering by means of A-buffer. The actual opacity of each surface element is modulated through ambient occlusion values.
+		\item In the last stage, we blend all acquired samples together.
 	\end{enumerate}
-\end{itemize}
 
 \begin{figure*}[htb]
   \centering
@@ -27,7 +27,7 @@ Overview of the algorithm: (JP)
 \end{figure*}
 
 \subsection{Extended CB Algorithm}
-
+\label{sec:ecb}
 Our extended CB algorithm is based on the existing research that utilizes the GPU capabilities~\cite{krone2011parallel}.
 In the former study, the SES is represented as three different sets of surface primitives -- spheres, tori, and spherical triangles, that are ray-casted to obtain opaque surface visualization. 
 While ray-casting spheres and tori, some sections of the final image will be later occluded by the spherical triangles.
