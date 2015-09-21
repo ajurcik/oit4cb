@@ -164,10 +164,19 @@ public class MainWindow extends javax.swing.JFrame {
         jTabbedPane1 = new javax.swing.JTabbedPane();
         paramsPanel = new javax.swing.JPanel();
         dataPanel = new javax.swing.JPanel();
-        jLabel5 = new javax.swing.JLabel();
-        animateCheckBox = new javax.swing.JCheckBox();
         dataTextField = new javax.swing.JTextField();
         dataButton = new javax.swing.JButton();
+        dynamicsPanel = new javax.swing.JPanel();
+        playButton = new javax.swing.JButton();
+        filler5 = new javax.swing.Box.Filler(new java.awt.Dimension(2, 0), new java.awt.Dimension(2, 0), new java.awt.Dimension(2, 32767));
+        snapshotSpinner = new javax.swing.JSpinner();
+        filler1 = new javax.swing.Box.Filler(new java.awt.Dimension(2, 0), new java.awt.Dimension(2, 0), new java.awt.Dimension(2, 32767));
+        jLabel21 = new javax.swing.JLabel();
+        filler6 = new javax.swing.Box.Filler(new java.awt.Dimension(2, 0), new java.awt.Dimension(2, 0), new java.awt.Dimension(2, 32767));
+        snapshotLabel = new javax.swing.JLabel();
+        filler4 = new javax.swing.Box.Filler(new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 0), new java.awt.Dimension(32767, 0));
+        jLabel22 = new javax.swing.JLabel();
+        speedSpinner = new javax.swing.JSpinner();
         surfacePanel = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         probeSpinner = new javax.swing.JSpinner();
@@ -214,7 +223,6 @@ public class MainWindow extends javax.swing.JFrame {
         resolutionComboBox = new javax.swing.JComboBox();
         jLabel4 = new javax.swing.JLabel();
         filler2 = new javax.swing.Box.Filler(new java.awt.Dimension(90, 0), new java.awt.Dimension(90, 0), new java.awt.Dimension(80, 32767));
-        filler1 = new javax.swing.Box.Filler(new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 20), new java.awt.Dimension(32767, 200));
         develPanel = new javax.swing.JPanel();
         debugPanel = new javax.swing.JPanel();
         spheresCheckBox = new javax.swing.JCheckBox();
@@ -246,27 +254,6 @@ public class MainWindow extends javax.swing.JFrame {
         dataPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Data"));
         dataPanel.setLayout(new java.awt.GridBagLayout());
 
-        jLabel5.setText("Dynamics:");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_TRAILING;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 4);
-        dataPanel.add(jLabel5, gridBagConstraints);
-
-        animateCheckBox.setHorizontalTextPosition(javax.swing.SwingConstants.LEADING);
-        animateCheckBox.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                animateCheckBoxActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 4);
-        dataPanel.add(animateCheckBox, gridBagConstraints);
-
         dataTextField.setEditable(false);
         dataTextField.setPreferredSize(new java.awt.Dimension(170, 20));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -287,6 +274,51 @@ public class MainWindow extends javax.swing.JFrame {
         dataPanel.add(dataButton, gridBagConstraints);
 
         paramsPanel.add(dataPanel);
+
+        dynamicsPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Dynamics"));
+        dynamicsPanel.setLayout(new javax.swing.BoxLayout(dynamicsPanel, javax.swing.BoxLayout.LINE_AXIS));
+
+        playButton.setText("Play");
+        playButton.setMargin(new java.awt.Insets(2, 6, 2, 6));
+        playButton.setPreferredSize(new java.awt.Dimension(45, 23));
+        playButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                playButtonActionPerformed(evt);
+            }
+        });
+        dynamicsPanel.add(playButton);
+        dynamicsPanel.add(filler5);
+
+        snapshotSpinner.setMinimumSize(new java.awt.Dimension(50, 20));
+        snapshotSpinner.setPreferredSize(new java.awt.Dimension(50, 20));
+        dynamicsPanel.add(snapshotSpinner);
+        dynamicsPanel.add(filler1);
+
+        jLabel21.setText("/");
+        dynamicsPanel.add(jLabel21);
+        dynamicsPanel.add(filler6);
+
+        snapshotLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        snapshotLabel.setText("-");
+        snapshotLabel.setMinimumSize(new java.awt.Dimension(20, 14));
+        snapshotLabel.setPreferredSize(new java.awt.Dimension(20, 14));
+        dynamicsPanel.add(snapshotLabel);
+        dynamicsPanel.add(filler4);
+
+        jLabel22.setText("Speed:");
+        dynamicsPanel.add(jLabel22);
+
+        speedSpinner.setModel(new javax.swing.SpinnerNumberModel(Float.valueOf(2.0f), Float.valueOf(0.5f), null, Float.valueOf(0.5f)));
+        speedSpinner.setMinimumSize(new java.awt.Dimension(15, 20));
+        speedSpinner.setPreferredSize(new java.awt.Dimension(35, 20));
+        speedSpinner.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                speedSpinnerStateChanged(evt);
+            }
+        });
+        dynamicsPanel.add(speedSpinner);
+
+        paramsPanel.add(dynamicsPanel);
 
         surfacePanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Surface"));
         surfacePanel.setLayout(new java.awt.GridBagLayout());
@@ -776,7 +808,6 @@ public class MainWindow extends javax.swing.JFrame {
         otherPanel.add(filler2, gridBagConstraints);
 
         paramsPanel.add(otherPanel);
-        paramsPanel.add(filler1);
 
         jTabbedPane1.addTab("Parameters", paramsPanel);
 
@@ -1108,14 +1139,6 @@ public class MainWindow extends javax.swing.JFrame {
         scene.updateSurfaceGraph();
     }//GEN-LAST:event_updateGraphButtonActionPerformed
 
-    private void animateCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_animateCheckBoxActionPerformed
-        if (animateCheckBox.isSelected()) {
-            scene.startDynamics();
-        } else {
-            scene.stopDynamics();
-        }
-    }//GEN-LAST:event_animateCheckBoxActionPerformed
-
     private void selectTorusCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_selectTorusCheckBoxActionPerformed
         scene.setRenderSelectedTorus(selectTorusCheckBox.isSelected());
     }//GEN-LAST:event_selectTorusCheckBoxActionPerformed
@@ -1314,6 +1337,20 @@ public class MainWindow extends javax.swing.JFrame {
         scene.setClipSurface(!surfaceVisibleCheckBox.isSelected());
     }//GEN-LAST:event_surfaceVisibleCheckBoxActionPerformed
 
+    private void playButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_playButtonActionPerformed
+        if (scene.isDynamicsRunning()) {
+            scene.stopDynamics();
+            playButton.setText("Play");
+        } else {
+            scene.startDynamics();
+            playButton.setText("Pause");
+        }
+    }//GEN-LAST:event_playButtonActionPerformed
+
+    private void speedSpinnerStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_speedSpinnerStateChanged
+        scene.setSpeed((float) speedSpinner.getValue());
+    }//GEN-LAST:event_speedSpinnerStateChanged
+
     /**
      * @param args the command line arguments
      */
@@ -1358,7 +1395,6 @@ public class MainWindow extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JSpinner ambientExponentSpinner;
     private javax.swing.JSpinner ambientThresholdSpinner;
-    private javax.swing.JCheckBox animateCheckBox;
     private javax.swing.JCheckBox aoCheckBox;
     private javax.swing.JCheckBox autoupdateCheckBox;
     private javax.swing.JCheckBox backfaceCheckBox;
@@ -1373,9 +1409,13 @@ public class MainWindow extends javax.swing.JFrame {
     private javax.swing.JTextField dataTextField;
     private javax.swing.JPanel debugPanel;
     private javax.swing.JPanel develPanel;
+    private javax.swing.JPanel dynamicsPanel;
     private javax.swing.Box.Filler filler1;
     private javax.swing.Box.Filler filler2;
     private javax.swing.Box.Filler filler3;
+    private javax.swing.Box.Filler filler4;
+    private javax.swing.Box.Filler filler5;
+    private javax.swing.Box.Filler filler6;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;
@@ -1389,9 +1429,10 @@ public class MainWindow extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel19;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel20;
+    private javax.swing.JLabel jLabel21;
+    private javax.swing.JLabel jLabel22;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
-    private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;
@@ -1401,6 +1442,7 @@ public class MainWindow extends javax.swing.JFrame {
     private javax.swing.JPanel paramsPanel;
     private javax.swing.JCheckBox phongCheckBox;
     private javax.swing.JTextField planeEquationText;
+    private javax.swing.JButton playButton;
     private javax.swing.JTextField pointText;
     private javax.swing.JSpinner probeSpinner;
     private javax.swing.JCheckBox renderPlaneCheckBox;
@@ -1411,6 +1453,9 @@ public class MainWindow extends javax.swing.JFrame {
     private javax.swing.JCheckBox selectTorusCheckBox;
     private javax.swing.JCheckBox selectTriangleCheckBox;
     private javax.swing.JCheckBox silhouettes;
+    private javax.swing.JLabel snapshotLabel;
+    private javax.swing.JSpinner snapshotSpinner;
+    private javax.swing.JSpinner speedSpinner;
     private javax.swing.JPanel sphereColorPanel;
     private javax.swing.JSpinner sphereSpinner;
     private javax.swing.JCheckBox spheresCheckBox;

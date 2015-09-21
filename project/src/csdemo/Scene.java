@@ -25,8 +25,6 @@ import com.jogamp.opengl.GL4bc;
 import com.jogamp.opengl.glu.GLU;
 import java.awt.Color;
 import java.io.File;
-import javax.vecmath.AxisAngle4f;
-import javax.vecmath.Matrix4f;
 import javax.vecmath.Point3f;
 import javax.vecmath.Vector3f;
 import javax.vecmath.Vector4f;
@@ -185,6 +183,7 @@ public class Scene implements GLEventListener {
     private boolean uploaded = false;
     
     private int snapshot;
+    private float t;
     private long lastUpdateTime;
     
     private boolean writeResults = false;
@@ -237,7 +236,8 @@ public class Scene implements GLEventListener {
     private Surface surfaceType = Surface.SES;
     private boolean clipSurface = false;
     private float alpha = 0.5f;
-    private boolean animate = false;
+    private boolean running = false;
+    private float speed = 5.0f;
     private int width;
     private int height;
     private Color sphereColor = Color.RED;
@@ -369,6 +369,10 @@ public class Scene implements GLEventListener {
 
     public void setTunnelColor(Color tunnelColor) {
         this.tunnelColor = tunnelColor;
+    }
+    
+    public void setSpeed(float speed) {
+        this.speed = speed;
     }
     
     public void setRenderSpheres(boolean renderSpheres) {
@@ -512,8 +516,8 @@ public class Scene implements GLEventListener {
             stickProgram = Utils.loadProgram(gl, "/resources/shaders/stick.vert",
                     "/resources/shaders/stick.frag");
             // Load molecule
-            //dynamics = new Dynamics(Utils.loadDynamicsFromResource("/resources/md/model", 1, 10));
-            dynamics = new Dynamics(Collections.singletonList(Utils.loadAtomsFromResource("/resources/1CRN_26.pdb")));
+            dynamics = new Dynamics(Utils.loadDynamicsFromResource("/resources/md/model", 1, 10));
+            //dynamics = new Dynamics(Collections.singletonList(Utils.loadAtomsFromResource("/resources/1CRN_26.pdb")));
             System.out.println("Atoms (molecule): " + dynamics.getMolecule().getAtomCount());
             System.out.println("Snapshots: " + dynamics.getSnapshotCount());
         } catch (Exception ex) {
@@ -916,6 +920,10 @@ public class Scene implements GLEventListener {
             updateAtomPositions(gl);
             volumetricAO.updateVolumes(gl, dynamics.getMolecule().getAtoms());
             uploaded = true;
+        }
+        
+        if (running) {
+            updateAtomPositions(gl);
         }
         
         // Clear buffers
@@ -1394,26 +1402,9 @@ public class Scene implements GLEventListener {
         Utils.drawAABB(gl, aabbMin, aabbSize);
         gl.glPopMatrix();*/
         
-        // DEBUG capsule
-        gl.glUseProgram(stickProgram);
-        Utils.setUniform(gl, stickProgram, "size", 2f);
-        Utils.setUniform(gl, stickProgram, "window", viewport[2], viewport[3]);
-        
-        gl.glColor4f(1f, 0f, 0f, 1f);
-        gl.glEnableClientState(GL_VERTEX_ARRAY);
-        gl.glEnableClientState(GL_NORMAL_ARRAY);
-        
-        gl.glBindBuffer(GL_ARRAY_BUFFER, capsule.getVertexArrayBuffer());
-        gl.glVertexPointer(3, GL_FLOAT, 24, 0);
-        gl.glNormalPointer(GL_FLOAT, 24, 12);
-        
-        //gl.glDrawArrays(GL_TRIANGLES, 0, 3 * capsule.getTriangleCount());
-        
-        gl.glDisableClientState(GL_VERTEX_ARRAY);
-        gl.glDisableClientState(GL_NORMAL_ARRAY);
-        
+        // DEBUG acetone
         gl.glUseProgram(defaultProgram);
-        renderAcetone(gl, acetone);
+        //renderAcetone(gl, acetone);
         
         if (renderPoint) {
             Utils.drawPoint(gl, point, 2f);
@@ -1429,7 +1420,7 @@ public class Scene implements GLEventListener {
         for (Drug drug : dynamics.getDrugs()) {
             drug.getCenter(snapshot, drugCenter);
             if (cavityCenter.distance(drugCenter) <= 15f) {
-                renderAcetone(gl, drug);
+                renderAcetone(gl, drug, viewport);
             }
         }
         
@@ -1546,10 +1537,6 @@ public class Scene implements GLEventListener {
             } catch (IOException e) {
                 e.printStackTrace(System.err);
             }
-        }
-        
-        if (animate) {
-            updateAtomPositions(gl);
         }
         
         //System.out.println("End display(...)");
@@ -1831,12 +1818,13 @@ public class Scene implements GLEventListener {
         gl.glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT); // A-buffer
     }
     
-    private void renderAcetone(GL4 gl, Drug drug) {
+    private void renderAcetone(GL4 gl, Drug drug, int[] viewport) {
         float[] positions = drug.getAtomPositions(snapshot);
-        Vector3f pos = new Vector3f();
+        float[] nextPositions = drug.getAtomPositions((snapshot + 1) % drug.getSnapshotCount());
+        //Vector3f pos = new Vector3f();
         GL2 gl2 = gl.getGL2();
-        gl2.glPushAttrib(GL_ALL_ATTRIB_BITS);
-        gl2.glLineWidth(4f);
+        //gl2.glPushAttrib(GL_ALL_ATTRIB_BITS);
+        //gl2.glLineWidth(4f);
         gl2.glColor3f(1f, 0f, 0f);
         //gl2.glBegin(GL_LINES);
         int c1 = 0;
@@ -1853,16 +1841,16 @@ public class Scene implements GLEventListener {
         line(gl2, positions, c3, c3 + 2); // C3-H5
         line(gl2, positions, c3, c3 + 3); // C3-H6
         gl2.glEnd();*/
-        gl2.glPopAttrib();
-        stick(gl2, positions, c1, c1 + 1); // C1-H1
-        stick(gl2, positions, c1, c1 + 2); // C1-H2
-        stick(gl2, positions, c1, c1 + 3); // C1-H3
-        stick(gl2, positions, c1, c2); // C1-C2
-        stick(gl2, positions, c2, o1); // C2-O1
-        stick(gl2, positions, c2, c3); // C2-C3
-        stick(gl2, positions, c3, c3 + 1); // C3-H4
-        stick(gl2, positions, c3, c3 + 2); // C3-H5
-        stick(gl2, positions, c3, c3 + 3); // C3-H6
+        //gl2.glPopAttrib();
+        stick(gl2, positions, nextPositions, c1, c1 + 1, viewport); // C1-H1
+        stick(gl2, positions, nextPositions, c1, c1 + 2, viewport); // C1-H2
+        stick(gl2, positions, nextPositions, c1, c1 + 3, viewport); // C1-H3
+        stick(gl2, positions, nextPositions, c1, c2, viewport); // C1-C2
+        stick(gl2, positions, nextPositions, c2, o1, viewport); // C2-O1
+        stick(gl2, positions, nextPositions, c2, c3, viewport); // C2-C3
+        stick(gl2, positions, nextPositions, c3, c3 + 1, viewport); // C3-H4
+        stick(gl2, positions, nextPositions, c3, c3 + 2, viewport); // C3-H5
+        stick(gl2, positions, nextPositions, c3, c3 + 3, viewport); // C3-H6
     }
     
     private void line(GL2 gl, float[] positions, int p0, int p1) {
@@ -1870,13 +1858,13 @@ public class Scene implements GLEventListener {
         gl.glVertex3f(positions[3 * p1], positions[3 * p1 + 1], positions[3 * p1 + 2]);
     }
     
-    private void stick(GL2 gl, float[] positions, int p0, int p1) {
-        float p0x = positions[3 * p0];
-        float p0y = positions[3 * p0 + 1];
-        float p0z = positions[3 * p0 + 2];
-        float p1x = positions[3 * p1];
-        float p1y = positions[3 * p1 + 1];
-        float p1z = positions[3 * p1 + 2];
+    private void stick(GL2 gl, float[] positions, float[] nextPositions, int p0, int p1, int[] viewport) {
+        float p0x = linearInterpolation(positions[3 * p0],     nextPositions[3 * p0],     t);
+        float p0y = linearInterpolation(positions[3 * p0 + 1], nextPositions[3 * p0 + 1], t);
+        float p0z = linearInterpolation(positions[3 * p0 + 2], nextPositions[3 * p0 + 2], t);
+        float p1x = linearInterpolation(positions[3 * p1],     nextPositions[3 * p1], t);
+        float p1y = linearInterpolation(positions[3 * p1 + 1], nextPositions[3 * p1 + 1], t);
+        float p1z = linearInterpolation(positions[3 * p1 + 2], nextPositions[3 * p1 + 2], t);
         
         Vector3f dir = new Vector3f(p1x - p0x, p1y - p0y, p1z - p0z);
         Vector3f up = new Vector3f(0f, 1f, 0f);
@@ -1892,7 +1880,7 @@ public class Scene implements GLEventListener {
         
         gl.glUseProgram(stickProgram);
         Utils.setUniform(gl.getGL4(), stickProgram, "size", size);
-        //Utils.setUniform(gl.getGL4(), stickProgram, "window", viewport[2], viewport[3]);
+        Utils.setUniform(gl.getGL4(), stickProgram, "window", viewport[2], viewport[3]);
         
         gl.glColor4f(1f, 0f, 0f, 1f);
         gl.glEnableClientState(GL_VERTEX_ARRAY);
@@ -2263,25 +2251,26 @@ public class Scene implements GLEventListener {
     
     public void startDynamics() {
         lastUpdateTime = System.currentTimeMillis();
-        animate = true;
+        running = true;
     }
     
     public void stopDynamics() {
-        animate = false;
+        running = false;
+    }
+    
+    public boolean isDynamicsRunning() {
+        return running;
     }
     
     private void updateAtomPositions(GL4 gl) {
-        // TODO interpolation
-        float speed = 2f; // snapshots per second
-        
-        float t = 0f;
-        int lastSnapshot = snapshot;
+        t = 0f;
         long time = System.currentTimeMillis();
         if (lastUpdateTime > 0) {
             long diff = time - lastUpdateTime;
             int snapshotDiff = (int) (diff * speed / 1000L);
             if (snapshotDiff > 0) {
                 snapshot = (snapshot + snapshotDiff) % dynamics.getSnapshotCount();
+                diff = diff - (long) (snapshotDiff * 1000L / speed);
                 lastUpdateTime = time;
             }
             t = ((float) diff * speed) / 1000f;
@@ -2290,14 +2279,15 @@ public class Scene implements GLEventListener {
             lastUpdateTime = time;
         }
         
+        int nextSnapshot = (snapshot + 1) % dynamics.getSnapshotCount();
         Molecule molecule = dynamics.getMolecule();
-        float[] snapshotAtoms = molecule.getAtomPositions(snapshot);
-        float[] lastSnapshotAtoms = molecule.getAtomPositions(lastSnapshot);
+        float[] positions = molecule.getAtomPositions(snapshot);
+        float[] nextPositions = molecule.getAtomPositions(nextSnapshot);
         for (int i = 0; i < molecule.getAtomCount(); i++) {
             int offset = 3 * i;
-            atomsPos.put(linearInterpolation(lastSnapshotAtoms[offset],     snapshotAtoms[offset],     t));
-            atomsPos.put(linearInterpolation(lastSnapshotAtoms[offset + 1], snapshotAtoms[offset + 1], t));
-            atomsPos.put(linearInterpolation(lastSnapshotAtoms[offset + 2], snapshotAtoms[offset + 2], t));
+            atomsPos.put(linearInterpolation(positions[offset],     nextPositions[offset],     t));
+            atomsPos.put(linearInterpolation(positions[offset + 1], nextPositions[offset + 1], t));
+            atomsPos.put(linearInterpolation(positions[offset + 2], nextPositions[offset + 2], t));
             // copy radius
             atomsPos.put(molecule.getAtom(i).r);
         }
