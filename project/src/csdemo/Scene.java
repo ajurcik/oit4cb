@@ -61,6 +61,9 @@ public class Scene implements GLEventListener {
     private int triangleProgram;
     private int torusProgram;
     private int polygonProgram;
+    private int kroneTriangleProgram;
+    private int kroneTorusProgram;
+    private int kronePolygonProgram;
     
     // A-buffer programs
     private int defaultProgram;
@@ -275,6 +278,9 @@ public class Scene implements GLEventListener {
     private boolean renderPoint = false;
     private Vector4f plane = new Vector4f();
     private Vector3f point = new Vector3f();
+    private int testTriangleProgram;
+    private int testTorusProgram;
+    private int testPolygonProgram;
 
     // spherical polygon
     private final Polygon polygon = new Polygon();
@@ -515,15 +521,25 @@ public class Scene implements GLEventListener {
                     "/resources/shaders/default.frag");
             stickProgram = Utils.loadProgram(gl, "/resources/shaders/stick.vert",
                     "/resources/shaders/stick.frag");
+            kroneTriangleProgram = Utils.loadProgram(gl, "/resources/shaders/ray/triangle.vert",
+                    "/resources/shaders/ray/krone/triangle.frag");
+            kroneTorusProgram = Utils.loadProgram(gl, "/resources/shaders/ray/torus.vert",
+                    "/resources/shaders/ray/torus.geom", "/resources/shaders/ray/krone/torus.frag");
+            kronePolygonProgram = Utils.loadProgram(gl, "/resources/shaders/ray/polygon2.vert",
+                    "/resources/shaders/ray/polygon2.geom", "/resources/shaders/ray/krone/polygon2.frag");
             // Load molecule
-            dynamics = new Dynamics(Utils.loadDynamicsFromResource("/resources/md/model", 1, 10));
-            //dynamics = new Dynamics(Collections.singletonList(Utils.loadAtomsFromResource("/resources/1CRN_26.pdb")));
+            //dynamics = new Dynamics(Utils.loadDynamicsFromResource("/resources/md/model", 1, 10));
+            dynamics = new Dynamics(Collections.singletonList(Utils.loadAtomsFromResource("/resources/1CRN_3.pdb")));
             System.out.println("Atoms (molecule): " + dynamics.getMolecule().getAtomCount());
             System.out.println("Snapshots: " + dynamics.getSnapshotCount());
         } catch (Exception ex) {
             ex.printStackTrace(System.err);
             System.exit(1);
         }
+        
+        testTriangleProgram = triangleProgram;
+        testTorusProgram = torusProgram;
+        testPolygonProgram = polygonProgram;
         
         // TODO move to MainWindow
         atomCount = dynamics.getMolecule().getAtomCount();
@@ -776,6 +792,20 @@ public class Scene implements GLEventListener {
         Utils.bindShaderStorageBlock(gl, resolveProgram, "ABufferIndex", FRAGMENTS_INDEX_BUFFER_INDEX);
         Utils.bindShaderStorageBlock(gl, resolveProgram, "CountersBuffer", COUNTERS_BUFFER_INDEX);
         //Utils.bindShaderStorageBlock(gl, resolveProgram, "Debug", DEBUG_BUFFER_INDEX);
+        
+        // triangle test program
+        Utils.bindShaderStorageBlock(gl, kroneTriangleProgram, "ABuffer", FRAGMENTS_BUFFER_INDEX);
+        Utils.bindShaderStorageBlock(gl, kroneTriangleProgram, "ABufferIndex", FRAGMENTS_INDEX_BUFFER_INDEX);
+        Utils.bindUniformBlock(gl, kroneTriangleProgram, "MinMaxCavityArea", MINMAX_CAVITY_AREA_BUFFER_INDEX);
+        // torus test program
+        Utils.bindShaderStorageBlock(gl, kroneTorusProgram, "ABuffer", FRAGMENTS_BUFFER_INDEX);
+        Utils.bindShaderStorageBlock(gl, kroneTorusProgram, "ABufferIndex", FRAGMENTS_INDEX_BUFFER_INDEX);
+        Utils.bindUniformBlock(gl, kroneTorusProgram, "MinMaxCavityArea", MINMAX_CAVITY_AREA_BUFFER_INDEX);
+        // polygon test program
+        Utils.bindShaderStorageBlock(gl, kronePolygonProgram, "ABuffer", FRAGMENTS_BUFFER_INDEX);
+        Utils.bindShaderStorageBlock(gl, kronePolygonProgram, "ABufferIndex", FRAGMENTS_INDEX_BUFFER_INDEX);
+        Utils.bindShaderStorageBlock(gl, kronePolygonProgram, "Debug", DEBUG_BUFFER_INDEX);
+        Utils.bindUniformBlock(gl, kronePolygonProgram, "MinMaxCavityArea", MINMAX_CAVITY_AREA_BUFFER_INDEX);
         
         // textures
         int[] textures = new int[17];
@@ -1356,7 +1386,7 @@ public class Scene implements GLEventListener {
         int[] viewport = new int[4];
         gl.glGetIntegerv(GL_VIEWPORT, viewport, 0);
 
-        renderPolygons(gl, gr, ar, aoVolumeTex, sphereCount, view, up, right, viewport);
+        renderPolygons(gl, testPolygonProgram, gr, ar, aoVolumeTex, sphereCount, view, up, right, viewport);
         
         if (renderSelectedSphere) {
             /*gl.glColor4f(1f, 1f, 0f, 1f);
@@ -1372,13 +1402,13 @@ public class Scene implements GLEventListener {
         
         gl.glBeginQuery(GL_TIME_ELAPSED, raycastTrianglesElapsedQuery);
         
-        renderTriangles(gl, gr, ar, aoVolumeTex, triangleCount, view, up, right, viewport);
+        renderTriangles(gl, testTriangleProgram, gr, ar, aoVolumeTex, triangleCount, view, up, right, viewport);
         
         gl.glEndQuery(GL_TIME_ELAPSED);
         
         gl.glBeginQuery(GL_TIME_ELAPSED, raycastToriElapsedQuery);
         
-        renderTori(gl, gr, ar, aoVolumeTex, torusCount, view, up, right, viewport);
+        renderTori(gl, testTorusProgram, gr, ar, aoVolumeTex, torusCount, view, up, right, viewport);
         
         gl.glEndQuery(GL_TIME_ELAPSED);
         
@@ -1542,9 +1572,9 @@ public class Scene implements GLEventListener {
         //System.out.println("End display(...)");
     }
     
-    private void renderPolygons(GL4bc gl, GPUGraph.Result gr, Area.Result ar, int aoVolumeTex, int count,
+    private void renderPolygons(GL4bc gl, int program, GPUGraph.Result gr, Area.Result ar, int aoVolumeTex, int count,
             Vector3f view, Vector3f up, Vector3f right, int[] viewport) {
-        gl.glUseProgram(polygonProgram);
+        gl.glUseProgram(program);
         
         gl.glBindBuffer(GL_SHADER_STORAGE_BUFFER, debugBuffer);
         gl.glClearBufferData(GL_SHADER_STORAGE_BUFFER, GL_R32UI, GL_RED_INTEGER, GL_UNSIGNED_INT, IntBuffer.wrap(new int[] { 0 }));
@@ -1570,45 +1600,45 @@ public class Scene implements GLEventListener {
         gl.glActiveTexture(GL_TEXTURE6);
         gl.glBindTexture(GL_TEXTURE_3D, aoVolumeTex);
         
-        Utils.setSampler(gl, polygonProgram, "circlesTex", 0);
-        //Utils.setSampler(gl, polygonProgram, "circlesStartTex", 1);
-        //Utils.setSampler(gl, polygonProgram, "circlesLengthTex", 2);
-        Utils.setSampler(gl, polygonProgram, "edgesCircleTex", 3);
-        Utils.setSampler(gl, polygonProgram, "edgesLineTex", 4);
-        Utils.setSampler(gl, polygonProgram, "areasTex", 5);
-        Utils.setSampler(gl, polygonProgram, "aoVolumeTex", 6);
+        Utils.setSampler(gl, program, "circlesTex", 0);
+        //Utils.setSampler(gl, program, "circlesStartTex", 1);
+        //Utils.setSampler(gl, program, "circlesLengthTex", 2);
+        Utils.setSampler(gl, program, "edgesCircleTex", 3);
+        Utils.setSampler(gl, program, "edgesLineTex", 4);
+        Utils.setSampler(gl, program, "areasTex", 5);
+        Utils.setSampler(gl, program, "aoVolumeTex", 6);
         
         // camera
-        Utils.setUniform(gl, polygonProgram, "camIn", view.x, view.y, view.z);
-        Utils.setUniform(gl, polygonProgram, "camUp", up.x, up.y, up.z);
-        Utils.setUniform(gl, polygonProgram, "camRight", right.x, right.y, right.z);
+        Utils.setUniform(gl, program, "camIn", view.x, view.y, view.z);
+        Utils.setUniform(gl, program, "camUp", up.x, up.y, up.z);
+        Utils.setUniform(gl, program, "camRight", right.x, right.y, right.z);
         // viewport
-        Utils.setUniform(gl, polygonProgram, "viewport", 0f, 0f, 2f / viewport[2], 2f / viewport[3]);
-        Utils.setUniform(gl, polygonProgram, "window", viewport[2], viewport[3]);
+        Utils.setUniform(gl, program, "viewport", 0f, 0f, 2f / viewport[2], 2f / viewport[3]);
+        Utils.setUniform(gl, program, "window", viewport[2], viewport[3]);
         // other properties
-        //Utils.setUniform(gl, polygonProgram, "maxNumNeighbors", MAX_NEIGHBORS);
-        Utils.setUniform(gl, polygonProgram, "probeRadius", probeRadius);
-        Utils.setUniform(gl, polygonProgram, "sas", surfaceType == Surface.SAS ? 1 : 0); // SAS/SES
+        //Utils.setUniform(gl, program, "maxNumNeighbors", MAX_NEIGHBORS);
+        Utils.setUniform(gl, program, "probeRadius", probeRadius);
+        Utils.setUniform(gl, program, "sas", surfaceType == Surface.SAS ? 1 : 0); // SAS/SES
         // cavity clipping
-        Utils.setUniform(gl, polygonProgram, "clipCavities", clipCavities);
-        Utils.setUniform(gl, polygonProgram, "clipSurface", clipSurface);
-        Utils.setUniform(gl, polygonProgram, "surfaceLabel", gr.getSurfaceLabels()[0]);
-        Utils.setUniform(gl, polygonProgram, "threshold", threshold);
+        Utils.setUniform(gl, program, "clipCavities", clipCavities);
+        Utils.setUniform(gl, program, "clipSurface", clipSurface);
+        Utils.setUniform(gl, program, "surfaceLabel", gr.getSurfaceLabels()[0]);
+        Utils.setUniform(gl, program, "threshold", threshold);
         // ambient occlusion & lighting
-        Utils.setUniform(gl, polygonProgram, "lambda", volumetricAO.getLambda());
-        Utils.setUniform(gl, polygonProgram, "volumeSize", aabbSize);
-        Utils.setUniform(gl, polygonProgram, "phong", phongLighting);
-        Utils.setUniform(gl, polygonProgram, "ao", ambientOcclusion);
-        Utils.setUniform(gl, polygonProgram, "aoExponent", aoExponent);
-        Utils.setUniform(gl, polygonProgram, "aoThreshold", aoThreshold);
-        Utils.setUniform(gl, polygonProgram, "silhouettes", silhouettes);
-        Utils.setUniform(gl, polygonProgram, "bfmod", backfaceModulation);
+        Utils.setUniform(gl, program, "lambda", volumetricAO.getLambda());
+        Utils.setUniform(gl, program, "volumeSize", aabbSize);
+        Utils.setUniform(gl, program, "phong", phongLighting);
+        Utils.setUniform(gl, program, "ao", ambientOcclusion);
+        Utils.setUniform(gl, program, "aoExponent", aoExponent);
+        Utils.setUniform(gl, program, "aoThreshold", aoThreshold);
+        Utils.setUniform(gl, program, "silhouettes", silhouettes);
+        Utils.setUniform(gl, program, "bfmod", backfaceModulation);
         // cavity coloring
-        Utils.setUniform(gl, polygonProgram, "cavityColoring", cavityColoring == Coloring.AREA ? 0 : 1);
-        Utils.setUniform(gl, polygonProgram, "cavityColor1", cavityColor1);
-        Utils.setUniform(gl, polygonProgram, "cavityColor2", cavityColor2);
+        Utils.setUniform(gl, program, "cavityColoring", cavityColoring == Coloring.AREA ? 0 : 1);
+        Utils.setUniform(gl, program, "cavityColor1", cavityColor1);
+        Utils.setUniform(gl, program, "cavityColor2", cavityColor2);
         // tunnel coloring
-        Utils.setUniform(gl, polygonProgram, "tunnelColor", tunnelColor);
+        Utils.setUniform(gl, program, "tunnelColor", tunnelColor);
         
         gl.glEnableClientState(GL_VERTEX_ARRAY);
         gl.glClientActiveTexture(GL_TEXTURE0);
@@ -1639,9 +1669,9 @@ public class Scene implements GLEventListener {
         gl.glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
     }
     
-    private void renderTriangles(GL4bc gl, GPUGraph.Result gr, Area.Result ar, int aoVolumeTex, int count,
+    private void renderTriangles(GL4bc gl, int program, GPUGraph.Result gr, Area.Result ar, int aoVolumeTex, int count,
             Vector3f view, Vector3f up, Vector3f right, int[] viewport) {
-        gl.glUseProgram(triangleProgram);
+        gl.glUseProgram(program);
         
         gl.glColor4f(triangleColor.getRed() / 255f, triangleColor.getGreen() / 255f, triangleColor.getBlue() / 255f, alpha);
         
@@ -1658,35 +1688,35 @@ public class Scene implements GLEventListener {
         gl.glActiveTexture(GL_TEXTURE4);
         gl.glBindTexture(GL_TEXTURE_3D, aoVolumeTex);
         
-        Utils.setSampler(gl, triangleProgram, "neighborCountsTex", 0);
-        Utils.setSampler(gl, triangleProgram, "neighborProbesTex", 1);
-        Utils.setSampler(gl, triangleProgram, "labelsTex", 2);
-        Utils.setSampler(gl, triangleProgram, "areasTex", 3);
-        Utils.setSampler(gl, triangleProgram, "aoVolumeTex", 4);
+        Utils.setSampler(gl, program, "neighborCountsTex", 0);
+        Utils.setSampler(gl, program, "neighborProbesTex", 1);
+        Utils.setSampler(gl, program, "labelsTex", 2);
+        Utils.setSampler(gl, program, "areasTex", 3);
+        Utils.setSampler(gl, program, "aoVolumeTex", 4);
         
-        Utils.setUniform(gl, triangleProgram, "camIn", view.x, view.y, view.z);
-        Utils.setUniform(gl, triangleProgram, "camUp", up.x, up.y, up.z);
-        Utils.setUniform(gl, triangleProgram, "camRight", right.x, right.y, right.z);
-        Utils.setUniform(gl, triangleProgram, "viewport", 0f, 0f, 2f / viewport[2], 2f / viewport[3]);
-        Utils.setUniform(gl, triangleProgram, "window", viewport[2], viewport[3]);
-        Utils.setUniform(gl, triangleProgram, "maxNumNeighbors", MAX_NEIGHBORS);
-        Utils.setUniform(gl, triangleProgram, "probeRadius", probeRadius);
-        Utils.setUniform(gl, triangleProgram, "surfaceLabel", gr.getSurfaceLabels()[0]);
-        Utils.setUniform(gl, triangleProgram, "clipSurface", clipSurface);
-        Utils.setUniform(gl, triangleProgram, "clipCavities", clipCavities);
-        Utils.setUniform(gl, triangleProgram, "lambda", volumetricAO.getLambda());
-        Utils.setUniform(gl, triangleProgram, "volumeSize", aabbSize);
-        Utils.setUniform(gl, triangleProgram, "phong", phongLighting);
-        Utils.setUniform(gl, triangleProgram, "ao", ambientOcclusion);
-        Utils.setUniform(gl, triangleProgram, "aoExponent", aoExponent);
-        Utils.setUniform(gl, triangleProgram, "aoThreshold", aoThreshold);
-        Utils.setUniform(gl, triangleProgram, "silhouettes", silhouettes);
-        Utils.setUniform(gl, triangleProgram, "bfmod", backfaceModulation);
-        Utils.setUniform(gl, triangleProgram, "threshold", threshold);
-        Utils.setUniform(gl, triangleProgram, "cavityColoring", cavityColoring == Coloring.AREA ? 0 : 1);
-        Utils.setUniform(gl, triangleProgram, "cavityColor1", cavityColor1);
-        Utils.setUniform(gl, triangleProgram, "cavityColor2", cavityColor2);
-        Utils.setUniform(gl, triangleProgram, "tunnelColor", tunnelColor);
+        Utils.setUniform(gl, program, "camIn", view.x, view.y, view.z);
+        Utils.setUniform(gl, program, "camUp", up.x, up.y, up.z);
+        Utils.setUniform(gl, program, "camRight", right.x, right.y, right.z);
+        Utils.setUniform(gl, program, "viewport", 0f, 0f, 2f / viewport[2], 2f / viewport[3]);
+        Utils.setUniform(gl, program, "window", viewport[2], viewport[3]);
+        Utils.setUniform(gl, program, "maxNumNeighbors", MAX_NEIGHBORS);
+        Utils.setUniform(gl, program, "probeRadius", probeRadius);
+        Utils.setUniform(gl, program, "surfaceLabel", gr.getSurfaceLabels()[0]);
+        Utils.setUniform(gl, program, "clipSurface", clipSurface);
+        Utils.setUniform(gl, program, "clipCavities", clipCavities);
+        Utils.setUniform(gl, program, "lambda", volumetricAO.getLambda());
+        Utils.setUniform(gl, program, "volumeSize", aabbSize);
+        Utils.setUniform(gl, program, "phong", phongLighting);
+        Utils.setUniform(gl, program, "ao", ambientOcclusion);
+        Utils.setUniform(gl, program, "aoExponent", aoExponent);
+        Utils.setUniform(gl, program, "aoThreshold", aoThreshold);
+        Utils.setUniform(gl, program, "silhouettes", silhouettes);
+        Utils.setUniform(gl, program, "bfmod", backfaceModulation);
+        Utils.setUniform(gl, program, "threshold", threshold);
+        Utils.setUniform(gl, program, "cavityColoring", cavityColoring == Coloring.AREA ? 0 : 1);
+        Utils.setUniform(gl, program, "cavityColor1", cavityColor1);
+        Utils.setUniform(gl, program, "cavityColor2", cavityColor2);
+        Utils.setUniform(gl, program, "tunnelColor", tunnelColor);
         
         gl.glEnableClientState(GL_VERTEX_ARRAY);
         gl.glClientActiveTexture(GL_TEXTURE0);
@@ -1726,10 +1756,10 @@ public class Scene implements GLEventListener {
         gl.glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT); // A-buffer
     }
     
-    private void renderTori(GL4bc gl, GPUGraph.Result gr, Area.Result ar, int aoVolumeTex, int count,
+    private void renderTori(GL4bc gl, int program, GPUGraph.Result gr, Area.Result ar, int aoVolumeTex, int count,
             Vector3f view, Vector3f up, Vector3f right, int[] viewport) {
         // draw tori
-        gl.glUseProgram(torusProgram);
+        gl.glUseProgram(program);
         
         gl.glColor4f(torusColor.getRed() / 255f, torusColor.getGreen() / 255f, torusColor.getBlue() / 255f, alpha);
         
@@ -1744,35 +1774,35 @@ public class Scene implements GLEventListener {
         gl.glActiveTexture(GL_TEXTURE3);
         gl.glBindTexture(GL_TEXTURE_3D, aoVolumeTex);
         
-        Utils.setSampler(gl, torusProgram, "edgesTex", 0);
-        Utils.setSampler(gl, torusProgram, "labelsTex", 1);
-        Utils.setSampler(gl, torusProgram, "areasTex", 2);
-        Utils.setSampler(gl, torusProgram, "aoVolumeTex", 3);
+        Utils.setSampler(gl, program, "edgesTex", 0);
+        Utils.setSampler(gl, program, "labelsTex", 1);
+        Utils.setSampler(gl, program, "areasTex", 2);
+        Utils.setSampler(gl, program, "aoVolumeTex", 3);
         
-        Utils.setUniform(gl, torusProgram, "camIn", view.x, view.y, view.z);
-        Utils.setUniform(gl, torusProgram, "camUp", up.x, up.y, up.z);
-        Utils.setUniform(gl, torusProgram, "camRight", right.x, right.y, right.z);
-        Utils.setUniform(gl, torusProgram, "viewport", 0f, 0f, 2f / viewport[2], 2f / viewport[3]);
-        Utils.setUniform(gl, torusProgram, "window", viewport[2], viewport[3]);
-        Utils.setUniform(gl, torusProgram, "probeRadius", probeRadius);
-        Utils.setUniform(gl, torusProgram, "surfaceLabel", gr.getSurfaceLabels()[0]);
-        Utils.setUniform(gl, torusProgram, "clipSurface", clipSurface);
-        Utils.setUniform(gl, torusProgram, "clipCavities", clipCavities);
-        Utils.setUniform(gl, torusProgram, "selectCavity", renderSelectedCavity);
-        Utils.setUniform(gl, torusProgram, "cavityLabel", selectedCavity);
-        Utils.setUniform(gl, torusProgram, "lambda", volumetricAO.getLambda());
-        Utils.setUniform(gl, torusProgram, "volumeSize", aabbSize);
-        Utils.setUniform(gl, torusProgram, "phong", phongLighting);
-        Utils.setUniform(gl, torusProgram, "ao", ambientOcclusion);
-        Utils.setUniform(gl, torusProgram, "aoExponent", aoExponent);
-        Utils.setUniform(gl, torusProgram, "aoThreshold", aoThreshold);
-        Utils.setUniform(gl, torusProgram, "silhouettes", silhouettes);
-        Utils.setUniform(gl, torusProgram, "bfmod", backfaceModulation);
-        Utils.setUniform(gl, torusProgram, "threshold", threshold);
-        Utils.setUniform(gl, torusProgram, "cavityColoring", cavityColoring == Coloring.AREA ? 0 : 1);
-        Utils.setUniform(gl, torusProgram, "cavityColor1", cavityColor1);
-        Utils.setUniform(gl, torusProgram, "cavityColor2", cavityColor2);
-        Utils.setUniform(gl, torusProgram, "tunnelColor", tunnelColor);
+        Utils.setUniform(gl, program, "camIn", view.x, view.y, view.z);
+        Utils.setUniform(gl, program, "camUp", up.x, up.y, up.z);
+        Utils.setUniform(gl, program, "camRight", right.x, right.y, right.z);
+        Utils.setUniform(gl, program, "viewport", 0f, 0f, 2f / viewport[2], 2f / viewport[3]);
+        Utils.setUniform(gl, program, "window", viewport[2], viewport[3]);
+        Utils.setUniform(gl, program, "probeRadius", probeRadius);
+        Utils.setUniform(gl, program, "surfaceLabel", gr.getSurfaceLabels()[0]);
+        Utils.setUniform(gl, program, "clipSurface", clipSurface);
+        Utils.setUniform(gl, program, "clipCavities", clipCavities);
+        Utils.setUniform(gl, program, "selectCavity", renderSelectedCavity);
+        Utils.setUniform(gl, program, "cavityLabel", selectedCavity);
+        Utils.setUniform(gl, program, "lambda", volumetricAO.getLambda());
+        Utils.setUniform(gl, program, "volumeSize", aabbSize);
+        Utils.setUniform(gl, program, "phong", phongLighting);
+        Utils.setUniform(gl, program, "ao", ambientOcclusion);
+        Utils.setUniform(gl, program, "aoExponent", aoExponent);
+        Utils.setUniform(gl, program, "aoThreshold", aoThreshold);
+        Utils.setUniform(gl, program, "silhouettes", silhouettes);
+        Utils.setUniform(gl, program, "bfmod", backfaceModulation);
+        Utils.setUniform(gl, program, "threshold", threshold);
+        Utils.setUniform(gl, program, "cavityColoring", cavityColoring == Coloring.AREA ? 0 : 1);
+        Utils.setUniform(gl, program, "cavityColor1", cavityColor1);
+        Utils.setUniform(gl, program, "cavityColor2", cavityColor2);
+        Utils.setUniform(gl, program, "tunnelColor", tunnelColor);
         
         gl.glEnableClientState(GL_VERTEX_ARRAY);
         gl.glClientActiveTexture(GL_TEXTURE0);
@@ -2260,6 +2290,18 @@ public class Scene implements GLEventListener {
     
     public boolean isDynamicsRunning() {
         return running;
+    }
+    
+    public void setRenderingMode(int mode) {
+        if (mode == 0) {
+            testTriangleProgram = triangleProgram;
+            testTorusProgram = torusProgram;
+            testPolygonProgram = polygonProgram;
+        } else {
+            testTriangleProgram = kroneTriangleProgram;
+            testTorusProgram = kroneTorusProgram;
+            testPolygonProgram = kronePolygonProgram;
+        }
     }
     
     private void updateAtomPositions(GL4 gl) {

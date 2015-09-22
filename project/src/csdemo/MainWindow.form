@@ -1190,6 +1190,19 @@
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="testGromacsButtonActionPerformed"/>
               </Events>
             </Component>
+            <Component class="javax.swing.JComboBox" name="renderingModeComboBox">
+              <Properties>
+                <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
+                  <StringArray count="2">
+                    <StringItem index="0" value="OIT"/>
+                    <StringItem index="1" value="KRONE"/>
+                  </StringArray>
+                </Property>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="renderingModeComboBoxActionPerformed"/>
+              </Events>
+            </Component>
             <Component class="javax.swing.Box$Filler" name="filler3">
               <Properties>
                 <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">

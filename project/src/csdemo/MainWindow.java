@@ -244,6 +244,7 @@ public class MainWindow extends javax.swing.JFrame {
         renderPointCheckBox = new javax.swing.JCheckBox();
         pointText = new javax.swing.JTextField();
         testGromacsButton = new javax.swing.JButton();
+        renderingModeComboBox = new javax.swing.JComboBox();
         filler3 = new javax.swing.Box.Filler(new java.awt.Dimension(0, 310), new java.awt.Dimension(0, 310), new java.awt.Dimension(32767, 310));
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
@@ -1063,6 +1064,14 @@ public class MainWindow extends javax.swing.JFrame {
             }
         });
         develPanel.add(testGromacsButton);
+
+        renderingModeComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "OIT", "KRONE" }));
+        renderingModeComboBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                renderingModeComboBoxActionPerformed(evt);
+            }
+        });
+        develPanel.add(renderingModeComboBox);
         develPanel.add(filler3);
 
         jTabbedPane1.addTab("Development", develPanel);
@@ -1351,6 +1360,10 @@ public class MainWindow extends javax.swing.JFrame {
         scene.setSpeed((float) speedSpinner.getValue());
     }//GEN-LAST:event_speedSpinnerStateChanged
 
+    private void renderingModeComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_renderingModeComboBoxActionPerformed
+        scene.setRenderingMode(renderingModeComboBox.getSelectedIndex());
+    }//GEN-LAST:event_renderingModeComboBoxActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -1447,6 +1460,7 @@ public class MainWindow extends javax.swing.JFrame {
     private javax.swing.JSpinner probeSpinner;
     private javax.swing.JCheckBox renderPlaneCheckBox;
     private javax.swing.JCheckBox renderPointCheckBox;
+    private javax.swing.JComboBox renderingModeComboBox;
     private javax.swing.JComboBox resolutionComboBox;
     private javax.swing.JCheckBox selectCavityCheckBox;
     private javax.swing.JCheckBox selectSphereCheckBox;

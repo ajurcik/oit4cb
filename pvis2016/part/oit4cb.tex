@@ -38,6 +38,22 @@ While ray-casting spheres and tori, some sections of the final image will be lat
 	\item Spherical patches -- a spherical patch is enclosed by edges of three or more toroidal patches.
 \end{itemize}
 
+\begin{figure}[htp]
+    \centering
+    \begin{subfigure}[t]{0.25\textwidth}
+        \centering
+        \includegraphics[width=1.5in]{image/cb-krone.png}
+        \caption{Krone's CB.}
+    \end{subfigure}%
+    ~ 
+    \begin{subfigure}[t]{0.25\textwidth}
+        \centering
+        \includegraphics[width=1.5in]{image/cb-oit.png}
+        \caption{Our CB.}
+    \end{subfigure}
+    \caption{The transparent SES of three atoms produced by the original parallel CB algorithm (a), and our extended algorithm (b). Moreover, our algorithm is also able to handle patches on a sphere that form different surfaces, i.e., the outer and one or more inner.}
+\end{figure}
+
 \textcolor{red}{TODO Check if it's correct: In comparison with the previous solution our main contribution here lies in the computation of toroidal and spherical patches.
 Using them we avoid the situation when the previous algorithm renders parts of tori and spheres which do not form the final surface.}
 
