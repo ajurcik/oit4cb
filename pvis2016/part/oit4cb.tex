@@ -11,7 +11,7 @@ Overview (0.5 page) (AJ, JP)
 The data comes in a form of trajectories describing motion of individual atoms. Each trajectory snap shot includes a set of atoms, described by their positions and their radii. Our rendering pipeline consists of several steps that are performed on per-frame basis. 
 For better explaination, we split computations into two groups. The first group deals with data processing that involves computation of the surface primitives, inner voids and additional attributes used in later stages. The second group of computations relates to visualization. This includes ray-casting of the formed primitives, estimate of ambient occlusion and opacity calculation; before the final stage represented by the image formation. In more detail, we perform the following steps \textcolor{red}{(TODO need more detail from Adam)}:
 	\begin{enumerate}
-	  \item We employ contour-buildup algorithm to construct the molecular surface. Additionally, we enhance the computation as well as the performance by several changes (Sec.~\ref{sec:ecb}).
+	  \item We employ contour-buildup algorithm to construct the molecular surface. Additionally, we enhance the computation as well as the performance (\textcolor{red}{only memory efficiency, bit in the CB article, they do not describe their data structures. I inspected the MegaMol code.}) by several changes (Sec.~\ref{sec:ecb}).
 		\item To extract cavities we introduce the so-called \textit{surface graph} (Sec.~\ref{sec:graph}), which allows us to compute the internal voids / cavities.
 		\item Each one of the three primitives is visualization using ray-casting (Sec.~\ref{sec:vis}). (ray-casting, opacity calculation, etc.)
 		\item We compute ambient occlusion, stored in the grid.
@@ -45,6 +45,13 @@ Kauker et al.~\cite{kauker2013rendering} proposed to ray-cast a toroidal patch u
 We modify the data structure used to store spherical triangles in such a way that all spherical triangles that delimit patches on a torus are known. Therefore, it allows us to ray-cast toroidal patches directly instead of tori.
 In order to get all triangles incident to some torus, we hash the triangles by three keys -- one for each torus which is connected to a triangle.
 We implemented a simple hash table which is based on linear addressing scheme with quadratic probing \cite{alcantara2011efficient}.
+
+\begin{figure}[htb]
+  \centering
+  \includegraphics[width=3.3in]{image/hashing.png}
+  \caption{TODO.}
+	\label{fig:hashing}
+\end{figure}
 
 Since a spherical patch is bounded by toroidal patches, we extended the original algorithm by adding three new GPU kernels that compute the sets of toroidal patches forming the spherical patches (see Section~\ref{sec:graph}).
 When visualizing the surface, each such set is used to ray-cast a spherical patch (see Section~\ref{sec:spherical-patches}).
