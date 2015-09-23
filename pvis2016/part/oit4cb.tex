@@ -114,10 +114,11 @@ The computed surface contains primitives of both the outer molecular surface and
 \footnote{\textcolor{red}{JP: This should be written in more friendly fashion and with clear defined terms.
 Terms to be explained: surface is continuitous (geometrical?, since $C^1$ continuous it is not), graphs (2D/3D, does it contain loops?), primitive, component}}
 Kauker et al. \cite{kauker2013rendering} were in their study interested in visualizing only the outer surface.
+\footnote{\textcolor{red}{AJ: Maybe, this could be part of related work}}
 Therefore, they called the inner parts of the surface as inner remains as it was source of occlusion.
 However, the domain experts are often interested in the exploration of inner cavities because of their significant role in reactivity of the molecule.
 %We think that for SES, the user might want to visualize cavities within the molecule and hence it is useful to let him decide on what to visualize.
-So it is advantageous for the user to have the option to visualize both molecular surface and inner cavities and interactively change this decision.ties
+So it is advantageous for the user to have the option to visualize both molecular surface and inner cavities and interactively change this decision.
 It means that the cavities can be shown or hidden on demand.
 %Contrary, for SAS, the cavities are visualized much smaller than in the case of SES and therefore visualizing them does not help assessing their shape or volume.
 %The difference \textcolor{red}{stems from} the definitions of the surfaces.
@@ -128,20 +129,25 @@ It means that the cavities can be shown or hidden on demand.
 \begin{figure}[htb]
   \centering
   \includegraphics[width=3.3in]{image/graph.png}
-  \caption{TODO.}
+  \caption{The surface graph.
+	Triangles form vertices and toroidal patches form edges between them.
+	Spherical patches are represented as cycles in the graph.}
 	\label{fig:graph}
 \end{figure}
 
-For both SAS and SES, the hiding of cavities is straightforward because of the fact that their surfaces are completely separated from the molecular surface. \textcolor{red}{\cite{borland2011ambient}}.
+For both \textcolor{red}{SAS} and SES, the hiding of cavities is straightforward \footnote{\textcolor{red}{AJ: It was quite hard job to do it:)}} because of the fact that their surfaces are completely separated from the molecular surface. \textcolor{red}{\cite{borland2011ambient}}.
 %\footnote{\textcolor{red}{JP: Too many ideas in one sentence. Split into two or more.}}
-More specifically, one component represents the outer molecular surface and each single cavity corresponds to one component.
+More specifically, one component represents the outer molecular surface and each single cavity corresponds to another component.
 For the contour representation of the surface, isolated components can be easily detected by applying connected component (CC) analysis to a structure which we call the \textit{surface graph}.
 \footnote{\textcolor{red}{JP: Introduce here "terminus techniques"; i.e., SES is composed of three types of patches etc.}}
-We build our \textit{surface graph} using triangles as vertices and toroidal patches (recall that a toroidal patch is delimited by two triangles) as edges between them.
-First, we tried to define vertices by spheres and edges connecting them by toroidal patches. 
-But such a representation showed to be insufficient because of the fact that spheres may contain patches that are parts of different surface components.
-\footnote{\textcolor{red}{I don't understand the following sentence. What is former graph representation? The whole sentence should be rewritten.}} Moreover, using the former graph representation makes also the implementation of used graph algorithms and graph data structures on the GPU easier.
-This is caused mainly by the fact that a triangle has exactly three neighboring toroidal patches, hence all vertices in our graph are of degree three.
+We build our \textit{surface graph} using triangles as vertices and toroidal patches (recall that a toroidal patch is delimited by two triangles) as edges connecting them (see Figure~\ref{fig:graph}).
+%\footnote{\textcolor{red}{I don't understand the following sentence. What is former graph representation? The whole sentence should be rewritten.}}
+%Moreover, using the former graph representation makes also the implementation of used graph algorithms and graph data structures on the GPU easier.
+Moreover, we also tried to do the CC analysis on a graph with spheres as vertices and toroidal patches as edges.
+But, the idea showed to be not useful because spheres may contain more than one patches that can form parts of different surfaces.
+More, the implementation of used graph algorithms and data structures on the GPU would be more complex.
+This is caused mainly by the fact that a sphere has arbitrary number of neighboring tori, while a triangle has exactly three tori as its neighbors.
+Hence, all vertices in our graph are of degree three.
 
 Finally, the surface contains also tori that are not \textcolor{red}{cut} by any triangle.
 We call such tori as \textit{isolated}, because they do not have any neighboring triangle.
