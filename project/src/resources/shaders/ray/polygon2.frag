@@ -52,6 +52,7 @@ in flat uint label;
 in flat uint circleStart;
 in flat uint circleEnd;
 in flat float area;
+in flat vec4 plane;
 
 uniform usamplerBuffer circlesTex;
 uniform samplerBuffer edgesCircleTex;
@@ -233,6 +234,16 @@ void main() {
         }
     }
 
+    // clip by isolated torus plane
+    /*if (dot(plane.xyz, plane.xyz) > 0) {
+        if (dot(plane.xyz, intPos1) + plane.z < 0.0) {
+            outer = false;
+        }
+        if (dot(plane.xyz, intPos2) + plane.z < 0.0) {
+            inner = false;
+        }
+    }*/
+
     if (!inner && !outer) {
         discard;
     }
@@ -242,13 +253,13 @@ void main() {
         if (label == surfaceLabel) {
             storeIntersection(intPos1, normal1, eye, color, 0.2, 0.8, false);
         } else {
-            storeIntersection(intPos1, normal1, eye, vec4(1.0, 1.0, 1.0, 0.5), 0.2, 0.4, bfmod);
+            storeIntersection(intPos1, normal1, eye, color /*vec4(1.0, 1.0, 1.0, 0.5)*/, 0.2, 0.8 /*0.4*/, bfmod);
         }
     }
 
     if (inner) {
         if (label == surfaceLabel) {
-            storeIntersection(intPos2, normal2, eye, vec4(1.0, 1.0, 1.0, 0.5), 0.2, 0.4, bfmod);
+            storeIntersection(intPos2, normal2, eye, color /*vec4(1.0, 1.0, 1.0, 0.5)*/, 0.2, 0.8 /*0.4*/, bfmod);
         } else {
             storeIntersection(intPos2, normal2, eye, color, 0.2, 0.8, false);
         }
@@ -269,7 +280,7 @@ void storeIntersection(vec3 position, vec3 normal, vec3 eye, vec4 color, float K
 
     float aoFactor = texture3D(aoVolumeTex, (position + lambda * normal) / volumeSize).r;
     if (label == surfaceLabel && aoFactor > 0.9) {
-        color.rgb = tunnelColor;
+        //color.rgb = tunnelColor;
     }
 
     vec4 fragColor = color;

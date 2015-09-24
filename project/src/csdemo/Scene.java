@@ -529,7 +529,7 @@ public class Scene implements GLEventListener {
                     "/resources/shaders/ray/polygon2.geom", "/resources/shaders/ray/krone/polygon2.frag");
             // Load molecule
             //dynamics = new Dynamics(Utils.loadDynamicsFromResource("/resources/md/model", 1, 10));
-            dynamics = new Dynamics(Collections.singletonList(Utils.loadAtomsFromResource("/resources/1CRN_3.pdb")));
+            dynamics = new Dynamics(Collections.singletonList(Utils.loadAtomsFromResource("/resources/1CRN.pdb")));
             System.out.println("Atoms (molecule): " + dynamics.getMolecule().getAtomCount());
             System.out.println("Snapshots: " + dynamics.getSnapshotCount());
         } catch (Exception ex) {
@@ -1229,18 +1229,21 @@ public class Scene implements GLEventListener {
         gl.glBindBufferBase(GL_SHADER_STORAGE_BUFFER, POLYGONS_PLANES_BUFFER_INDEX, polygonsPlanesBuffer);
         
         gl.glActiveTexture(GL_TEXTURE0);
-        gl.glBindTexture(GL_TEXTURE_BUFFER, gr.getCirclesTex());
+        gl.glBindTexture(GL_TEXTURE_BUFFER, atomsTex);
         gl.glActiveTexture(GL_TEXTURE1);
-        gl.glBindTexture(GL_TEXTURE_BUFFER, gr.getCirclesCountTex());
+        gl.glBindTexture(GL_TEXTURE_BUFFER, gr.getCirclesTex());
         gl.glActiveTexture(GL_TEXTURE2);
-        gl.glBindTexture(GL_TEXTURE_BUFFER, surfaceVerticesTex);
+        gl.glBindTexture(GL_TEXTURE_BUFFER, gr.getCirclesCountTex());
         gl.glActiveTexture(GL_TEXTURE3);
+        gl.glBindTexture(GL_TEXTURE_BUFFER, surfaceVerticesTex);
+        gl.glActiveTexture(GL_TEXTURE4);
         gl.glBindTexture(GL_TEXTURE_BUFFER, gr.getPolygonsTex());
         
-        Utils.setSampler(gl, isolatedProgram, "circlesTex", 0);
-        Utils.setSampler(gl, isolatedProgram, "circlesCountTex", 1);
-        Utils.setSampler(gl, isolatedProgram, "labelsTex", 2);
-        //Utils.setSampler(gl, isolatedProgram, "polygonsTex", 3);
+        Utils.setSampler(gl, isolatedProgram, "atomsTex", 0);
+        Utils.setSampler(gl, isolatedProgram, "circlesTex", 1);
+        Utils.setSampler(gl, isolatedProgram, "circlesCountTex", 2);
+        Utils.setSampler(gl, isolatedProgram, "labelsTex", 3);
+        //Utils.setSampler(gl, isolatedProgram, "polygonsTex", 4);
         
         Utils.setUniform(gl, isolatedProgram, "torusCount", isolatedTorusCount);
         
@@ -1355,7 +1358,7 @@ public class Scene implements GLEventListener {
         gl.glBindBufferBase(GL_SHADER_STORAGE_BUFFER, COUNTERS_BUFFER_INDEX, countersBuffer);
         
         gl.glUseProgram(defaultProgram);
-        Utils.drawAxes(gl, 5.0f);
+        //Utils.drawAxes(gl, 5.0f);
         
         gl.glPushMatrix();
         gl.glTranslatef(aabbMin.x - 4f, aabbMin.y - 4f, aabbMin.z - 4f);
@@ -1638,7 +1641,7 @@ public class Scene implements GLEventListener {
         Utils.setUniform(gl, program, "cavityColor1", cavityColor1);
         Utils.setUniform(gl, program, "cavityColor2", cavityColor2);
         // tunnel coloring
-        Utils.setUniform(gl, program, "tunnelColor", tunnelColor);
+        //Utils.setUniform(gl, program, "tunnelColor", tunnelColor);
         
         gl.glEnableClientState(GL_VERTEX_ARRAY);
         gl.glClientActiveTexture(GL_TEXTURE0);
@@ -1716,7 +1719,7 @@ public class Scene implements GLEventListener {
         Utils.setUniform(gl, program, "cavityColoring", cavityColoring == Coloring.AREA ? 0 : 1);
         Utils.setUniform(gl, program, "cavityColor1", cavityColor1);
         Utils.setUniform(gl, program, "cavityColor2", cavityColor2);
-        Utils.setUniform(gl, program, "tunnelColor", tunnelColor);
+        //Utils.setUniform(gl, program, "tunnelColor", tunnelColor);
         
         gl.glEnableClientState(GL_VERTEX_ARRAY);
         gl.glClientActiveTexture(GL_TEXTURE0);
@@ -1802,7 +1805,7 @@ public class Scene implements GLEventListener {
         Utils.setUniform(gl, program, "cavityColoring", cavityColoring == Coloring.AREA ? 0 : 1);
         Utils.setUniform(gl, program, "cavityColor1", cavityColor1);
         Utils.setUniform(gl, program, "cavityColor2", cavityColor2);
-        Utils.setUniform(gl, program, "tunnelColor", tunnelColor);
+        //Utils.setUniform(gl, program, "tunnelColor", tunnelColor);
         
         gl.glEnableClientState(GL_VERTEX_ARRAY);
         gl.glClientActiveTexture(GL_TEXTURE0);

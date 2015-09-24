@@ -10,6 +10,7 @@ struct torus {
 
 uniform uint torusCount;
 
+uniform samplerBuffer atomsTex;
 uniform usamplerBuffer circlesTex;
 uniform usamplerBuffer circlesCountTex;
 uniform usamplerBuffer labelsTex;
@@ -54,12 +55,14 @@ void main() {
     
     count = texelFetch(circlesCountTex, int(aj)).r;
     if (count == 1) {
-        uint label = polygonLabel(ai);
+        uint label = polygonLabel(aj);
         tori[torusIdx].plane1.x = uintBitsToFloat(label);
         clipPolygon(ai, torusIdx);
         clipPolygon(aj, torusIdx);
         return;
     }
+
+    tori[torusIdx].plane1.x = uintBitsToFloat(999); // DEBUG
 }
 
 uint polygonLabel(uint index) {
@@ -67,6 +70,19 @@ uint polygonLabel(uint index) {
     return texelFetch(labelsTex, int(vertexIdx)).r;
 }
 
-void clipPolygon(uint polyIdx, uint torusIdx) {
-    polygonsPlanes[polyIdx] = vec4(1.0, 2.0, 3.0, 4.0); // DEBUG
+void clipPolygon(uint atomIdx, uint torusIdx) {
+    vec4 atom = texelFetch(atomsTex, int(atomIdx));
+    vec4 vs = tori[torusIdx].visibility;
+    // compute intersection plane (taken from neighbors.glsl)
+    vec3 relPos = atom.xyz - vs.xyz;
+    float dist = length(relPos);
+    float r = atom.w * atom.w + dist * dist - vs.w * vs.w;
+    r = r / (2.0 * dist * dist);
+    vec3 vec = relPos * r;
+    // set isolated torus plane
+    vec4 plane;
+    plane.xyz = vec;
+    plane.w = -dot(plane.xyz, atom.xyz + vec);
+    // write isolated torus plane
+    polygonsPlanes[atomIdx] = plane;
 }

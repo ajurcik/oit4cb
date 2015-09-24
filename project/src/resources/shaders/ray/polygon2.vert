@@ -41,6 +41,8 @@ out VertexData {
     flat uint label;
     flat uint circleStart;
     flat uint circleEnd;
+    // clipping plane of isolated torus
+    flat vec4 plane;
 } vertex;
 
 void main() {
@@ -56,6 +58,8 @@ void main() {
     vertex.label = params.y;
     vertex.circleStart = params.z;
     vertex.circleEnd = params.z + params.w;
+    // isolated torus clipping plane
+    vertex.plane = gl_MultiTexCoord1;
 
     /*if (clipCavities) {
         if (label != surfaceLabel) {

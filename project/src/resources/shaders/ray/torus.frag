@@ -95,6 +95,7 @@ void storeFragment(vec4 color, float depth, float ao) {
 void main() {
     // change color if selected
     vec4 col = (selectCavity && (cavityLabel == label)) ? YELLOW : color;
+    col = (label == 999) ? vec4(1.0, 0.0, 0.0, 1.0) : col;
 
     // transform fragment coordinates from window coordinates to view coordinates.
     vec4 coord = gl_FragCoord
@@ -210,17 +211,17 @@ void main() {
 
     if (label == surfaceLabel) {
         /*if (numRoots >= 2)*/ storeIntersection(a + ray * lambdas.x, ray, col, false); // second intersection
-        /*if (numRoots >= 2)*/ storeIntersection(a + ray * lambdas.y, ray, vec4(1.0, 1.0, 1.0, 0.5), true); // first intersection
+        /*if (numRoots >= 2)*/ storeIntersection(a + ray * lambdas.y, ray, col /*vec4(1.0, 1.0, 1.0, 0.5)*/, true); // first intersection
         if (numRoots == 4) {
-            storeIntersection(a + ray * lambdas.w, ray, vec4(1.0, 1.0, 1.0, 0.5), true); // third intersection
+            storeIntersection(a + ray * lambdas.w, ray, col /*vec4(1.0, 1.0, 1.0, 0.5)*/, true); // third intersection
             storeIntersection(a + ray * lambdas.z, ray, col, false); // fourth intersection
         }
     } else {
-        /*if (numRoots >= 2)*/ storeIntersection(a + ray * lambdas.x, ray, vec4(1.0, 1.0, 1.0, 0.5), false); // second intersection
+        /*if (numRoots >= 2)*/ storeIntersection(a + ray * lambdas.x, ray, col /*vec4(1.0, 1.0, 1.0, 0.5)*/, false); // second intersection
         /*if (numRoots >= 2)*/ storeIntersection(a + ray * lambdas.y, ray, col, true); // first intersection
         if (numRoots == 4) {
             storeIntersection(a + ray * lambdas.w, ray, col, true); // third intersection
-            storeIntersection(a + ray * lambdas.z, ray, vec4(1.0, 1.0, 1.0, 0.5), false); // fourth intersection
+            storeIntersection(a + ray * lambdas.z, ray, col /*vec4(1.0, 1.0, 1.0, 0.5)*/, false); // fourth intersection
         }
         //if (numRoots == 2) storeIntersection(a + ray * lambdas.x, ray, vec4(0.0, 1.0, 0.0, color.a), true);
     }
@@ -278,7 +279,7 @@ void storeIntersection(vec3 intersection, vec3 ray, vec4 color, bool outer) {
     worldNormal.z = dot(rotMatT2, normal.xyz);
     float aoFactor = texture3D(aoVolumeTex, (intersection + lambda * worldNormal) / volumeSize).r;
     if (label == surfaceLabel && aoFactor > 0.9) {
-        color.rgb = tunnelColor;
+        //color.rgb = tunnelColor;
     }
 
     // phong lighting with directional light
@@ -288,7 +289,7 @@ void storeIntersection(vec3 intersection, vec3 ray, vec4 color, bool outer) {
         fragColor.rgb += 0.8 * -dot(normal, ray) * color.rgb;
     } else if (outer && phong) {
         fragColor.rgb = 0.2 * color.rgb;
-        fragColor.rgb += 0.4 * -dot(normal, ray) * color.rgb;
+        fragColor.rgb += 0.8 /*0.4*/ * -dot(normal, ray) * color.rgb;
     } else if (outer && !phong && label == surfaceLabel) {
         fragColor = vec4(0.6, 0.6, 0.6, 0.5);
     }

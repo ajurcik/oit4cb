@@ -203,7 +203,7 @@ void main() {
     vec3 eye = -normalize(ray);
     if (outer) {
         if (label == surfaceLabel) {
-            storeIntersection(intPos1, normal1, eye, vec4(1.0, 1.0, 1.0, 0.5), 0.2, 0.4, bfmod, label, area);
+            storeIntersection(intPos1, normal1, eye, color /*vec4(1.0, 1.0, 1.0, 0.5)*/, 0.2, 0.8 /*0.4*/, bfmod, label, area);
         } else {
             storeIntersection(intPos1, normal1, eye, color, 0.2, 0.8, false, label, area);
         }
@@ -213,7 +213,7 @@ void main() {
         if (label == surfaceLabel) {
             storeIntersection(intPos2, normal2, eye, color, 0.2, 0.8, false, label, area);
         } else {
-            storeIntersection(intPos2, normal2, eye, vec4(1.0, 1.0, 1.0, 0.5), 0.2, 0.4, bfmod, label, area);
+            storeIntersection(intPos2, normal2, eye, color /*vec4(1.0, 1.0, 1.0, 0.5)*/, 0.2, 0.8 /*0.4*/, bfmod, label, area);
         }
     }
 
@@ -230,7 +230,7 @@ void storeIntersection(vec3 position, vec3 normal, vec3 eye, vec4 color, float K
 
     float aoFactor = texture3D(aoVolumeTex, (position + lambda * normal) / volumeSize).r;
     if (label == surfaceLabel && aoFactor > 0.9) {
-        color.rgb = tunnelColor;
+        //color.rgb = tunnelColor;
     }
 
     vec4 fragColor = color;
