@@ -151,31 +151,32 @@ Hence, all vertices in our graph are of degree three.
 
 Finally, the surface contains also tori that are not \textcolor{red}{cut} by any triangle.
 We call such tori as \textit{isolated}, because they do not have any neighboring triangle.
-\textit{Isolated tori} are excluded from the \textit{surface graph} and they are handled later in the computation (see Section ?).
+\textit{Isolated} tori are excluded from the \textit{surface graph} and they are handled later in the computation (see Section ?).
 
-\subsubsection{CC Analysis on the GPU}
+\subsubsection{Extraction of surfaces}
 
-We do the CC analysis on the GPU to avoid synchronization and data transfer costs.
-\footnote{\textcolor{red}{Input, output}}
-We split the process of analyzing the surface into three steps:
+To extract the surfaces, i.e., the outer surface and the surfaces of the \textcolor{green}{inner voids}, we build a \textit{surface graph} from the computed surface and apply the CC analysis to it.
+The whole computation is done on the GPU, so that we avoid additional data transfers between main memory and graphics card.
+%\footnote{\textcolor{red}{Input, output}}
+We split the analysis of the surface into three steps:
 \begin{enumerate}
-  \item Build adjacency matrix of \textit{surface graph} $G = (E, V)$.
-	\item Do CC analysis of $G$.
-	\item Find circles in $G$ that represent sets of toroidal patches delimiting patches on spheres.
+  \item Building adjacency matrix of \textit{surface graph} $G = (E, V)$.
+	\item Finding all connected components of $G$.
+	\item Finding \textcolor{red}{circles/cycles} in $G$ that represent patches on spheres.
 \end{enumerate}
-For each step, we designed and implemented a new GPU kernel as a GLSL compute shader.
+For each step, we introduce a new GPU kernel implemented as a GLSL compute shader.
 
 %First, we modified the output of the original GPU parallel CB to obtain the input which is needed for the analysis and rendering of transparent toroidal patches.
 To build the adjacency matrix of $G$ we utilize the hash table of triangles.
 During the writing of toroidal patches into a buffer for ray-casting, we also write a list of edges $E$ of $G$.
-For each \textit{non-isolated} toroidal patch an edge $e$ is added to $E$ by writing its incident vertices into a buffer.
+For each non-\textit{isolated} toroidal patch an edge $e$ is added to $E$ by writing its incident vertices into a buffer of edges.
 Here, we find the incident vertices of $e$ by querying the hash table of triangles.
 In the hash table, each triangle is hashed using all three pairs of atoms -- $(i, j)$, $(i, k)$ and $(j, k)$, that form the three small circles that produced it.
 Then, the toroidal patches (and also edges) for a torus can be found by retrieving all triangles incident to a torus and sorting them relatively by their angular position around the torus.
 We use the bubble sort algorithm for this sorting.
-When sorted, the pairs of neighboring triangles define the patches and edges.
+When sorted, the pairs of neighboring triangles define the toroidal patches and corresponding edges.
 We also check whether the first two triangles form a visible patch.
-If not, we rotate the sorted list of triangles by one item.
+If not, then the first triangle forms a visible patch with the last one and we rotate the sorted list of triangles by one item.
 \textcolor{red}{The test is done...}
 %In the original algorithm \cite{krone2011parallel}, an arc intersection was stored only for atoms whose indices fulfilled $i < j < k$.
 %This is insufficient for rendering the toroidal patches transparent as they can't be rendered as a one whole patch because the parts that would be hidden by the opaque surface would be visible.
@@ -184,17 +185,19 @@ If not, we rotate the sorted list of triangles by one item.
 %\textcolor{red}{For this purpose, we store the computed arc intersections in a linear buffer (employing atomics) and together produce a hash structure which enables us to find the triangles by their two of the three atom indices.
 %Consequently, we save GPU memory because the original arcs structure was sparse (see Appendix ?).
 %Now, we store n arcs together with $3 n$ keys in a hash table which data/free ratio is 2. \textcolor{red}{TODO: More precision.}}
-Finally, the buffer of edges $E$ is read by a \textcolor{red}{kernel} and the adjacency matrix is written. 
-The matrix will have one row for each vertex and three columns for its three neighbors.%, because each triangle has exactly (at most?) three neighboring toroidal patches in the surface.
+Finally, the buffer of edges $E$ is transformed into the adjacency matrix by a kernel.
+The matrix will have one row for each vertex (triangle) and three columns for its three neighbors (toroidal patches).%, because each triangle has exactly (at most?) three neighboring toroidal patches in the surface.
 
-In the second step, all connected components of $G$ are detected and labeled using the BFS algorithm.
+In the second step, all connected components of $G$ are found and labeled using the \textcolor{red}{BFS} algorithm.
 %Our implementation of the BFS algorithm is suboptimal, because its time complexity is $O(d \cdot n)$ where d is the length of the longest shortest path among all vertices in a component.
 %In the worst case, d can be n.
-We decided to choose a very simple yet inefficient \cite{merrill2012scalable} quadratic-work implementation because of the ability of BFS implementation as one kernel.
-Our decision is also supported by the performance measurements (see Section~\ref{sec:performance}) where the computation of labels takes only \~5 ms for a molecule with \~10.000 atoms while the computation of SES takes five times more \textcolor{red}{and ray-casting even more}.
+We decided to choose a very simple yet inefficient \cite{merrill2012scalable} quadratic-work implementation because of the ability of BFS implementation as a one kernel.
+Our decision is supported by the performance measurements (see Section~\ref{sec:performance}) where the computation of surface components takes {\tweakedsim}5 ms for a molecule with {\tweakedsim}10.000 atoms while the computation of SES and its ray-casting together take {\tweakedsim}\textcolor{red}{x} ms.
 
-In the last step, we sort all edges neighboring with the sphere to get one or more circles where each circle delimits a spherical patch.
-The labels for the spherical patches are obtained from the labels of some of their delimiting edges.
+In the last step, the cycles representing the spherical patches are extracted.
+To do this, we assign the edges in $E$ by their neighboring spheres into buckets.
+We then order the edges in buckets, so that they represent one or more cycles in $G$.
+A spherical patch is labeled by the label of any of its delimiting edges.
 
 \subsection{Special case -- isolated torus}
 
