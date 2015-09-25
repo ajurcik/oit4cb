@@ -1,16 +1,6 @@
-\section{Visualization} (0.5 page) (AJ, JP)
+\section{Real-time Visualization} (0.5 page) (AJ, JP)
 \label{sec:vis}
-\begin{itemize}
-  \item Transparency
-	\item Opacity mapping (surface, AO, ...)
-\end{itemize}
-
-Interactive Analysis (0.5 page) (ALL)
-\begin{itemize}
-  \item Possibilities (scenario, dynamics, pipeline)
-  \item Feedback
-\end{itemize}
-
+To enable our focus and context transparent rendering, we employ an A-buffer to acquire a list of participating fragments. These fragments represent three types of surface patches, computed in previous steps, analytically computed for a given ray. This is obtained via an analytical approach.
 \subsection{Rendering of spherical patches --- polygons?}
 \label{sec:spherical-patches}
 A sphere can produce one or more spherical patches which may form different surfaces.
@@ -36,6 +26,24 @@ The intersection of a spherical segment with a small circle arc is computed in t
 \end{enumerate}
 
 \textcolor{red}{TODO: \textsc{http://horizon.documentation.ird.fr/exl-doc/pleins\_textes/pleins\_textes\_6/b\_fdi\_39-40/43404.pdf}}
+
+\subsection{Opacity Mapping}
+Borland~\cite{borland2011ambient} proposed to utilize ambient occlusion (AO) values to alter the opacity. Motivated by his approach, we exploit the ambient occlusion values as well. Since, we would like to maintain fast rendering performance, we need to remedy the issue of having an object space technique to evaluate the AO values. In the former work of Borland, the performance was not an important factor, which allows him to exploit the full object space AO evaluation. Here, we opted for the most recent approach, proposed by Grottel et al.~\cite{grottel}, which renders ambient occlusion values to a $3D$ grid containing an estimate of the volume area of atoms located inside a voxel. Although this approach only reflects the volume of atoms and not the molecular surface, we find it as a good trade off between the visual precision and the performance measure taking into consideration that these values are not employed directly, but as opacity modulators instead.
+	
+\begin{figure}[htb]
+\centering
+  \includegraphics[width=0.8\columnwidth]{image/ray_fragments.png}
+  \caption{(TODO make more nice with overlay AO grid). An example of the list of fragments per a given ray. The color of the circles represent the obtain ambient occlusion value.}
+	\label{fig:ray_fragments}
+\end{figure}
+
+
+Interactive Analysis (0.5 page) (ALL)
+\begin{itemize}
+  \item Possibilities (scenario, dynamics, pipeline)
+  \item Feedback
+\end{itemize}
+
 
 \subsection{Cavity area estimation}
 Observation: triangles take most area of a cavity.
