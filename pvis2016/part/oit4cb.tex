@@ -168,8 +168,8 @@ This is caused mainly by the fact that a sphere has arbitrary number of neighbor
 Hence, all vertices in our graph are of degree three.
 
 Finally, the surface contains also tori that are not \textcolor{red}{cut} by any triangle.
-We call such tori as \textit{isolated}, because they do not have any neighboring triangle.
-\textit{Isolated} tori are excluded from the \textit{surface graph} and they are handled later in the computation (see Section ?).
+We call these tori as \textit{isolated}, because they do not have any neighboring triangle (see Figure~\ref{fig:isolated}).
+\textit{Isolated} tori are excluded from the \textit{surface graph} and they are handled later in the computation (see Section~\ref{sec:isolated}).
 
 \subsubsection{Extraction of surfaces}
 
@@ -218,10 +218,21 @@ We then order the edges in buckets, so that they represent one or more cycles in
 A spherical patch is labeled by the label of any of its delimiting edges.
 
 \subsection{Special case -- isolated torus}
+\label{sec:isolated}
 
 The isolated torus must be handled in two ways.
 First, the label of the surface that an isolated torus forms must be found -- recall that the torus is not part of the \textit{surface graph}.
 Second, each isolated torus should clip the overlaid fragments of its spherical patch (see Figure \textcolor{red}{?}).
+
+\begin{figure}[htb]
+  \centering
+  \includegraphics[width=2in]{image/isolated-cutaway.png}
+  \caption{Isolated torus between two spheres.
+	Isolated tori do not have neighboring triangles, therefore the surface component to which they belong can not be determined directly from the \textit{surface graph}.
+	An isolated torus cuts a circular hole into its neighboring spherical patches. \textcolor{red}{TODO image}
+	}
+	\label{fig:isolated}
+\end{figure}
 
 %\begin{equation}
 % \sum_{j=1}^{z} j = \frac{z(z+1)}{2}
