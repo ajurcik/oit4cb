@@ -91,6 +91,8 @@ public class Scene implements GLEventListener {
     private int surfaceEdgesLineBuffer;
     private int isolatedToriBuffer;
     private int polygonsPlanesBuffer;
+    private int sphereIsolatedCountsBuffer;
+    private int sphereIsolatedVSBuffer;
     private int countersBuffer;
     
     private int atomsTex;
@@ -110,6 +112,8 @@ public class Scene implements GLEventListener {
     private int surfaceEdgesCircleTex;
     private int surfaceEdgesLineTex;
     private int polygonsPlanesTex;
+    private int sphereIsolatedCountsTex;
+    private int sphereIsolatedVSTex;
     
     // Vertex array buffers
     private int quadArrayBuffer;
@@ -145,6 +149,7 @@ public class Scene implements GLEventListener {
     private static final int MAX_PROBES = 32768; // 65536
     private static final int MAX_NEIGHBORS = 128;
     private static final int MAX_ARCS = 32;
+    private static final int MAX_SPHERE_ISOLATED_TORI = 8;
     private static final int MAX_TOTAL_ARCS = 32771; // 257, 521, 1031, 2053, 4099, 8209, 16787, 32771, 65537
     private static final int MAX_TOTAL_ARC_HASHES = 196613; // 98317, 196613
     
@@ -213,6 +218,9 @@ public class Scene implements GLEventListener {
     // indices for singularity shaders
     private static final int PROBE_NEIGHBOR_COUNTS_BUFFER_INDEX = 3;
     private static final int PROBE_NEIGHBOR_PROBES_BUFFER_INDEX = 4;
+    // indices for isolated shader
+    private static final int SPHERE_ISOLATED_COUNTS_BUFFER_INDEX = 4;
+    private static final int SPHERE_ISOLATED_VS_BUFFER_INDEX = 5;
     // indices for write shaders
     private static final int SPHERES_ARRAY_BUFFER_INDEX = 0;
     private static final int TRIANGLES_ARRAY_BUFFER_INDEX = 0;
@@ -550,8 +558,8 @@ public class Scene implements GLEventListener {
         atomsPos = Buffers.newDirectFloatBuffer(MAX_ATOMS * 4);
         
         // Create buffers
-        int buffers[] = new int[29];
-        gl.glGenBuffers(29, buffers, 0);
+        int buffers[] = new int[31];
+        gl.glGenBuffers(31, buffers, 0);
         // contour-buildup
         atomsBuffer = buffers[0];
         gridCountsBuffer = buffers[1];
@@ -588,8 +596,10 @@ public class Scene implements GLEventListener {
         // isolated tori handling
         isolatedToriBuffer = buffers[26];
         polygonsPlanesBuffer = buffers[27];
+        sphereIsolatedCountsBuffer = buffers[28];
+        sphereIsolatedVSBuffer = buffers[29];
         // counters
-        countersBuffer = buffers[28];
+        countersBuffer = buffers[30];
         
         // quad array buffer
         FloatBuffer quad = FloatBuffer.allocate(16);
@@ -700,6 +710,12 @@ public class Scene implements GLEventListener {
         gl.glBindBuffer(GL_SHADER_STORAGE_BUFFER, polygonsPlanesBuffer);
         gl.glBufferData(GL_SHADER_STORAGE_BUFFER, (3 * MAX_ATOMS / 2) * SIZEOF_VEC4, null, GL_DYNAMIC_COPY);
         
+        gl.glBindBuffer(GL_SHADER_STORAGE_BUFFER, sphereIsolatedCountsBuffer);
+        gl.glBufferData(GL_SHADER_STORAGE_BUFFER, MAX_ATOMS * Buffers.SIZEOF_INT, null, GL_DYNAMIC_COPY);
+        
+        gl.glBindBuffer(GL_SHADER_STORAGE_BUFFER, sphereIsolatedVSBuffer);
+        gl.glBufferData(GL_SHADER_STORAGE_BUFFER, MAX_ATOMS * MAX_SPHERE_ISOLATED_TORI * SIZEOF_VEC4, null, GL_DYNAMIC_COPY);
+        
         gl.glBindBuffer(GL_SHADER_STORAGE_BUFFER, countersBuffer);
         gl.glBufferData(GL_SHADER_STORAGE_BUFFER, 16 * Buffers.SIZEOF_INT, null, GL_DYNAMIC_READ);
         
@@ -766,6 +782,8 @@ public class Scene implements GLEventListener {
         Utils.bindShaderStorageBlock(gl, isolatedProgram, "Tori", TORI_ARRAY_BUFFER_INDEX);
         Utils.bindShaderStorageBlock(gl, isolatedProgram, "IsolatedTori", ISOLATED_TORI_BUFFER_INDEX);
         Utils.bindShaderStorageBlock(gl, isolatedProgram, "PolygonsPlanes", POLYGONS_PLANES_BUFFER_INDEX);
+        Utils.bindShaderStorageBlock(gl, isolatedProgram, "SphereIsolatedCounts", SPHERE_ISOLATED_COUNTS_BUFFER_INDEX);
+        Utils.bindShaderStorageBlock(gl, isolatedProgram, "SphereIsolatedVisSphere", SPHERE_ISOLATED_VS_BUFFER_INDEX);
         // bind sphere ray-tracing buffers
         Utils.bindShaderStorageBlock(gl, sphereProgram, "ABuffer", FRAGMENTS_BUFFER_INDEX);
         Utils.bindShaderStorageBlock(gl, sphereProgram, "ABufferIndex", FRAGMENTS_INDEX_BUFFER_INDEX);
@@ -808,8 +826,8 @@ public class Scene implements GLEventListener {
         Utils.bindUniformBlock(gl, kronePolygonProgram, "MinMaxCavityArea", MINMAX_CAVITY_AREA_BUFFER_INDEX);
         
         // textures
-        int[] textures = new int[17];
-        gl.glGenTextures(17, textures, 0);
+        int[] textures = new int[19];
+        gl.glGenTextures(19, textures, 0);
         atomsTex = textures[0];
         gridCountsTex = textures[1];
         gridIndicesTex = textures[2];
@@ -827,6 +845,8 @@ public class Scene implements GLEventListener {
         surfaceEdgesCircleTex = textures[14];
         surfaceEdgesLineTex = textures[15];
         polygonsPlanesTex = textures[16];
+        sphereIsolatedCountsTex = textures[17];
+        sphereIsolatedVSTex = textures[18];
         
         gl.glBindTexture(GL_TEXTURE_BUFFER, atomsTex);
         gl.glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA32F, atomsBuffer);
@@ -878,6 +898,9 @@ public class Scene implements GLEventListener {
         
         gl.glBindTexture(GL_TEXTURE_BUFFER, polygonsPlanesTex);
         gl.glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA32F, polygonsPlanesBuffer);
+        
+        Utils.bindTextureBuffer(gl, sphereIsolatedCountsTex, GL_R32UI, sphereIsolatedCountsBuffer);
+        Utils.bindTextureBuffer(gl, sphereIsolatedVSTex, GL_RGBA32F, sphereIsolatedVSBuffer);
         
         int atomicCounterBufferIndex = 0;
         gl.glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, atomicCountersBuffer);
@@ -1222,14 +1245,24 @@ public class Scene implements GLEventListener {
             gl.glClearBufferData(GL_SHADER_STORAGE_BUFFER, GL_RGBA32F, GL_RGBA, GL_FLOAT,
                     FloatBuffer.wrap(new float[] { 0f, 0f, 0f, 0f }));
             gl.glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+            
+            gl.glBindBuffer(GL_SHADER_STORAGE_BUFFER, sphereIsolatedCountsBuffer);
+            gl.glClearBufferData(GL_SHADER_STORAGE_BUFFER, GL_R32UI, GL_RED_INTEGER, GL_UNSIGNED_INT,
+                    IntBuffer.wrap(new int[] { 0 }));
+            gl.glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+            
+            gl.glBindBuffer(GL_SHADER_STORAGE_BUFFER, sphereIsolatedVSBuffer);
+            gl.glClearBufferData(GL_SHADER_STORAGE_BUFFER, GL_RGBA32F, GL_RGBA, GL_FLOAT,
+                    FloatBuffer.wrap(new float[] { 0f, 0f, 0f, 0f }));
+            gl.glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
         }
         
         gl.glBindBufferBase(GL_SHADER_STORAGE_BUFFER, TORI_ARRAY_BUFFER_INDEX, toriArrayBuffer);
         gl.glBindBufferBase(GL_SHADER_STORAGE_BUFFER, ISOLATED_TORI_BUFFER_INDEX, isolatedToriBuffer);
         gl.glBindBufferBase(GL_SHADER_STORAGE_BUFFER, POLYGONS_PLANES_BUFFER_INDEX, polygonsPlanesBuffer);
+        gl.glBindBufferBase(GL_SHADER_STORAGE_BUFFER, SPHERE_ISOLATED_COUNTS_BUFFER_INDEX, sphereIsolatedCountsBuffer);
+        gl.glBindBufferBase(GL_SHADER_STORAGE_BUFFER, SPHERE_ISOLATED_VS_BUFFER_INDEX, sphereIsolatedVSBuffer);
         
-        gl.glActiveTexture(GL_TEXTURE0);
-        gl.glBindTexture(GL_TEXTURE_BUFFER, atomsTex);
         gl.glActiveTexture(GL_TEXTURE1);
         gl.glBindTexture(GL_TEXTURE_BUFFER, gr.getCirclesTex());
         gl.glActiveTexture(GL_TEXTURE2);
@@ -1239,13 +1272,13 @@ public class Scene implements GLEventListener {
         gl.glActiveTexture(GL_TEXTURE4);
         gl.glBindTexture(GL_TEXTURE_BUFFER, gr.getPolygonsTex());
         
-        Utils.setSampler(gl, isolatedProgram, "atomsTex", 0);
         Utils.setSampler(gl, isolatedProgram, "circlesTex", 1);
         Utils.setSampler(gl, isolatedProgram, "circlesCountTex", 2);
         Utils.setSampler(gl, isolatedProgram, "labelsTex", 3);
         //Utils.setSampler(gl, isolatedProgram, "polygonsTex", 4);
         
         Utils.setUniform(gl, isolatedProgram, "torusCount", isolatedTorusCount);
+        Utils.setUniform(gl, isolatedProgram, "maxSphereIsolatedTori", MAX_SPHERE_ISOLATED_TORI);
         
         if (autoupdate || update) {
             gl.glDispatchCompute((isolatedTorusCount + 63) / 64, 1, 1); // isolatedProgram
@@ -1392,13 +1425,13 @@ public class Scene implements GLEventListener {
         renderPolygons(gl, testPolygonProgram, gr, ar, aoVolumeTex, sphereCount, view, up, right, viewport);
         
         if (renderSelectedSphere) {
-            /*gl.glColor4f(1f, 1f, 0f, 1f);
-            Atom atom = atoms.get(selectedSphere);
+            gl.glColor4f(1f, 1f, 0f, 1f);
+            float[] positions = dynamics.getMolecule().getAtomPositions(snapshot);
             gl.glUseProgram(defaultProgram);
             gl.glPushMatrix();
-            gl.glTranslatef(atom.x, atom.y, atom.z);
-            glut.glutSolidSphere(atom.r, 16, 16);
-            gl.glPopMatrix();*/
+            gl.glTranslatef(positions[selectedSphere * 3], positions[selectedSphere * 3 + 1], positions[selectedSphere * 3 + 2]);
+            glut.glutSolidSphere(dynamics.getMolecule().getAtom(selectedSphere).r, 16, 16);
+            gl.glPopMatrix();
         }
         
         gl.glEndQuery(GL_TIME_ELAPSED);
@@ -1565,6 +1598,7 @@ public class Scene implements GLEventListener {
                 writeTriangles(gl, triangleCount);
                 writeTori(gl, torusCount);
                 writePolygons(gl, sphereCount);
+                writeSphereIsolated(gl);
                 //writeDebugi(gl, 2);
                 //writeDebug4f(gl, 4);
             } catch (IOException e) {
@@ -1601,6 +1635,10 @@ public class Scene implements GLEventListener {
         gl.glActiveTexture(GL_TEXTURE5);
         gl.glBindTexture(GL_TEXTURE_1D, ar.getAreasTexture());
         gl.glActiveTexture(GL_TEXTURE6);
+        gl.glBindTexture(GL_TEXTURE_BUFFER, sphereIsolatedCountsTex);
+        gl.glActiveTexture(GL_TEXTURE7);
+        gl.glBindTexture(GL_TEXTURE_BUFFER, sphereIsolatedVSTex);
+        gl.glActiveTexture(GL_TEXTURE8);
         gl.glBindTexture(GL_TEXTURE_3D, aoVolumeTex);
         
         Utils.setSampler(gl, program, "circlesTex", 0);
@@ -1609,7 +1647,9 @@ public class Scene implements GLEventListener {
         Utils.setSampler(gl, program, "edgesCircleTex", 3);
         Utils.setSampler(gl, program, "edgesLineTex", 4);
         Utils.setSampler(gl, program, "areasTex", 5);
-        Utils.setSampler(gl, program, "aoVolumeTex", 6);
+        Utils.setSampler(gl, program, "sphereIsolatedCountsTex", 6);
+        Utils.setSampler(gl, program, "sphereIsolatedVSTex", 7);
+        Utils.setSampler(gl, program, "aoVolumeTex", 8);
         
         // camera
         Utils.setUniform(gl, program, "camIn", view.x, view.y, view.z);
@@ -1642,6 +1682,8 @@ public class Scene implements GLEventListener {
         Utils.setUniform(gl, program, "cavityColor2", cavityColor2);
         // tunnel coloring
         //Utils.setUniform(gl, program, "tunnelColor", tunnelColor);
+        // clipping by isolated tori
+        Utils.setUniform(gl, program, "maxSphereIsolatedTori", MAX_SPHERE_ISOLATED_TORI);
         
         gl.glEnableClientState(GL_VERTEX_ARRAY);
         gl.glClientActiveTexture(GL_TEXTURE0);
@@ -2606,6 +2648,29 @@ public class Scene implements GLEventListener {
                 writer.append(String.format("circle: [%6d, %2d]", circleStart, circleLength));
                 if (plane.x * plane.x + plane.y * plane.y + plane.z * plane.z > 0f) {
                     writer.append(String.format(", plane: [%f, %f, %f, %f]", plane.x, plane.y, plane.z, plane.w));
+                }
+                writer.newLine();
+            }
+            gl.glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
+        }
+    }
+    
+    private void writeSphereIsolated(GL4 gl) throws IOException {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter("sphere-isolated.txt"))) {
+            // read counts
+            gl.glBindBuffer(GL_SHADER_STORAGE_BUFFER, sphereIsolatedCountsBuffer);
+            ByteBuffer data = gl.glMapBuffer(GL_SHADER_STORAGE_BUFFER, GL_READ_ONLY);
+            int counts[] = new int[dynamics.getMolecule().getAtomCount()];
+            data.asIntBuffer().get(counts);
+            gl.glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
+            // write counts and indices
+            gl.glBindBuffer(GL_SHADER_STORAGE_BUFFER, sphereIsolatedVSBuffer);
+            ByteBuffer vsData = gl.glMapBuffer(GL_SHADER_STORAGE_BUFFER, GL_READ_ONLY);
+            for (int i = 0; i < counts.length; i++) {
+                writer.append(String.format("%4d (%2d): ", i, counts[i]));
+                for (int j = 0; j < counts[i]; j++) {
+                    Vector4f vs = getVec4(vsData, (i * MAX_SPHERE_ISOLATED_TORI + j) * SIZEOF_VEC4);
+                    writer.append(String.format("vs: [%f, %f, %f, %f], ", vs.x, vs.y, vs.z, vs.w));
                 }
                 writer.newLine();
             }

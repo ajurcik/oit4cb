@@ -300,7 +300,7 @@ public class Utils {
             return volumes;
         }
     }
-        
+    
     public static void bindShaderStorageBlock(GL4 gl, int program, String name, int index) {
         int blockIndex = gl.glGetProgramResourceIndex(program, GL_SHADER_STORAGE_BLOCK, name.getBytes(), 0);
         if (blockIndex != GL_INVALID_INDEX) {
@@ -308,6 +308,11 @@ public class Utils {
         } else {
             System.err.println("Warning: binding " + name + " not found");
         }
+    }
+    
+    public static void bindTextureBuffer(GL4 gl, int texture, int internalFormat, int buffer) {
+        gl.glBindTexture(GL_TEXTURE_BUFFER, texture);
+        gl.glTexBuffer(GL_TEXTURE_BUFFER, internalFormat, buffer);
     }
     
     public static void bindUniformBlock(GL4 gl, int program, String name, int index) {

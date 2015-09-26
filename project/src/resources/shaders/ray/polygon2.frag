@@ -40,6 +40,9 @@ uniform vec3 cavityColor2;
 // tunnel coloring
 uniform vec3 tunnelColor;
 
+// clipping by isolated tori
+uniform uint maxSphereIsolatedTori;
+
 in vec4 objPos;
 in vec4 camPos;
 in vec4 lightPos;
@@ -57,6 +60,8 @@ in flat vec4 plane;
 uniform usamplerBuffer circlesTex;
 uniform samplerBuffer edgesCircleTex;
 uniform samplerBuffer edgesLineTex;
+uniform usamplerBuffer sphereIsolatedCountsTex;
+uniform samplerBuffer sphereIsolatedVSTex;
 uniform sampler3D aoVolumeTex;
 
 layout(std430) buffer ABuffer {
@@ -81,6 +86,7 @@ void storeFragment(vec4 color, float depth, float ao) {
     fragments[index].prev = atomicExchange(fragIndices[coord.y * window.x + coord.x], index);
 }
 
+float squaredLength(vec3 v);
 void storeIntersection(vec3 position, vec3 normal, vec3 eye, vec4 color, float Ka, float Kd, bool bfmod);
 int planePlaneIntersection(vec4 plane1, vec4 plane2, out vec3 p1, out vec3 p2);
 vec3 rotate(vec3 v, vec3 axis, float angle);
@@ -235,14 +241,32 @@ void main() {
     }
 
     // clip by isolated torus plane
-    /*if (dot(plane.xyz, plane.xyz) > 0) {
-        if (dot(plane.xyz, intPos1) + plane.z < 0.0) {
-            outer = false;
+    if (!sas) {
+        /*if (dot(plane.xyz, plane.xyz) > 0) {
+            if (dot(plane.xyz, intPos1) + plane.z < 0.0) {
+                outer = false;
+            }
+            if (dot(plane.xyz, intPos2) + plane.z < 0.0) {
+                inner = false;
+            }
+        }*/
+        uint isolatedCount = texelFetch(sphereIsolatedCountsTex, int(index)).r;
+        for (uint i = 0; i < isolatedCount; i++) {
+            vec4 vs = texelFetch(sphereIsolatedVSTex, int(index * maxSphereIsolatedTori + i));
+            if (squaredLength(intPos1 - vs.xyz) < vs.w * vs.w) {
+                outer = false;
+                if (!inner) {
+                    break;
+                }
+            }
+            if (squaredLength(intPos2 - vs.xyz) < vs.w * vs.w) {
+                inner = false;
+                if (!outer) {
+                    break;
+                }
+            }
         }
-        if (dot(plane.xyz, intPos2) + plane.z < 0.0) {
-            inner = false;
-        }
-    }*/
+    }
 
     if (!inner && !outer) {
         discard;
@@ -266,6 +290,10 @@ void main() {
     }
 
     discard;
+}
+
+float squaredLength(vec3 v) {
+    return dot(v, v);
 }
 
 void storeIntersection(vec3 position, vec3 normal, vec3 eye, vec4 color, float Ka, float Kd, bool bfmod) {

@@ -40,6 +40,9 @@ uniform vec3 cavityColor2;
 // tunnel coloring
 uniform vec3 tunnelColor;
 
+// clipping by isolated tori
+uniform uint maxSphereIsolatedTori;
+
 in vec4 objPos;
 in vec4 camPos;
 in vec4 lightPos;

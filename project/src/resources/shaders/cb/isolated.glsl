@@ -9,8 +9,8 @@ struct torus {
 };
 
 uniform uint torusCount;
+uniform uint maxSphereIsolatedTori;
 
-uniform samplerBuffer atomsTex;
 uniform usamplerBuffer circlesTex;
 uniform usamplerBuffer circlesCountTex;
 uniform usamplerBuffer labelsTex;
@@ -26,6 +26,14 @@ layout(std430) buffer IsolatedTori {
 
 layout(std430) buffer PolygonsPlanes {
     vec4 polygonsPlanes[];
+};
+
+layout(std430) buffer SphereIsolatedCounts {
+    uint sphereIsolatedCounts[];
+};
+
+layout(std430) buffer SphereIsolatedVisSphere {
+    vec4 sphereIsolatedVS[];
 };
 
 layout (local_size_x = 64) in;
@@ -71,18 +79,9 @@ uint polygonLabel(uint index) {
 }
 
 void clipPolygon(uint atomIdx, uint torusIdx) {
-    vec4 atom = texelFetch(atomsTex, int(atomIdx));
+    vec4 pos = tori[torusIdx].position;
     vec4 vs = tori[torusIdx].visibility;
-    // compute intersection plane (taken from neighbors.glsl)
-    vec3 relPos = atom.xyz - vs.xyz;
-    float dist = length(relPos);
-    float r = atom.w * atom.w + dist * dist - vs.w * vs.w;
-    r = r / (2.0 * dist * dist);
-    vec3 vec = relPos * r;
-    // set isolated torus plane
-    vec4 plane;
-    plane.xyz = vec;
-    plane.w = -dot(plane.xyz, atom.xyz + vec);
-    // write isolated torus plane
-    polygonsPlanes[atomIdx] = plane;
+    // write torus visibilty sphere
+    uint vsIdx = atomicAdd(sphereIsolatedCounts[atomIdx], 1);
+    sphereIsolatedVS[atomIdx * maxSphereIsolatedTori + vsIdx] = vec4(pos.xyz + vs.xyz, vs.w);
 }
