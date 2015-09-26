@@ -66,6 +66,24 @@ In comparison with the previous solution our main contribution here lies in the 
 Using them we avoid the situation when the previous algorithm renders parts of tori and spheres which do not form the final surface.
 
 Regarding tori, Kauker et al.~\cite{kauker2013rendering} proposed to ray-cast a toroidal patch using a torus and two clipping planes defined by its delimiting triangles.
+
+\begin{figure}[htp]
+  \centering
+  \begin{subfigure}[t]{0.3\textwidth}
+    \centering
+    \includegraphics[width=1.7in]{image/torus-vs.png}
+    \caption{TODO.}
+		\label{fig:torus-vs}
+  \end{subfigure}%
+  ~ 
+  \begin{subfigure}[t]{0.2\textwidth}
+    \centering
+    \includegraphics[width=1.3in]{image/torus-planes.png}
+    \caption{TODO.}
+  \end{subfigure}
+\caption{TODO.}
+\end{figure}
+
 We employ his approach and modify the data structure that is used in the original algorithm to store spherical triangles in such a way that we are able to obtain all triangles incident to a torus.
 %In this way, we ray-cast toroidal patches directly instead of tori.
 In order to get all neighboring triangles for a torus, we hash the triangles by three keys -- one for each torus which is connected to a triangle.
