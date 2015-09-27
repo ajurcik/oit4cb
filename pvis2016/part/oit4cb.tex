@@ -221,32 +221,34 @@ A spherical patch is labeled by the label of any of its delimiting edges.
 \subsection{Special case -- isolated torus}
 \label{sec:isolated}
 
-An \textit{isolated} torus must be handled in two ways.
-First, the label of the surface that an isolated torus forms must be found -- recall that the torus is not part of the \textit{surface graph}.
-Second, each isolated torus should clip the overlaid fragments of its spherical patch (see \textcolor{red}{Figure~\ref{fig:isolated}}).
+We handle \textit{isolated} tori in two steps.
+First, a label for a torus must be found -- recall that an \textit{isolated} torus is not part of the \textit{surface graph}.
+Second, for each \textit{isolated} torus, we clip fragments in its neighboring spherical patches that are overlaid by the torus. Otherwise, these fragments would create a false surface layer between a torus and a spherical patch (see \textcolor{red}{Figure~\ref{fig:isolated}}).
 
 \begin{figure}[htb]
   \centering
   \includegraphics[width=2in]{image/isolated-cutaway.png}
   \caption{Isolated torus between two spheres.
 	Isolated tori do not have neighboring triangles, therefore the surface component to which they belong can not be determined directly from the \textit{surface graph}.
-	An isolated torus cuts a circular hole into its neighboring spherical patches. \textcolor{red}{TODO image}
-	}
+	An isolated torus cuts a circular hole into its neighboring spherical patches. \textcolor{red}{TODO image}}
 	\label{fig:isolated}
 \end{figure}
 
-While preparing toroidal patches for ray-casting, an \textit{isolated} torus can be encountered.
-We add this torus into the buffer for ray-casting and we mark it for later processing.
+An \textit{isolated} torus can be encountered, while writing toroidal patches for ray-casting.
+We add this torus into the buffer for ray-casting and we also mark it for later processing.
 Later on, when the detection of surface components is done, we run another kernel which assigns the \textit{isolated} tori with their surface labels.
 The assignment is done by inspecting neighboring spheres of the tori.
 There can be two cases:
 \begin{enumerate}
   \item One of the spheres forms only one patch. Then, the torus lies in the same surface component as this patch.
-	\item Both spheres form two or more patches. We find neighboring patch of the torus by employing the point in spherical patch test (see Section~\ref{sec:spherical-patches}). Then, the torus lies in the same surface component as its neighboring patch.
+	\item Both spheres form two or more patches. We find a neighboring patch of the torus by employing the point in spherical patch test (see Section~\ref{sec:spherical-patches}). Then, the torus lies in the same surface component as its neighboring patch.
 \end{enumerate}
+
+The clipping of fragments in affected spherical patches can be done using a clipping plane or a visibility sphere of a torus.
+We use the latter approach, since visibility spheres for tori were already computed in a previous step of our technique.
+Here, our kernel writes a texture, similarly to Krone et al. \cite{krone2011parallel}, which stores for an atom sphere all its intersecting visibility spheres.
+When ray-casting spherical patches, we use this texture to lookup all visibility spheres and discard all fragments being inside them.
 
 %\begin{equation}
 % \sum_{j=1}^{z} j = \frac{z(z+1)}{2}
 %\end{equation}
-
-%\paragraph{Rejected Ejector Seat Reservation}
