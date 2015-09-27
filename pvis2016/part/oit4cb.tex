@@ -259,7 +259,3 @@ The clipping of fragments in affected spherical patches can be done using a clip
 We use the latter approach, since visibility spheres for tori were already computed in a previous step of our technique.
 Here, our kernel writes a texture, similarly to Krone et al.~\cite{krone2011parallel}, which stores for an atom sphere all its intersecting visibility spheres.
 When ray-casting spherical patches, we use this texture to lookup all visibility spheres and discard all fragments being inside them.
-
-%\begin{equation}
-% \sum_{j=1}^{z} j = \frac{z(z+1)}{2}
-%\end{equation}

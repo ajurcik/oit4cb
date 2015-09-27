@@ -48,20 +48,25 @@ Borland~\cite{borland2011ambient} proposed to utilize ambient occlusion (AO) val
 	\label{fig:ray_fragments}
 \end{figure}
 
-
 Interactive Analysis (0.5 page) (ALL)
 \begin{itemize}
   \item Possibilities (scenario, dynamics, pipeline)
   \item Feedback
 \end{itemize}
 
-
 \subsection{Cavity area estimation}
-Observation: triangles take most area of a cavity.
 
 We enhance the visualization of cavities by coloring their surface by their approximate area.
 To estimate the area, we sum areas of all triangles that form the cavity surface.
-Therefore, the cavity area we compute is \textcolor{red}{underestimated -- maybe an equation?}.
+The area of a spherical triangle is calculated as follows:
+
+\begin{equation}
+  S = r_{probe}^2 \left[ \left( A + B + C \right) - \pi \right],
+\end{equation}
+
+where $A$, $B$ and $C$ are angles of the triangle. We do the area computation in a GLSL compute shader which computes areas of individual triangles and sums them using atomics.
+
 We decided to neglect areas of spherical and toroidal patches since from our observations their influence on the exact cavity area is much smaller compared to triangles.
+%Therefore, the cavity area we compute is \textcolor{red}{underestimated -- maybe an equation?}.
 Of course, this observation does not hold for the molecular surface.
-\textcolor{red}{What about coloring?}
+%\textcolor{red}{What about coloring?}
