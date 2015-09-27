@@ -1,34 +1,45 @@
 \section{Real-time Visualization} (0.5 page) (AJ, JP)
 \label{sec:vis}
-To enable our focus and context transparent rendering, we employ an A-buffer to acquire a list of participating fragments. These fragments represent three types of surface patches, computed in previous steps, analytically computed for a given ray. This is obtained via an analytical approach.
-\subsection{Rendering of spherical patches --- polygons?}
+
+To enable our focus and context transparent rendering, we employ an A-buffer to acquire a list of participating fragments.
+These fragments represent three types of surface patches, computed in previous steps, analytically computed for a given ray.
+This is obtained via an analytical approach.
+%We implemented the A-buffer using per-pixel linked lists~\cite{yang2010real}, since our main focus was on extending the CB algorithm to enable the extraction of different surface components.
+%The current A-buffer method can be easily swapped to benefit from, e.g., 
+
+\subsection{Rendering of spherical patches}
 \label{sec:spherical-patches}
-A sphere can produce one or more spherical patches which may form different surfaces.
-To be able to visualize isolated surfaces individually, we render (ray-cast) each spherical patch as a separate surface primitive.
-This way, we are able to visually distinguish between molecular and cavity surface and also among the detected cavities themselves.
-In fact, the sides of a spherical patch are formed by small circle arcs.
-When ray-casting a spherical patch, we firstly compute intersection points $I_1$ and $I_2$ of a ray and patch's sphere.
-Then, we employ the odd-even rule to test whether the computed intersections lie within the patch.
-We choose a point $O$ outside the patch and test lines (lying on a great circle) $OI_1$ and $OI_2$ for intersection with each side of the patch.
-The outside (or inside) point must be specified because both the interior and exterior surfaces of the sphere are finite.
+
+A sphere can form an arbitrary number of spherical patches which may lie in different surface components.
+To enable individual visualization of surface components, e.g., different coloring, transparency or visibility, we ray-cast each spherical patch as a separate surface primitive.
+This way, we are able to visually distinguish between different surface components.
+
+The sides of a spherical patch are formed by small circle arcs.
+We apply the odd-even rule for polygons \cite{shimrat1962algorithm} to test whether a point lies inside a patch.
+Firstly, we compute intersection points $P_{front}$ and $P_{back}$ of a ray with patch's sphere.
+We describe the point in patch test only for $P_{front}$ calling it $P$, as the same test is applied also to $P_{back}$.
+Before the application of the odd-even rule, we choose a point $O$ lying outside the patch.
+Then, we test line $OP$ (shortest path on a sphere) for intersection with each side (small circle arc) of the patch.
+The intersection of a line $OP$ with a small circle arc is computed in two steps (see Figure~\ref{fig:spherical-patch}):
+\begin{enumerate}
+  \item The intersection of the circles containing the line and the arc is computed --- they can intersect in 0 to 2 points.
+  \item The intersection points are tested whether they lie on the line and the arc.
+\end{enumerate}
+Finally, the number of intersections with all sides is summed and if it is even then the point lies inside the patch.
 
 \begin{figure}[htb]
   \centering
   \includegraphics[width=1.5in]{image/patch.png}
-  \caption{Point spherical patch test.}
+  \caption{Point in spherical patch test. The intersection $I_1$ lies on a intersection line between two planes containing arcs $OP$ and $AB$.}
+	\label{fig:spherical-patch}
 \end{figure}
 
-The intersection of a spherical segment with a small circle arc is computed in three steps:
-\begin{enumerate}
-  \item The intersection of the circles containing the segment and the arc is computed --- they can intersect in 0 to 2 points.
-  \item The intersection points are tested whether they lie on both the segment and the arc.
-  \item Cases with two intersections are marked as non-intersecting because the tested point lies outside the patch.
-\end{enumerate}
-
-\textcolor{red}{TODO: \textsc{http://horizon.documentation.ird.fr/exl-doc/pleins\_textes/pleins\_textes\_6/b\_fdi\_39-40/43404.pdf}}
+Differently from the planar case, the point $O$ has to be specified for the algorithm to be correct.
+Otherwise, we would count intersections of patch's sides with a great circle containing $P$.
+Then, the intersection count would be the same regardless of $P$ being inside or outside the patch, making the rule inapplicable.
 
 \subsection{Opacity Mapping}
-Borland~\cite{borland2011ambient} proposed to utilize ambient occlusion (AO) values to alter the opacity. Motivated by his approach, we exploit the ambient occlusion values as well. Since, we would like to maintain fast rendering performance, we need to remedy the issue of having an object space technique to evaluate the AO values. In the former work of Borland, the performance was not an important factor, which allows him to exploit the full object space AO evaluation. Here, we opted for the most recent approach, proposed by Grottel et al.~\cite{grottel}, which renders ambient occlusion values to a $3D$ grid containing an estimate of the volume area of atoms located inside a voxel. Although this approach only reflects the volume of atoms and not the molecular surface, we find it as a good trade off between the visual precision and the performance measure taking into consideration that these values are not employed directly, but as opacity modulators instead.
+Borland~\cite{borland2011ambient} proposed to utilize ambient occlusion (AO) values to alter the opacity. Motivated by his approach, we exploit the ambient occlusion values as well. Since, we would like to maintain fast rendering performance, we need to remedy the issue of having an object space technique to evaluate the AO values. In the former work of Borland, the performance was not an important factor, which allows him to exploit the full object space AO evaluation. Here, we opted for the most recent approach, proposed by Grottel et al.~\cite{grottel2012object}, which renders ambient occlusion values to a $3D$ grid containing an estimate of the volume area of atoms located inside a voxel. Although this approach only reflects the volume of atoms and not the molecular surface, we find it as a good trade off between the visual precision and the performance measure taking into consideration that these values are not employed directly, but as opacity modulators instead.
 	
 \begin{figure}[htb]
 \centering
