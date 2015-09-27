@@ -9,7 +9,7 @@ Overview (0.5 page) (AJ, JP)
 \subsection{Overview}
 
 The data comes in a form of trajectories describing motion of individual atoms. Each trajectory snap shot includes a set of atoms, described by their positions and their radii. Our rendering pipeline consists of several steps that are performed on per-frame basis. 
-For better explaination, we split computations into two groups. The first group deals with data processing that involves computation of the surface primitives, inner voids and additional attributes used in later stages. The second group of computations relates to visualization. This includes ray-casting of the formed primitives, estimate of ambient occlusion and opacity calculation; before the final stage represented by the image formation. In more detail, we perform the following steps \textcolor{red}{(TODO need more detail from Adam)}:
+For better explanation, we split computations into two groups. The first group deals with data processing that involves computation of the surface primitives, inner voids and additional attributes used in later stages. The second group of computations relates to visualization. This includes ray-casting of the formed primitives, estimate of ambient occlusion and opacity calculation; before the final stage represented by the image formation. In more detail, we perform the following steps \textcolor{red}{(TODO need more detail from Adam)}:
 	\begin{enumerate}
 	  \item We employ contour-buildup algorithm to construct the molecular surface. Additionally, we enhance the computation as well as the performance (\textcolor{red}{only memory efficiency, bit in the CB article, they do not describe their data structures. I inspected the MegaMol code.}) by several changes (Sec.~\ref{sec:ecb}).
 		\item To extract cavities we introduce the so-called \textit{surface graph} (Sec.~\ref{sec:graph}), which allows us to compute the internal voids / cavities.
@@ -21,7 +21,7 @@ For better explaination, we split computations into two groups. The first group 
 
 \begin{figure*}[htb]
   \centering
-  \includegraphics[width=7.3in]{image/overview.png}
+  \includegraphics[width=\textwidth]{image/overview.png}
   \caption{\textcolor{red}{TODO}.}
 	\label{fig:overview}
 \end{figure*}
@@ -42,14 +42,14 @@ To visualize the SES transparently, we extended the surface computation part of 
 
 \begin{figure}[htp]
   \centering
-  \begin{subfigure}[t]{0.25\textwidth}
+  \begin{subfigure}[t]{0.48\columnwidth}
     \centering
     \includegraphics[width=1.5in]{image/cb-krone.png}
     \caption{The original method \cite{krone2011parallel} rendered with transparency.}
 		\label{fig:cb-krone}
   \end{subfigure}%
-  ~ 
-  \begin{subfigure}[t]{0.25\textwidth}
+  ~
+  \begin{subfigure}[t]{0.48\columnwidth}
     \centering
     \includegraphics[width=1.5in]{image/cb-oit.png}
     \caption{Our extended method.}
@@ -69,19 +69,20 @@ Regarding tori, Kauker et al.~\cite{kauker2013rendering} proposed to ray-cast a 
 
 \begin{figure}[htp]
   \centering
-  \begin{subfigure}[t]{0.3\textwidth}
+  \begin{subfigure}[t]{0.55\columnwidth}
     \centering
     \includegraphics[width=1.7in]{image/torus-vs.png}
-    \caption{TODO.}
+    \caption{Clipping by \textit{visibility sphere}.}
 		\label{fig:torus-vs}
   \end{subfigure}%
-  ~ 
-  \begin{subfigure}[t]{0.2\textwidth}
+  \quad
+  \begin{subfigure}[t]{0.4\columnwidth}
     \centering
     \includegraphics[width=1.3in]{image/torus-planes.png}
-    \caption{TODO.}
+    \caption{Clipping by planes defined by spherical triangles.}
   \end{subfigure}
-\caption{TODO.}
+\caption{Ray-tracing of a toroidal patch. The saddle part of the torus (a) is cut by so called \textit{visibility sphere}.
+A patch (b) is cut from the whole toroidal ring by clipping planes.}
 \end{figure}
 
 We employ his approach and modify the data structure that is used in the original algorithm to store spherical triangles in such a way that we are able to obtain all triangles incident to a torus.
@@ -220,9 +221,9 @@ A spherical patch is labeled by the label of any of its delimiting edges.
 \subsection{Special case -- isolated torus}
 \label{sec:isolated}
 
-The isolated torus must be handled in two ways.
+An \textit{isolated} torus must be handled in two ways.
 First, the label of the surface that an isolated torus forms must be found -- recall that the torus is not part of the \textit{surface graph}.
-Second, each isolated torus should clip the overlaid fragments of its spherical patch (see Figure \textcolor{red}{?}).
+Second, each isolated torus should clip the overlaid fragments of its spherical patch (see \textcolor{red}{Figure~\ref{fig:isolated}}).
 
 \begin{figure}[htb]
   \centering
@@ -233,6 +234,16 @@ Second, each isolated torus should clip the overlaid fragments of its spherical 
 	}
 	\label{fig:isolated}
 \end{figure}
+
+While preparing toroidal patches for ray-casting, an \textit{isolated} torus can be encountered.
+We add this torus into the buffer for ray-casting and we mark it for later processing.
+Later on, when the detection of surface components is done, we run another kernel which assigns the \textit{isolated} tori with their surface labels.
+The assignment is done by inspecting neighboring spheres of the tori.
+There can be two cases:
+\begin{enumerate}
+  \item One of the spheres forms only one patch. Then, the torus lies in the same surface component as this patch.
+	\item Both spheres form two or more patches. We find neighboring patch of the torus by employing the point in spherical patch test (see Section~\ref{sec:spherical-patches}). Then, the torus lies in the same surface component as its neighboring patch.
+\end{enumerate}
 
 %\begin{equation}
 % \sum_{j=1}^{z} j = \frac{z(z+1)}{2}
