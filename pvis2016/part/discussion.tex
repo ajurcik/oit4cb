@@ -56,13 +56,22 @@ TODO
   \item Limits
 \end{itemize}
 
+We tested our technique on commodity hardware to show that it enables users to solve their tasks in real-time without high demands on their hardware.
+\textcolor{red}{Test also on high-end hardware --- GTX 980?}
+The tests were run on \textcolor{red}{Intel Core i5 720} with 4 GB of RAM and NVIDIA GeForce 680 GTX as a graphics card.
+For rendering, we used resolution of 1024x768 and we tried to fit the molecule such that it covered most of the image.
+Regarding transparency, we limited the maximum depth complexity to 24 fragments.
+The results of our measurements for static molecules are given in Table~\ref{tab:static}.
+
+\setlength{\tabcolsep}{4.5pt}
+
 \begin{table}[htb]
-  \caption{Performance in ms. Resolution was set to 1024x768. GPU was NVIDIA GeForce 680 GTX}
-  \label{tab:performance}
+  \caption{Performance of our technique for static structures.}
+  \label{tab:static}
   \scriptsize
   \begin{center}
     \begin{tabular}{ccccccc}
-      Mol. & Atoms & CB & SG & AO+Area & Ray-casting & Total \\
+      Molecule & \# Atoms & CB & SG & AO+Area & Ray-casting & Total \\
 			%        &       & buildup  & graph   & Area & casting &       \\
 							&       & (ms)     & (ms)    & (ms) & (ms)    & (FPS) \\
     \hline
@@ -72,3 +81,8 @@ TODO
     \end{tabular}
   \end{center}
 \end{table}
+
+Our technique is implemented mainly using OpenGL employing GLSL compute shaders as GPU kernels.
+We also utilize OpenCL to accelerate a kernel which computes positions of spherical triangles in the original algorithm \cite{krone2011parallel}.
+The GLSL implementation of this kernel performed for a molecule with {\tweakedsim}10000 atoms about 5x slower than the OpenCL/CUDA one.
+From the tests we did, we assume that the key of such performance loss is the extensive use of the global memory in the kernel which is handled differently in OpenGL and OpenCL/CUDA.
