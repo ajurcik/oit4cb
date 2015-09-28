@@ -6,7 +6,7 @@ struct sphere {
     uint label;
     uint circleStart;
     uint circleLength;
-    vec4 plane;
+    //vec4 plane;
 };
 
 uniform uint atomCount;
@@ -50,6 +50,6 @@ void main() {
         spheres[polygonIdx].circleStart = start;
         spheres[polygonIdx].circleLength = len;
         // isolated torus clipping plane
-        spheres[polygonIdx].plane = texelFetch(polygonsPlanesTex, int(index));
+        //spheres[polygonIdx].plane = texelFetch(polygonsPlanesTex, int(index));
     }
 }

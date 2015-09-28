@@ -59,7 +59,7 @@ void main() {
     vertex.circleStart = params.z;
     vertex.circleEnd = params.z + params.w;
     // isolated torus clipping plane
-    vertex.plane = gl_MultiTexCoord1;
+    //vertex.plane = gl_MultiTexCoord1;
 
     /*if (clipCavities) {
         if (label != surfaceLabel) {

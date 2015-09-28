@@ -55,7 +55,7 @@ in flat uint label;
 in flat uint circleStart;
 in flat uint circleEnd;
 in flat float area;
-in flat vec4 plane;
+//in flat vec4 plane;
 
 uniform usamplerBuffer circlesTex;
 uniform samplerBuffer edgesCircleTex;

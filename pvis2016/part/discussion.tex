@@ -57,16 +57,18 @@ TODO
 \end{itemize}
 
 \begin{table}[htb]
-  \caption{Performance in ms.}
+  \caption{Performance in ms. Resolution was set to 1024x768. GPU was NVIDIA GeForce 680 GTX}
   \label{tab:performance}
   \scriptsize
   \begin{center}
-    \begin{tabular}{cccccc}
-      MolID & Atoms & Surf & Cav & Ray & Total \\
+    \begin{tabular}{ccccccc}
+      Mol. & Atoms & CB & SG & AO+Area & Ray-casting & Total \\
+			%        &       & buildup  & graph   & Area & casting &       \\
+							&       & (ms)     & (ms)    & (ms) & (ms)    & (FPS) \\
     \hline
-      1OGZ &  {\tweakedsim}1000 & 0.0 & 0.0 & 0.0 & 0.0 \\
-      1VIS &  {\tweakedsim}2500 & 0.0 & 0.0 & 0.0 & 0.0 \\
-      4ADJ & {\tweakedsim}10000 & 0.0 & 0.0 & 0.0 & 0.0
+      1OGZ &  {\tweakedsim}1000 &  4.1 &  0.4 & 0.1 &  17.7 & 29.3 \\
+      1VIS &  {\tweakedsim}2500 &  6.4 &  4.7 & 0.2 &  46.0 & 14.0 \\
+      4ADJ & {\tweakedsim}10000 & 22.7 & 43.5 & 0.4 & 117.0 &  4.9
     \end{tabular}
   \end{center}
 \end{table}

@@ -278,12 +278,14 @@ public class GPUGraph {
                 gl.glGetQueryObjectiv(circlesElapsedQuery, GL_QUERY_RESULT_AVAILABLE, resultBuffer);
             }
             // get the query result
-            gl.glGetQueryObjectiv(adjacencyElapsedQuery, GL_QUERY_RESULT, resultBuffer);
-            System.out.println("Time elapsed (adjacency): " + resultBuffer.get(0) / 1000000.0 + " ms");
-            gl.glGetQueryObjectiv(componentsElapsedQuery, GL_QUERY_RESULT, resultBuffer);
-            System.out.println("Time elapsed (components): " + resultBuffer.get(0) / 1000000.0 + " ms");
-            gl.glGetQueryObjectiv(circlesElapsedQuery, GL_QUERY_RESULT, resultBuffer);
-            System.out.println("Time elapsed (circles): " + resultBuffer.get(0) / 1000000.0 + " ms");
+            int adjacencyElapsed = Utils.getTimeElapsed(gl.getGL2(), adjacencyElapsedQuery);
+            int componentsElapsed = Utils.getTimeElapsed(gl.getGL2(), componentsElapsedQuery);
+            int circlesElapsed = Utils.getTimeElapsed(gl.getGL2(), circlesElapsedQuery);
+            System.out.println("Time elapsed (adjacency): " + adjacencyElapsed / 1000000.0 + " ms");
+            System.out.println("Time elapsed (components): " + componentsElapsed / 1000000.0 + " ms");
+            System.out.println("Time elapsed (circles): " + circlesElapsed / 1000000.0 + " ms");
+            int sgElapsed = adjacencyElapsed + componentsElapsed + circlesElapsed;
+            System.out.println("Time elapsed (SG): " + sgElapsed / 1000000.0 + " ms");
         }
         
         if (writeResults) {

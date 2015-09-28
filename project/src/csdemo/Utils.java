@@ -32,6 +32,7 @@ public class Utils {
     
     private static final Vector4f TRANSPARENT_YELLOW = new Vector4f(1f, 1f, 0f, 0.3f);
     private static final IntBuffer COUNTER_DATA = Buffers.newDirectIntBuffer(1);
+    private static final IntBuffer TIME_ELAPSED_DATA = Buffers.newDirectIntBuffer(1);
     
     private static final Map<String, Float> radii;
     private static final Map<String, Map<String, Float>> volumes;
@@ -323,6 +324,11 @@ public class Utils {
         } else {
             System.err.println("Warning: binding " + name + " not found");
         }
+    }
+    
+    public static int getTimeElapsed(GL2 gl, int query) {
+        gl.glGetQueryObjectiv(query, GL_QUERY_RESULT, TIME_ELAPSED_DATA);
+        return TIME_ELAPSED_DATA.get(0);
     }
     
     public static int getCounter(GL4 gl, int buffer) {

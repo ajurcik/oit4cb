@@ -7,6 +7,7 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
 import java.util.List;
 
 /**
@@ -20,6 +21,8 @@ public class VolumetricAO {
     private int atomsVolumeBuffer;
     
     private int volumeTexture;
+    
+    private int aoElapsedQuery;
     
     private boolean writeResults = false;
     private boolean writePerformanceInfo = false;
@@ -75,6 +78,12 @@ public class VolumetricAO {
         // Bind buffer indices to programs
         Utils.bindShaderStorageBlock(gl, volumeProgram, "Atoms", ATOMS_BUFFER_INDEX);
         Utils.bindShaderStorageBlock(gl, volumeProgram, "AtomsVolume", ATOMS_VOLUME_BUFFER_INDEX);
+        
+        // timer query
+        int[] queries = new int[1];
+        gl.glGenQueries(1, queries, 0);
+        
+        aoElapsedQuery = queries[0];
     }
     
     public int ambientOcclusion(GL4 gl, int atomsBuffer, int atomCount, float aabbSize) {
@@ -93,8 +102,22 @@ public class VolumetricAO {
         Utils.setUniform(gl, volumeProgram, "voxelSize", voxelSize);
         Utils.setSampler(gl, volumeProgram, "volumeImg", 0);
         
+        gl.glBeginQuery(GL_TIME_ELAPSED, aoElapsedQuery);
         gl.glDispatchCompute((atomCount + 255) / 256, 1, 1);
         gl.glMemoryBarrier(GL_TEXTURE_FETCH_BARRIER_BIT | GL_TEXTURE_UPDATE_BARRIER_BIT | (int) GL_ALL_BARRIER_BITS);
+        gl.glEndQuery(GL_TIME_ELAPSED);
+        
+        if (writePerformanceInfo) {
+            writePerformanceInfo = false;
+            // write timer results
+            IntBuffer resultBuffer = Buffers.newDirectIntBuffer(1);
+            while (resultBuffer.get(0) != 1) {
+                gl.glGetQueryObjectiv(aoElapsedQuery, GL_QUERY_RESULT_AVAILABLE, resultBuffer);
+            }
+            // get the query result
+            int aoElapsed = Utils.getTimeElapsed(gl.getGL2(), aoElapsedQuery);
+            System.out.println("Time elapsed (AO): " + aoElapsed / 1000000.0 + " ms");
+        }
         
         if (writeResults) {
             writeResults = false;

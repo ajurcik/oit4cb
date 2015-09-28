@@ -11,7 +11,7 @@ import java.nio.IntBuffer;
 
 /**
  *
- * @author xjurc
+ * @author Adam Jurcik <xjurc@fi.muni.cz>
  */
 public class Area {
     
@@ -134,10 +134,11 @@ public class Area {
                 gl.glGetQueryObjectiv(minmaxElapsedQuery, GL_QUERY_RESULT_AVAILABLE, resultBuffer);
             }
             // get the query result
-            gl.glGetQueryObjectiv(areaElapsedQuery, GL_QUERY_RESULT, resultBuffer);
-            System.out.println("Time elapsed (area): " + resultBuffer.get(0) / 1000000.0 + " ms");
-            gl.glGetQueryObjectiv(minmaxElapsedQuery, GL_QUERY_RESULT, resultBuffer);
-            System.out.println("Time elapsed (minmax): " + resultBuffer.get(0) / 1000000.0 + " ms");
+            int areaElapsed = Utils.getTimeElapsed(gl.getGL2(), areaElapsedQuery);
+            int minmaxElapsed = Utils.getTimeElapsed(gl.getGL2(), minmaxElapsedQuery);
+            System.out.println("Time elapsed (area): " + areaElapsed / 1000000.0 + " ms");
+            System.out.println("Time elapsed (minmax): " + minmaxElapsed / 1000000.0 + " ms");
+            System.out.println("Time elapsed (Area): " + (areaElapsed + minmaxElapsed) / 1000000.0 + " ms");
         }
         
         if (writeResults) {

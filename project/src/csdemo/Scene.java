@@ -158,7 +158,7 @@ public class Scene implements GLEventListener {
     private static final int SIZEOF_FRAGMENT = 2 * Buffers.SIZEOF_INT + 2 * Buffers.SIZEOF_FLOAT;
     private static final int SIZEOF_TRIANGLE = 4 * SIZEOF_VEC4;
     private static final int SIZEOF_TORUS = 5 * SIZEOF_VEC4;
-    private static final int SIZEOF_POLYGON = 2 * SIZEOF_VEC4 + 4 * Buffers.SIZEOF_INT;
+    private static final int SIZEOF_POLYGON = SIZEOF_VEC4 + 4 * Buffers.SIZEOF_INT;
     private static final int SIZEOF_EDGE = 4 * Buffers.SIZEOF_INT;
     
     public static final int MAX_TRIANGLES = 16384;
@@ -1304,15 +1304,15 @@ public class Scene implements GLEventListener {
         gl.glBindTexture(GL_TEXTURE_BUFFER, gr.getCirclesStartTex());
         gl.glActiveTexture(GL_TEXTURE4);
         gl.glBindTexture(GL_TEXTURE_BUFFER, surfaceVerticesTex);
-        gl.glActiveTexture(GL_TEXTURE5);
-        gl.glBindTexture(GL_TEXTURE_BUFFER, polygonsPlanesTex);
+        //gl.glActiveTexture(GL_TEXTURE5);
+        //gl.glBindTexture(GL_TEXTURE_BUFFER, polygonsPlanesTex);
         
         Utils.setSampler(gl, writeSpheresProgram, "atomsTex", 0);
         Utils.setSampler(gl, writeSpheresProgram, "circlesTex", 1);
         Utils.setSampler(gl, writeSpheresProgram, "circlesLengthTex", 2);
         Utils.setSampler(gl, writeSpheresProgram, "circlesStartTex", 3);
         Utils.setSampler(gl, writeSpheresProgram, "labelsTex", 4);
-        Utils.setSampler(gl, writeSpheresProgram, "polygonsPlanesTex", 5);
+        //Utils.setSampler(gl, writeSpheresProgram, "polygonsPlanesTex", 5);
         
         //Utils.setUniform(gl, writeSpheresProgram, "atomCount", atoms.size());
         Utils.setUniform(gl, writeSpheresProgram, "circleCount", gr.getCircleCount());
@@ -1542,35 +1542,35 @@ public class Scene implements GLEventListener {
             System.out.println("Spheres: " + sphereCount);
             System.out.println("Triangles: " + triangleCount);
             System.out.println("Tori: " + torusCount);
-            System.out.println("Tori (isolated): " + isolatedTorusCount);
+            System.out.println("Isolated tori: " + isolatedTorusCount);
             // write timer results
             IntBuffer resultBuffer = Buffers.newDirectIntBuffer(1);
             while (resultBuffer.get(0) != 1) {
                 gl.glGetQueryObjectiv(resolveElapsedQuery, GL_QUERY_RESULT_AVAILABLE, resultBuffer);
             }
             // get the query result
-            gl.glGetQueryObjectiv(hashElapsedQuery, GL_QUERY_RESULT, resultBuffer);
-            System.out.println("Time elapsed (hash): " + resultBuffer.get(0) / 1000000.0 + " ms");
-            gl.glGetQueryObjectiv(neighborsElapsedQuery, GL_QUERY_RESULT, resultBuffer);
-            System.out.println("Time elapsed (neighbors): " + resultBuffer.get(0) / 1000000.0 + " ms");
-            gl.glGetQueryObjectiv(removeElapsedQuery, GL_QUERY_RESULT, resultBuffer);
-            System.out.println("Time elapsed (remove): " + resultBuffer.get(0) / 1000000.0 + " ms");
-            gl.glGetQueryObjectiv(arcsElapsedQuery, GL_QUERY_RESULT, resultBuffer);
-            System.out.println("Time elapsed (arcs): " + resultBuffer.get(0) / 1000000.0 + " ms");
-            gl.glGetQueryObjectiv(writeElapsedQuery, GL_QUERY_RESULT, resultBuffer);
-            System.out.println("Time elapsed (write): " + resultBuffer.get(0) / 1000000.0 + " ms");
-            gl.glGetQueryObjectiv(miscsElapsedQuery, GL_QUERY_RESULT, resultBuffer);
-            System.out.println("Time elapsed (miscs): " + resultBuffer.get(0) / 1000000.0 + " ms");
-            gl.glGetQueryObjectiv(singularityElapsedQuery, GL_QUERY_RESULT, resultBuffer);
-            System.out.println("Time elapsed (singularity): " + resultBuffer.get(0) / 1000000.0 + " ms");
-            gl.glGetQueryObjectiv(raycastSpheresElapsedQuery, GL_QUERY_RESULT, resultBuffer);
-            System.out.println("Time elapsed (ray-cast spheres): " + resultBuffer.get(0) / 1000000.0 + " ms");
-            gl.glGetQueryObjectiv(raycastTrianglesElapsedQuery, GL_QUERY_RESULT, resultBuffer);
-            System.out.println("Time elapsed (ray-cast triangles): " + resultBuffer.get(0) / 1000000.0 + " ms");
-            gl.glGetQueryObjectiv(raycastToriElapsedQuery, GL_QUERY_RESULT, resultBuffer);
-            System.out.println("Time elapsed (ray-cast tori): " + resultBuffer.get(0) / 1000000.0 + " ms");
-            gl.glGetQueryObjectiv(resolveElapsedQuery, GL_QUERY_RESULT, resultBuffer);
-            System.out.println("Time elapsed (resolve): " + resultBuffer.get(0) / 1000000.0 + " ms");
+            int hashElapsed = Utils.getTimeElapsed(gl, hashElapsedQuery);
+            int neighborsElapsed = Utils.getTimeElapsed(gl, neighborsElapsedQuery);
+            int removeElapsed = Utils.getTimeElapsed(gl, removeElapsedQuery);
+            int arcsElapsed = Utils.getTimeElapsed(gl, arcsElapsedQuery);
+            int writeElapsed = Utils.getTimeElapsed(gl, writeElapsedQuery);
+            int miscsElapsed = Utils.getTimeElapsed(gl, miscsElapsedQuery);
+            int singularityElapsed = Utils.getTimeElapsed(gl, singularityElapsedQuery);
+            int raycastSpheresElapsed = Utils.getTimeElapsed(gl, raycastSpheresElapsedQuery);
+            int raycastTrianglesElapsed = Utils.getTimeElapsed(gl, raycastTrianglesElapsedQuery);
+            int raycastToriElapsed = Utils.getTimeElapsed(gl, raycastToriElapsedQuery);
+            int resolveElapsed = Utils.getTimeElapsed(gl, resolveElapsedQuery);
+            System.out.println("Time elapsed (hash): " + hashElapsed / 1000000.0 + " ms");
+            System.out.println("Time elapsed (neighbors): " + neighborsElapsed / 1000000.0 + " ms");
+            System.out.println("Time elapsed (remove): " + removeElapsed / 1000000.0 + " ms");
+            System.out.println("Time elapsed (arcs): " + arcsElapsed / 1000000.0 + " ms");
+            System.out.println("Time elapsed (write): " + writeElapsed / 1000000.0 + " ms");
+            System.out.println("Time elapsed (miscs): " + miscsElapsed / 1000000.0 + " ms");
+            System.out.println("Time elapsed (singularity): " + singularityElapsed / 1000000.0 + " ms");
+            System.out.println("Time elapsed (ray-cast spheres): " + raycastSpheresElapsed / 1000000.0 + " ms");
+            System.out.println("Time elapsed (ray-cast triangles): " + raycastTrianglesElapsed / 1000000.0 + " ms");
+            System.out.println("Time elapsed (ray-cast tori): " + raycastToriElapsed / 1000000.0 + " ms");
+            System.out.println("Time elapsed (resolve): " + resolveElapsed / 1000000.0 + " ms");
             // check A-buffer capacity
             //int fragmentCount = getAtomicCounter(gl, atomicCountersBuffer);
             /*IntBuffer fragCount = Buffers.newDirectIntBuffer(1);
@@ -1586,6 +1586,11 @@ public class Scene implements GLEventListener {
             }*/
             System.out.println("Max. fragments: " + maxFragmentCount);
             System.out.println("Coverage: " + 100f * ((float) pixelCount) / (width * height));
+            // testing
+            int cbElapsed = hashElapsed + neighborsElapsed + removeElapsed + arcsElapsed;
+            int raycastElapsed = raycastSpheresElapsed + raycastTrianglesElapsed + raycastToriElapsed;
+            System.out.println("Time elapsed (CB): " + cbElapsed / 1000000.0 + " ms");
+            System.out.println("Time elapsed (Ray-casting): " + raycastElapsed / 1000000.0 + " ms");
         }
         
         if (writeResults) {
@@ -1690,11 +1695,11 @@ public class Scene implements GLEventListener {
         gl.glEnableClientState(GL_TEXTURE_COORD_ARRAY);
         
         gl.glBindBuffer(GL_ARRAY_BUFFER, spheresArrayBuffer);
-        gl.glVertexPointer(4, GL_FLOAT, 48, 0);
+        gl.glVertexPointer(4, GL_FLOAT, 32, 0);
         gl.glClientActiveTexture(GL_TEXTURE0);
-        gl.glTexCoordPointer(4, GL_INT, 48, 16);
-        gl.glClientActiveTexture(GL_TEXTURE1);
-        gl.glTexCoordPointer(4, GL_FLOAT, 48, 32);
+        gl.glTexCoordPointer(4, GL_INT, 32, 16);
+        //gl.glClientActiveTexture(GL_TEXTURE1);
+        //gl.glTexCoordPointer(4, GL_FLOAT, 48, 32);
         
         if (renderSpheres) {
             gl.glDrawArrays(GL_POINTS, 0, count);
