@@ -16,7 +16,7 @@
    version="1.1"
    inkscape:version="0.91 r13725"
    sodipodi:docname="patch.svg"
-   inkscape:export-filename="C:\School\Documents\PacificVIS\image\patch.png"
+   inkscape:export-filename="C:\School\Projects\oit4cb\pvis2016\image\patch.png"
    inkscape:export-xdpi="150.01224"
    inkscape:export-ydpi="150.01224">
   <defs
@@ -43,9 +43,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="1.4"
-     inkscape:cx="205.58285"
-     inkscape:cy="817.14534"
+     inkscape:zoom="0.7"
+     inkscape:cx="304.58265"
+     inkscape:cy="902.85963"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -90,7 +90,7 @@
        inkscape:connector-curvature="0"
        sodipodi:nodetypes="ccccc" />
     <circle
-       style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:2.5;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:2;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
        id="path4136"
        cx="189.47496"
        cy="191.7849"
@@ -199,14 +199,14 @@
     <text
        xml:space="preserve"
        style="font-style:normal;font-weight:normal;font-size:20px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-       x="163.16217"
-       y="391.05002"
+       x="181.01933"
+       y="380.33572"
        id="text4178-1"
        sodipodi:linespacing="125%"><tspan
          sodipodi:role="line"
          id="tspan4180-2"
-         x="163.16217"
-         y="391.05002"
+         x="181.01933"
+         y="380.33572"
          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:sans-serif;-inkscape-font-specification:sans-serif">Intersection line</tspan></text>
     <text
        xml:space="preserve"
@@ -274,7 +274,7 @@
    id="tspan4234-4">1</tspan></tspan></text>
     <path
        style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#TriangleOutM)"
-       d="M 211.42858,374.50505 177.14286,358.07648"
+       d="M 217.14286,364.50505 182.85714,348.07648"
        id="path4259"
        inkscape:connector-curvature="0" />
   </g>
