@@ -148,6 +148,9 @@ public class GromacsStructureLoader {
             atom.setAlphaCarbon(atom.getName().contains("CA"));
         }*/
         atom.id = atomId;
+        atom.residueId = residueSeq;
+        atom.name = atomName;
+        atom.type = atomElement;
         atom.r = Utils.getAtomRadius(atomElement);
         if (!drug) {
             atom.v = Utils.getAtomVolume(residueIdentifier, atomName);

@@ -28,7 +28,7 @@ layout(std430) buffer Labels {
     uint labels[];
 };
 
-layout (local_size_x = 64) in;
+layout (local_size_x = 1024) in;
 
 void connectedComponent(uint label);
 void unlabelledVertex();

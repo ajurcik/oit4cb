@@ -10,6 +10,11 @@ import javax.vecmath.Vector3f;
 public class Atom extends Vector3f {
     
     public int id;
+    public int residueId;
+    
+    public String name;
+    public String type;
+    
     public float r;
     public float v;
     
@@ -19,6 +24,8 @@ public class Atom extends Vector3f {
     
     public Atom(Atom atom) {
         id = atom.id;
+        residueId = atom.residueId;
+        type = atom.type;
         r = atom.r;
         v = atom.v;
         setPosition(atom);

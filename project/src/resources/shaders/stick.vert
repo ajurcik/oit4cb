@@ -1,6 +1,6 @@
 #version 430 compatibility
 
-const float width = 0.25;
+const float width = 0.2;
 
 uniform float size;
 

@@ -289,6 +289,7 @@ public class Scene implements GLEventListener {
     private int testTriangleProgram;
     private int testTorusProgram;
     private int testPolygonProgram;
+    private boolean moleculeVisible = false;
 
     // spherical polygon
     private final Polygon polygon = new Polygon();
@@ -452,6 +453,10 @@ public class Scene implements GLEventListener {
     public void setPoint(Vector3f point) {
         this.point = point;
     }
+
+    public void setMoleculeVisible(boolean visible) {
+        this.moleculeVisible = visible;
+    }
     
     public void togglePolygonMode() {
         mode = (++mode) % 3;
@@ -552,6 +557,7 @@ public class Scene implements GLEventListener {
         // TODO move to MainWindow
         atomCount = dynamics.getMolecule().getAtomCount();
         
+        dynamics.getMolecule().computeBonds();
         AABB bb = preprocessAtoms(dynamics.getMolecule());
         updateBoundingBox(bb);
         
@@ -1422,6 +1428,11 @@ public class Scene implements GLEventListener {
         int[] viewport = new int[4];
         gl.glGetIntegerv(GL_VIEWPORT, viewport, 0);
 
+        // render molecule
+        if (moleculeVisible) {
+            renderMolecule(gl, dynamics.getMolecule(), viewport);
+        }
+        
         renderPolygons(gl, testPolygonProgram, gr, ar, aoVolumeTex, sphereCount, view, up, right, viewport);
         
         if (renderSelectedSphere) {
@@ -1898,6 +1909,16 @@ public class Scene implements GLEventListener {
         gl.glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT); // A-buffer
     }
     
+    private void renderMolecule(GL4 gl, Molecule molecule, int[] viewport) {
+        float[] positions = molecule.getAtomPositions(snapshot);
+        float[] nextPositions = molecule.getAtomPositions((snapshot + 1) % molecule.getSnapshotCount());
+        GL2 gl2 = gl.getGL2();
+        gl2.glColor3f(1f, 1f, 0f);
+        for (Bond bond : molecule.getBonds()) {
+            stick(gl2, positions, nextPositions, bond.first, bond.second, viewport);
+        }
+    }
+    
     private void renderAcetone(GL4 gl, Drug drug, int[] viewport) {
         float[] positions = drug.getAtomPositions(snapshot);
         float[] nextPositions = drug.getAtomPositions((snapshot + 1) % drug.getSnapshotCount());
@@ -1962,7 +1983,7 @@ public class Scene implements GLEventListener {
         Utils.setUniform(gl.getGL4(), stickProgram, "size", size);
         Utils.setUniform(gl.getGL4(), stickProgram, "window", viewport[2], viewport[3]);
         
-        gl.glColor4f(1f, 0f, 0f, 1f);
+        //gl.glColor4f(1f, 0f, 0f, 1f);
         gl.glEnableClientState(GL_VERTEX_ARRAY);
         gl.glEnableClientState(GL_NORMAL_ARRAY);
         
@@ -2197,6 +2218,7 @@ public class Scene implements GLEventListener {
         snapshot = 0;
         lastUpdateTime = -1L;
         
+        dynamics.computeBonds();
         AABB bb = preprocessAtoms(dynamics);
         updateBoundingBox(bb);
         

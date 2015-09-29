@@ -42,7 +42,7 @@ out VertexData {
     flat uint circleStart;
     flat uint circleEnd;
     // clipping plane of isolated torus
-    flat vec4 plane;
+    //flat vec4 plane;
 } vertex;
 
 void main() {

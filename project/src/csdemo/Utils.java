@@ -35,6 +35,7 @@ public class Utils {
     private static final IntBuffer TIME_ELAPSED_DATA = Buffers.newDirectIntBuffer(1);
     
     private static final Map<String, Float> radii;
+    private static final Map<String, Float> covalentRadii;
     private static final Map<String, Map<String, Float>> volumes;
 
     private static final GLUT glut = new GLUT();
@@ -43,6 +44,8 @@ public class Utils {
         try {
             // load van der Waals radii
             radii = loadVDWRadii("/resources/vdwradii.csv");
+            // load covalent radii
+            covalentRadii = loadCovalentRadii("/resources/covalentradii.txt");
             // load volumes
             volumes = loadVolumes("/resources/volumes.csv");
         } catch (IOException ex) {
@@ -192,9 +195,13 @@ public class Utils {
             String line;
             while ((line = reader.readLine()) != null) {
                 if (line.startsWith("ATOM")) {
+                    String id = line.substring(6, 11).trim();
                     String name = line.substring(12, 16).trim();
                     String residue = line.substring(17, 20).trim();
+                    String residueId = line.substring(22, 26).trim();
                     Atom atom = new Atom();
+                    atom.id = Integer.parseInt(id);
+                    atom.residueId = Integer.parseInt(residueId);
                     atom.x = Float.parseFloat(line.substring(30, 38));
                     atom.y = Float.parseFloat(line.substring(38, 46));
                     atom.z = Float.parseFloat(line.substring(46, 54));
@@ -202,6 +209,8 @@ public class Utils {
                     if (code == null || code.isEmpty()) {
                         code = name.substring(0, 1);
                     }
+                    atom.name = name;
+                    atom.type = code;
                     atom.r = radii.get(code);
                     if (residue.equals("HIE") || residue.equals("HID") || residue.equals("HIP")) {
                         residue = "HIS";
@@ -278,6 +287,25 @@ public class Utils {
         }
     }
     
+    public static Map<String, Float> loadCovalentRadii(String name) throws IOException {
+        InputStream is = Utils.class.getResourceAsStream(name);
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(is))) {
+            Map<String, Float> radii = new HashMap<>();
+            String line;
+            while ((line = reader.readLine()) != null) {
+                // every line has 4 columns
+                String[] columns = line.trim().split("\\s+");
+                try {
+                    float r = Float.parseFloat(columns[1]);
+                    radii.put(columns[0], r);
+                } catch (NumberFormatException e) {
+                    // there is no radii data
+                }
+            }
+            return radii;
+        }
+    }
+    
     public static Map<String, Map<String, Float>> loadVolumes(String name) throws IOException {
         InputStream is = Utils.class.getResourceAsStream(name);
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(is))) {
@@ -300,6 +328,10 @@ public class Utils {
             }
             return volumes;
         }
+    }
+    
+    public static float getCovalentRadius(String atomType) {
+        return covalentRadii.get(atomType);
     }
     
     public static void bindShaderStorageBlock(GL4 gl, int program, String name, int index) {
