@@ -12,7 +12,6 @@ uniform uvec2 window;
 in vec3 pos;
 in vec3 normal;
 in vec4 color;
-in float depth;
 
 layout(std430) buffer ABuffer {
     fragment fragments[];
@@ -43,6 +42,6 @@ void main() {
     fragColor.rgb += 0.8 * max(0.0, dot(n, l)) * color.rgb;
     fragColor.rgb += pow(max(0.0, dot(r, e)), 64.0) * vec3(1.0);
 
-    storeFragment(fragColor, depth/*gl_FragCoord.z*/, 0.0);
+    storeFragment(fragColor, -pos.z /*gl_FragCoord.z*/, 0.0);
     discard;
 }

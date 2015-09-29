@@ -6,5 +6,5 @@ out float depth;
 void main() {
     gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;
     color = gl_Color;
-    depth = gl_Position.z;
+    depth = -(gl_ModelViewMatrix * gl_Vertex).z;
 }

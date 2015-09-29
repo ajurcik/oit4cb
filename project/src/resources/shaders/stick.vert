@@ -7,7 +7,6 @@ uniform float size;
 out vec3 pos;
 out vec3 normal;
 out vec4 color;
-out float depth;
 
 void main() {
     vec4 position = gl_Vertex;
@@ -19,5 +18,4 @@ void main() {
     pos = vec3(gl_ModelViewMatrix * position);
     normal = gl_NormalMatrix * gl_Normal;
     color = gl_Color;
-    depth = gl_Position.z;
 }

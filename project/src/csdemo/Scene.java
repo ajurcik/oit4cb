@@ -1017,7 +1017,7 @@ public class Scene implements GLEventListener {
         gl.glBeginQuery(GL_TIME_ELAPSED, hashElapsedQuery);
         gl.glDispatchCompute((atomCount + 63) / 64, 1, 1);
         gl.glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT | GL_TEXTURE_FETCH_BARRIER_BIT);
-        gl.glEndQuery(GL_TIME_ELAPSED);gl.glFinish();
+        gl.glEndQuery(GL_TIME_ELAPSED);
         
         gl.glUseProgram(neighborsProgram);
         
@@ -1041,7 +1041,7 @@ public class Scene implements GLEventListener {
         gl.glBeginQuery(GL_TIME_ELAPSED, neighborsElapsedQuery);
         gl.glDispatchCompute((atomCount + 63) / 64, 1, 1);
         gl.glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT | GL_TEXTURE_FETCH_BARRIER_BIT);
-        gl.glEndQuery(GL_TIME_ELAPSED);gl.glFinish();
+        gl.glEndQuery(GL_TIME_ELAPSED);
         
         gl.glUseProgram(removeProgram);
         
@@ -1065,7 +1065,7 @@ public class Scene implements GLEventListener {
         gl.glBeginQuery(GL_TIME_ELAPSED, removeElapsedQuery);
         gl.glDispatchCompute((MAX_NEIGHBORS + 63) / 64, (atomCount + 1) / 2, 1);
         gl.glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT | GL_TEXTURE_FETCH_BARRIER_BIT);
-        gl.glEndQuery(GL_TIME_ELAPSED);gl.glFinish();
+        gl.glEndQuery(GL_TIME_ELAPSED);
         
         gl.glUseProgram(arcsProgram);
         

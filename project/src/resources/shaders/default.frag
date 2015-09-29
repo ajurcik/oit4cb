@@ -31,6 +31,6 @@ void storeFragment(vec4 color, float depth, float ao) {
 }
 
 void main() {
-    storeFragment(color, depth/*gl_FragCoord.z*/, 0.0);
+    storeFragment(color, depth /*gl_FragCoord.z*/, 0.0);
     discard;
 }
