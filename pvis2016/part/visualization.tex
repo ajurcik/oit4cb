@@ -53,19 +53,30 @@ Differently from the planar case, the point $O$ has to be specified for the algo
 We compute $O$ by intersecting a patch's sphere by an axis of one (arbitrary) of its delimiting tori.
 This way, we get two intersection points from which we choose the one that lies in the direction of the torus's visibility sphere (see Figure~\ref{fig:outer-point}).
 
-\subsection{Opacity Mapping}
+\subsection{Ambient Occlusion Opacity Modulation}
 Borland~\cite{borland2011ambient} proposed to utilize ambient occlusion (AO) values to alter the opacity. Motivated by his approach, we exploit the ambient occlusion values as well. Since, we would like to maintain fast rendering performance, we need to remedy the issue of having an object space technique to evaluate the AO values. In the former work of Borland, the performance was considered a less important factor, which allows him to exploit the full object space AO evaluation. Here, we opted for the most recent approach, proposed by Grottel et al.~\cite{grottel2012object}, which renders ambient occlusion values to a $3D$ grid containing an estimate of the volume area of atoms located inside a voxel. Although this approach only reflects the volume of atoms and not the volume area of the molecular surface, we find it as a good trade off between the visual precision and the performance measure. Note, in addition, these values are not employed directly, but rather as opacity modulators instead, which defines the opacity as follows:
 \begin{equation}
   \alpha = \left( \frac{O}{\tau}\right)^\rho,
 	\label{eq:alpha}
 \end{equation}
-where $\tau$ represents a threshold such that $alpha=1$ if $O\geq\tau$. An example of comparison between different $\tau$ values is depicted in Figure~\ref{fig:TODO}.
+where $\tau$ represents a threshold such that $alpha=1$ if $O\geq\tau$. Moreover, the resulting $\alpha$ values are clampled to interval $[0,1]$. An example of comparison between different $\tau$ values is depicted in Figure~\ref{fig:TODO}.
+
+Another property we propose to use as the opacity modulator is the surface area of the cavity (TODO do we use this as well, or just using colors?).
 \begin{figure}[htb]
 \centering
   \includegraphics[width=0.8\columnwidth]{image/ray_fragments.png}
   \caption{(TODO make more nice with overlay AO grid). An example of the list of fragments per a given ray. The color of the circles represent the obtain ambient occlusion value.}
 	\label{fig:ray_fragments}
 \end{figure}
+
+\subsection{Distance based opacity modulation}
+\textcolor{red}{TODO: upravit}
+For a given ray, we acquire a list of fragments $\{f_1,\ldots,f_n \}$, where each pair represents an entry and an exit point for the molecular surface. The entire length / distance is then represented as $l=|f_1-f_n|$. As we step along each fragment $f_i$, its opacity $\alpha_i$ is then defined as follows \textcolor{red}{TODO: v kode je to inac ale takto by to neslo?}:
+\begin{equation}
+  \alpha_i = \frac{O\times\sum_{j=1}^{i}|f_{2j+1}-f_{2j}|}{l},
+	\label{eq:alphaDist},
+\end{equation}	
+	where the nominator represents the distance between the exit and entry fragments occurred before the fragment $f_i$ and $O$ is a user defined parameter altering the overall opacity. Additionally, the opacity of the first and the last fragment is specified interactively by the user.
 
 Interactive Analysis (0.5 page) (ALL)
 \begin{itemize}
