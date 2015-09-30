@@ -15,6 +15,7 @@ struct frag {
 
 uniform uvec2 window;
 uniform uint maxNumFragments;
+uniform float opacity;
 
 const uint INVALID_INDEX = 0xffffffff;
 
@@ -74,6 +75,31 @@ void main() {
         }
     }
 
+    // modulate alpha of outer surface
+    float maxDepth = ordered[count - 1].depth - ordered[0].depth;
+    int front = 0;
+    while (front < count - 1) {
+        if (ordered[front].ao < 0) {
+            front++;
+            continue;
+        }
+        
+        int back = front + 1;
+        while (ordered[back].ao < 0 && back < count) {
+            back++;
+        }
+
+        vec4 frontColor = unpackUnorm4x8(ordered[front].color);
+        vec4 backColor = unpackUnorm4x8(ordered[back].color);
+        frontColor.a = opacity * (ordered[back].depth - ordered[front].depth) / maxDepth;
+        backColor.a = opacity;
+        ordered[front].color = packUnorm4x8(frontColor);
+        ordered[back].color = packUnorm4x8(backColor);
+
+        front = back + 1;
+    }
+    //ordered[0].color = packUnorm4x8(vec4(1.0, 0.0, 0.0, unpackUnorm4x8(ordered[0].color).a)); // DEBUG opacity
+
     // compose fragments front to back
     vec3 sumColor = vec3(0.0);
     float sumAlpha = 0.0;
@@ -84,9 +110,10 @@ void main() {
         sumAlpha = min(sumAlpha + (1.0 - sumAlpha) * color.a, 1.0);
     }
     // add backgroud color
-    fragColor.xyz = sumColor + (1.0 - sumAlpha) * vec3(1.0);
+    fragColor.xyz = sumColor + (1.0 - sumAlpha) * vec3(1.0); /*vec3(unpackUnorm4x8(ordered[0].color).a, 0.0, 0.0)*/;
     fragColor.a = 1.0;
 
     //fragColor = unpackUnorm4x8(ordered[0].color); // DEBUG sort
     //fragColor = vec4(fragCount / 16.0, 0.0, 0.0, 1.0); // DEBUG peaks
+    //fragColor = vec4(clamp(ordered[0].depth / 100.0, 0.0, 1.0)); // DEBUG depth
 }
