@@ -15,7 +15,12 @@ struct frag {
 
 uniform uvec2 window;
 uniform uint maxNumFragments;
+
 uniform float opacity;
+uniform float frontOpacityMaxExponent;
+uniform float backOpacityExponent;
+
+uniform vec3 tunnelColor;
 
 const uint INVALID_INDEX = 0xffffffff;
 
@@ -75,6 +80,20 @@ void main() {
         }
     }
 
+    for (int tunnelBack = 2; tunnelBack < count; tunnelBack++) {
+        if (floatBitsToUint(ordered[tunnelBack].ao) == -2) {
+            // find front fragment of the tunnel, there can be ligand (bad impl!)
+            int tunnelFront = tunnelBack - 1;
+            while (ordered[tunnelFront].ao < 0 && tunnelFront > 0) {
+                tunnelFront--;
+            }
+            // modulate front tunnel fragment with tunnel color
+            vec4 tunnelFrontColor = unpackUnorm4x8(ordered[tunnelFront].color);
+            ordered[tunnelFront].color = packUnorm4x8(tunnelFrontColor * vec4(tunnelColor, 1.0));
+            ordered[tunnelFront].ao = -2.0;
+        }
+    }
+
     // modulate alpha of outer surface
     float maxDepth = ordered[count - 1].depth - ordered[0].depth;
     int front = 0;
@@ -91,8 +110,15 @@ void main() {
 
         vec4 frontColor = unpackUnorm4x8(ordered[front].color);
         vec4 backColor = unpackUnorm4x8(ordered[back].color);
-        frontColor.a = opacity * (ordered[back].depth - ordered[front].depth) / maxDepth;
-        backColor.a = opacity;
+
+        float depthDiff = ordered[back].depth - ordered[front].depth;
+        //if (depthDiff < 0.95 * maxDepth) {
+            frontColor.a = pow(opacity, frontOpacityMaxExponent - (frontOpacityMaxExponent - 1.0) * depthDiff / maxDepth);
+        //} else {
+        //    frontColor.a = pow(opacity, 1.0 / 4.0);
+        //}
+        
+        backColor.a = pow(opacity, backOpacityExponent);
         ordered[front].color = packUnorm4x8(frontColor);
         ordered[back].color = packUnorm4x8(backColor);
 
@@ -110,10 +136,11 @@ void main() {
         sumAlpha = min(sumAlpha + (1.0 - sumAlpha) * color.a, 1.0);
     }
     // add backgroud color
-    fragColor.xyz = sumColor + (1.0 - sumAlpha) * vec3(1.0); /*vec3(unpackUnorm4x8(ordered[0].color).a, 0.0, 0.0)*/;
+    fragColor.xyz = sumColor + (1.0 - sumAlpha) * vec3(1.0); /*vec3(unpackUnorm4x8(ordered[0].color).a, 0.0, 0.0);*/
     fragColor.a = 1.0;
 
     //fragColor = unpackUnorm4x8(ordered[0].color); // DEBUG sort
     //fragColor = vec4(fragCount / 16.0, 0.0, 0.0, 1.0); // DEBUG peaks
     //fragColor = vec4(clamp(ordered[0].depth / 100.0, 0.0, 1.0)); // DEBUG depth
+    //if (ordered[0].ao >= 0.0) fragColor = vec4(vec3(1.0 - ordered[0].ao), 1.0); // DEBUG AO
 }

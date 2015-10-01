@@ -38,6 +38,7 @@ uniform vec3 cavityColor1;
 uniform vec3 cavityColor2;
 
 // tunnel coloring
+uniform float tunnelAOThreshold;
 uniform vec3 tunnelColor;
 
 // clipping by isolated tori
@@ -307,8 +308,9 @@ void storeIntersection(vec3 position, vec3 normal, vec3 eye, vec4 color, float K
     }
 
     float aoFactor = texture3D(aoVolumeTex, (position + lambda * normal) / volumeSize).r;
-    if (label == surfaceLabel && aoFactor > 0.9) {
-        //color.rgb = tunnelColor;
+    if (label == surfaceLabel && aoFactor > tunnelAOThreshold && !bfmod) {
+        color.rgb = tunnelColor;
+        aoFactor = uintBitsToFloat(-2);
     }
 
     vec4 fragColor = color;

@@ -26,6 +26,7 @@ uniform vec3 cavityColor1;
 uniform vec3 cavityColor2;
 
 // tunnel coloring
+uniform float tunnelAOThreshold;
 uniform vec3 tunnelColor;
 
 // cavity selection
@@ -278,8 +279,9 @@ void storeIntersection(vec3 intersection, vec3 ray, vec4 color, bool outer) {
     worldNormal.y = dot(rotMatT1, normal.xyz);
     worldNormal.z = dot(rotMatT2, normal.xyz);
     float aoFactor = texture3D(aoVolumeTex, (intersection + lambda * worldNormal) / volumeSize).r;
-    if (label == surfaceLabel && aoFactor > 0.9) {
-        //color.rgb = tunnelColor;
+    if (label == surfaceLabel && aoFactor > tunnelAOThreshold && !outer) {
+        color.rgb = tunnelColor;
+        aoFactor = uintBitsToFloat(-2);
     }
 
     // phong lighting with directional light

@@ -267,7 +267,10 @@ public class Scene implements GLEventListener {
     private float threshold = 0f;
     private boolean clipCavities = false;
     private Color tunnelColor = Color.GREEN;
+    private float tunnelAOThreshold = 0.85f;
     private Interpolation interpolation = Interpolation.NEAREST;
+    private float frontOpacityMaxExponent = 8f;
+    private float backOpacityExponent = 0.25f;
     
     // debug parameters
     private boolean autoupdate = true;
@@ -313,8 +316,16 @@ public class Scene implements GLEventListener {
     
     private static final boolean PERFORMANCE_TESTS_ENABLED = false;
     
-    public void setAlpha(float alpha) {
-        this.opacity = alpha;
+    public void setOpacity(float opacity) {
+        this.opacity = opacity;
+    }
+
+    public void setFrontOpacityMaxExponent(float exponent) {
+        this.frontOpacityMaxExponent = exponent;
+    }
+
+    public void setBackOpacityExponent(float exponent) {
+        this.backOpacityExponent = exponent;
     }
     
     public void setProbeRadius(float probeRadius) {
@@ -387,6 +398,10 @@ public class Scene implements GLEventListener {
 
     public void setTunnelColor(Color tunnelColor) {
         this.tunnelColor = tunnelColor;
+    }
+
+    public void setTunnelAOThreshold(float tunnelAOThreshold) {
+        this.tunnelAOThreshold = tunnelAOThreshold;
     }
     
     public void setSpeed(float speed) {
@@ -1533,6 +1548,9 @@ public class Scene implements GLEventListener {
         Utils.setUniform(gl, resolveProgram, "window", viewport[2], viewport[3]);
         Utils.setUniform(gl, resolveProgram, "maxNumFragments", MAX_FRAGMENTS);
         Utils.setUniform(gl, resolveProgram, "opacity", opacity);
+        Utils.setUniform(gl, resolveProgram, "frontOpacityMaxExponent", frontOpacityMaxExponent);
+        Utils.setUniform(gl, resolveProgram, "backOpacityExponent", backOpacityExponent);
+        Utils.setUniform(gl, resolveProgram, "tunnelColor", tunnelColor);
         
         // draw fullscreen quad
         gl.glBegin(GL_QUADS);
@@ -1716,7 +1734,8 @@ public class Scene implements GLEventListener {
         Utils.setUniform(gl, program, "cavityColor1", cavityColor1);
         Utils.setUniform(gl, program, "cavityColor2", cavityColor2);
         // tunnel coloring
-        //Utils.setUniform(gl, program, "tunnelColor", tunnelColor);
+        Utils.setUniform(gl, program, "tunnelColor", tunnelColor);
+        Utils.setUniform(gl, program, "tunnelAOThreshold", tunnelAOThreshold);
         // clipping by isolated tori
         Utils.setUniform(gl, program, "maxSphereIsolatedTori", MAX_SPHERE_ISOLATED_TORI);
         
@@ -1796,7 +1815,8 @@ public class Scene implements GLEventListener {
         Utils.setUniform(gl, program, "cavityColoring", cavityColoring == Coloring.AREA ? 0 : 1);
         Utils.setUniform(gl, program, "cavityColor1", cavityColor1);
         Utils.setUniform(gl, program, "cavityColor2", cavityColor2);
-        //Utils.setUniform(gl, program, "tunnelColor", tunnelColor);
+        Utils.setUniform(gl, program, "tunnelColor", tunnelColor);
+        Utils.setUniform(gl, program, "tunnelAOThreshold", tunnelAOThreshold);
         
         gl.glEnableClientState(GL_VERTEX_ARRAY);
         gl.glClientActiveTexture(GL_TEXTURE0);
@@ -1882,7 +1902,8 @@ public class Scene implements GLEventListener {
         Utils.setUniform(gl, program, "cavityColoring", cavityColoring == Coloring.AREA ? 0 : 1);
         Utils.setUniform(gl, program, "cavityColor1", cavityColor1);
         Utils.setUniform(gl, program, "cavityColor2", cavityColor2);
-        //Utils.setUniform(gl, program, "tunnelColor", tunnelColor);
+        Utils.setUniform(gl, program, "tunnelColor", tunnelColor);
+        Utils.setUniform(gl, program, "tunnelAOThreshold", tunnelAOThreshold);
         
         gl.glEnableClientState(GL_VERTEX_ARRAY);
         gl.glClientActiveTexture(GL_TEXTURE0);

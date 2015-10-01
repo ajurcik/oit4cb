@@ -173,7 +173,8 @@ public class MainWindow extends javax.swing.JFrame {
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
-        jTabbedPane1 = new javax.swing.JTabbedPane();
+        guiTabbedPane = new javax.swing.JTabbedPane();
+        jScrollPane1 = new javax.swing.JScrollPane();
         paramsPanel = new javax.swing.JPanel();
         dataPanel = new javax.swing.JPanel();
         dataTextField = new javax.swing.JTextField();
@@ -216,6 +217,8 @@ public class MainWindow extends javax.swing.JFrame {
         tunnelsPanel = new javax.swing.JPanel();
         jLabel18 = new javax.swing.JLabel();
         tunnelColorPanel = new javax.swing.JPanel();
+        tunnelAOThresholdSlider = new javax.swing.JSlider();
+        jLabel25 = new javax.swing.JLabel();
         transparencyPanel = new javax.swing.JPanel();
         jLabel3 = new javax.swing.JLabel();
         transparencySlider = new javax.swing.JSlider();
@@ -264,10 +267,19 @@ public class MainWindow extends javax.swing.JFrame {
         ligandThresholdSpinner = new javax.swing.JSpinner();
         dynamicsInterpolationComboBox = new javax.swing.JComboBox();
         jLabel24 = new javax.swing.JLabel();
+        jLabel26 = new javax.swing.JLabel();
+        backOpacityExponentSpinner = new javax.swing.JSpinner();
+        frontOpacityMaxExponentSpinner = new javax.swing.JSpinner();
+        jLabel27 = new javax.swing.JLabel();
         filler3 = new javax.swing.Box.Filler(new java.awt.Dimension(0, 310), new java.awt.Dimension(0, 310), new java.awt.Dimension(32767, 310));
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         getContentPane().setLayout(new java.awt.BorderLayout(4, 4));
+
+        guiTabbedPane.setPreferredSize(new java.awt.Dimension(250, 600));
+
+        jScrollPane1.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        jScrollPane1.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
 
         paramsPanel.setLayout(new javax.swing.BoxLayout(paramsPanel, javax.swing.BoxLayout.PAGE_AXIS));
 
@@ -621,9 +633,8 @@ public class MainWindow extends javax.swing.JFrame {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.FIRST_LINE_END;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(2, 4, 0, 4);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_END;
+        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 4);
         tunnelsPanel.add(jLabel18, gridBagConstraints);
 
         tunnelColorPanel.setBackground(new java.awt.Color(0, 255, 0));
@@ -637,10 +648,36 @@ public class MainWindow extends javax.swing.JFrame {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.FIRST_LINE_START;
-        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 4);
         tunnelsPanel.add(tunnelColorPanel, gridBagConstraints);
+
+        tunnelAOThresholdSlider.setMajorTickSpacing(50);
+        tunnelAOThresholdSlider.setMinorTickSpacing(25);
+        tunnelAOThresholdSlider.setPaintLabels(true);
+        tunnelAOThresholdSlider.setValue(85);
+        tunnelAOThresholdSlider.setPreferredSize(new java.awt.Dimension(100, 37));
+        tunnelAOThresholdSlider.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                tunnelAOThresholdSliderStateChanged(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.FIRST_LINE_START;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
+        tunnelsPanel.add(tunnelAOThresholdSlider, gridBagConstraints);
+
+        jLabel25.setText("Occlusion threshold:");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.FIRST_LINE_END;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(12, 4, 0, 4);
+        tunnelsPanel.add(jLabel25, gridBagConstraints);
 
         paramsPanel.add(tunnelsPanel);
 
@@ -835,7 +872,9 @@ public class MainWindow extends javax.swing.JFrame {
 
         paramsPanel.add(otherPanel);
 
-        jTabbedPane1.addTab("Parameters", paramsPanel);
+        jScrollPane1.setViewportView(paramsPanel);
+
+        guiTabbedPane.addTab("Parameters", jScrollPane1);
 
         develPanel.setLayout(new javax.swing.BoxLayout(develPanel, javax.swing.BoxLayout.PAGE_AXIS));
 
@@ -1119,7 +1158,7 @@ public class MainWindow extends javax.swing.JFrame {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.FIRST_LINE_START;
         jPanel1.add(testGromacsButton, gridBagConstraints);
 
@@ -1174,12 +1213,56 @@ public class MainWindow extends javax.swing.JFrame {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 4);
         jPanel1.add(jLabel24, gridBagConstraints);
 
+        jLabel26.setText("Back opacity exponent:");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_TRAILING;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 4);
+        jPanel1.add(jLabel26, gridBagConstraints);
+
+        backOpacityExponentSpinner.setModel(new javax.swing.SpinnerNumberModel(Float.valueOf(0.25f), Float.valueOf(0.0f), Float.valueOf(1.0f), Float.valueOf(0.05f)));
+        backOpacityExponentSpinner.setPreferredSize(new java.awt.Dimension(50, 20));
+        backOpacityExponentSpinner.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                backOpacityExponentSpinnerStateChanged(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
+        jPanel1.add(backOpacityExponentSpinner, gridBagConstraints);
+
+        frontOpacityMaxExponentSpinner.setModel(new javax.swing.SpinnerNumberModel(Float.valueOf(8.0f), Float.valueOf(1.0f), null, Float.valueOf(1.0f)));
+        frontOpacityMaxExponentSpinner.setPreferredSize(new java.awt.Dimension(50, 20));
+        frontOpacityMaxExponentSpinner.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                frontOpacityMaxExponentSpinnerStateChanged(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
+        jPanel1.add(frontOpacityMaxExponentSpinner, gridBagConstraints);
+
+        jLabel27.setText("Front op. max exponent:");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_TRAILING;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 4);
+        jPanel1.add(jLabel27, gridBagConstraints);
+
         develPanel.add(jPanel1);
         develPanel.add(filler3);
 
-        jTabbedPane1.addTab("Development", develPanel);
+        guiTabbedPane.addTab("Development", develPanel);
 
-        getContentPane().add(jTabbedPane1, java.awt.BorderLayout.EAST);
+        getContentPane().add(guiTabbedPane, java.awt.BorderLayout.EAST);
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
@@ -1209,7 +1292,7 @@ public class MainWindow extends javax.swing.JFrame {
     }//GEN-LAST:event_toriCheckBoxActionPerformed
 
     private void transparencySliderStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_transparencySliderStateChanged
-        scene.setAlpha((100 - transparencySlider.getValue()) / 100.0f);
+        scene.setOpacity((100 - transparencySlider.getValue()) / 100.0f);
     }//GEN-LAST:event_transparencySliderStateChanged
 
     private void resolutionComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_resolutionComboBoxActionPerformed
@@ -1487,6 +1570,18 @@ public class MainWindow extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_dynamicsInterpolationComboBoxActionPerformed
 
+    private void tunnelAOThresholdSliderStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_tunnelAOThresholdSliderStateChanged
+        scene.setTunnelAOThreshold(tunnelAOThresholdSlider.getValue() / 100.0f);
+    }//GEN-LAST:event_tunnelAOThresholdSliderStateChanged
+
+    private void frontOpacityMaxExponentSpinnerStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_frontOpacityMaxExponentSpinnerStateChanged
+        scene.setFrontOpacityMaxExponent((float) frontOpacityMaxExponentSpinner.getValue());
+    }//GEN-LAST:event_frontOpacityMaxExponentSpinnerStateChanged
+
+    private void backOpacityExponentSpinnerStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_backOpacityExponentSpinnerStateChanged
+        scene.setBackOpacityExponent((float) backOpacityExponentSpinner.getValue());
+    }//GEN-LAST:event_backOpacityExponentSpinnerStateChanged
+
     /**
      * @param args the command line arguments
      */
@@ -1533,6 +1628,7 @@ public class MainWindow extends javax.swing.JFrame {
     private javax.swing.JSpinner ambientThresholdSpinner;
     private javax.swing.JCheckBox aoCheckBox;
     private javax.swing.JCheckBox autoupdateCheckBox;
+    private javax.swing.JSpinner backOpacityExponentSpinner;
     private javax.swing.JCheckBox backfaceCheckBox;
     private javax.swing.JPanel cavitiesPanel;
     private javax.swing.JCheckBox cavitiesVisibleCheckBox;
@@ -1553,6 +1649,8 @@ public class MainWindow extends javax.swing.JFrame {
     private javax.swing.Box.Filler filler4;
     private javax.swing.Box.Filler filler5;
     private javax.swing.Box.Filler filler6;
+    private javax.swing.JSpinner frontOpacityMaxExponentSpinner;
+    private javax.swing.JTabbedPane guiTabbedPane;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;
@@ -1570,6 +1668,9 @@ public class MainWindow extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel22;
     private javax.swing.JLabel jLabel23;
     private javax.swing.JLabel jLabel24;
+    private javax.swing.JLabel jLabel25;
+    private javax.swing.JLabel jLabel26;
+    private javax.swing.JLabel jLabel27;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
@@ -1578,7 +1679,7 @@ public class MainWindow extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel8;
     private javax.swing.JLabel jLabel9;
     private javax.swing.JPanel jPanel1;
-    private javax.swing.JTabbedPane jTabbedPane1;
+    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JSpinner ligandThresholdSpinner;
     private javax.swing.JCheckBox moleculeVisibleCheckBox;
     private javax.swing.JPanel otherPanel;
@@ -1617,6 +1718,7 @@ public class MainWindow extends javax.swing.JFrame {
     private javax.swing.JPanel triangleColorPanel;
     private javax.swing.JSpinner triangleSpinner;
     private javax.swing.JCheckBox trianglesCheckBox;
+    private javax.swing.JSlider tunnelAOThresholdSlider;
     private javax.swing.JPanel tunnelColorPanel;
     private javax.swing.JPanel tunnelsPanel;
     private javax.swing.JButton updateButton;
