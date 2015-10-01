@@ -2,12 +2,35 @@ Our approach touches several research areas, including computation and visualiza
 Further we focus on the real-time visualization of surfaces and an ambient occlusion technique enhancing the depth perception of the molecular surface. 
 Thus in this section we describe the existing techniques related to these topics.
 
-\subsection{Extraction and Visualization of Cavities and Their Surfaces}
-\cite{totrov1996contour}
-\cite{krone2009interactive}
-\cite{lindow2010accelerated}
-\cite{parulek2012implicit}
-\cite{connolly1983analytical}
+\subsection{Extraction and Visualization of Surfaces of Molecules and Their Cavities}
+There are several types of molecular surface representation proposed in the literature~\cite{STAR2015}. 
+However, for the cavity analysis,  the solvent-excluded surface (SES) is the most commonly used representation used by the domain experts.%~\cite{todo}. 
+This representation allows us to directly asses whether a solvent, approximated by a sphere of a given radius, is able to reach a binding site of interest on the molecular surface. 
+
+The area of geometrical analysis of molecular structures focusing on the detection and further exploration of the void space is very vast and so we do not aim to provide the users with an exhaustive list of the existing solutions. 
+Rather we focus on the techniques which we consider to be the closest to our work.
+
+The molecular surface is one of the most significant studied features thus many solutions were published.
+Here we focus on the analytical approaches for the construction of the SES where Connolly~\cite{connolly1983analytical} presented the first solution to this problem.
+Another approach to the detection of the analytic surface was later presented by Totrov and Abagyan~\cite{totrov1996contour}.
+The algorithm is based on the sequential build up of multi-arc contours. 
+One of the advantages of this contour-buildup approach is that it is localized thus applicable on the computation of partial molecular surface.
+
+One of the significant improvements of the SES computation was published by Parulek and Viola~\cite{parulek2012implicit}.
+Their approach does not require any precomputation. 
+It is based on the theory of implicit surfaces where the value of the implicit function helps to determine the inner and outer points with respect to the surface.
+The implicit function is composed of three types of patches from which the SES is constructed.
+
+However, none of these solutions dealt with molecular dynamics. 
+Krone et al.~\cite{krone2009interactive} presented their approach to the visualization of the SES using GPU ray casting technique which allowed to achieve interactive frame rates. \textcolor{red}{TODO: how it is in comparison with our solution?} 
+Another approach by Lindow et al.~\cite{lindow2010accelerated} even accelerates the construction of the SES by scaling the parallel contour-buildup algorithm to more GPU cores and using boundary quadrangles as rasterization primitives. \textcolor{red}{TODO: how it is in comparison with our solution?}
+
+Similarly, the analytical approaches are applicable to the protein inner voids. 
+We focus only on the analytical computation and visualization of cavities which can contain a potential protein binding site.
+Parulek et al.~\cite{parulek2013visual} presented their approach to the computation and visual analysis of cavities in simulations of molecular dynamics.
+The computation is based on implicit function. 
+The subsequent exploration is supported by graph based visualizations.
+\textcolor{red}{TODO: what else?}
 
 
 \subsection{Order-Independent Transparency}
@@ -28,34 +51,25 @@ PUXELS \cite{kauker2013rendering}
 
 
 \subsection{Ambient Occlusion}
-\cite{tarini2006ambient}
-\cite{grottel2012object}
-\cite{staib2015ambient} 
-\cite{borland2011ambient}
-
-
+Ambient occlusion is one of the most popular techniques for enhancement of the depth perception in molecular visualization.
+Tarini et al.~\cite{tarini2006ambient} as first used this technique for real-time molecular visualization.
+As this technique is computationally very demanding, several solutions focusing on this limitation appeared.
+Grottel et al.~\cite{grottel2012object} presented their method reaching interactive frame rates for large and dynamic data sets. 
+Recently, their approach was extended by~\cite{staib2015ambient}.
+This method is applicable to transparent particles as well.
+Ambient occlusion technique was used also by Borland\cite{borland2011ambient} for enhancing the understanding of the interior of the molecular structure.
+His technique, called ambient occlusion opacity mapping, enables to determine a variable opacity at each point on the molecular surface.
+In consequence, the interior structures can be more opaque than the outer structures, i.e., molecular surface.
+Because of the very convincing visual results, we employed this transparency modulation technique to our solution as well.
 
 
 \begin{itemize}
-  \item Performance drop of SES rendering on newer hardware (GF 680 GTX) --- we can perform better. We contacted authors, they do not know exactly why, they think it is change in the internal architecture between Fermi and Kepler (AJ)
-  \item Slow rendering of SAS. Too many layers in pixels --- we can do better by surface layers detection (AJ)
+  \item \textcolor{red}{Performance drop of SES rendering on newer hardware (GF 680 GTX) --- we can perform better. We contacted authors, they do not know exactly why, they think it is change in the internal architecture between Fermi and Kepler (AJ)}
+  \item \textcolor{red}{Slow rendering of SAS. Too many layers in pixels --- we can do better by surface layers detection (AJ)}
 \end{itemize}
 
-There are more solutions taken from computer graphics; e.g., OIT (JP)
+\textcolor{red}{There are more solutions taken from computer graphics; e.g., OIT (JP)}
 
-AOOM
-\begin{itemize}
-  \item We employ transparency modulation techniques presented in their paper \cite{borland2011ambient}
-\end{itemize}
-
-\subsection{Molecular Surface Representation}
-\textcolor{red}{Shouldn't be this section part of motivation of our algorithm for SES? Also, it seems that it mixes two types of voids - cavities and pockets. It needs to be discussed.}
-
-There are several types of molecular surface representation proposed in the literature~\cite{STAR2015}. 
-However, for cavity analysis,  the solvent-excluded surface (SES) is the most commonly used representation used by the domain experts~\cite{todo}. 
-This representation allows us to directly asses whether a solvent, approximated by a sphere of a given radius, is able to reach a binding site of interest on the molecular surface. 
-Such binding site can be located inside a cavity or a tunnel, while the molecular surface might contain tens of cavities per single simulation time step. 
-Additionally, computation of SES is not a trivial task, which also requires a substantial computation and algorithmic capabilities. 
-Therefore, it would be essential to posses a technique that could provide us with instant computation and interactive and meaningful visualization of cavities in the context of molecular surface.
+%Such binding site can be located inside a cavity or a tunnel, while the molecular surface might contain tens of cavities per single simulation time step. 
 
 
