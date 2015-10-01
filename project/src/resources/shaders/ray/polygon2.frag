@@ -317,7 +317,7 @@ void storeIntersection(vec3 position, vec3 normal, vec3 eye, vec4 color, float K
         fragColor.rgb = Ka * fragColor.rgb + Kd * Id * fragColor.rgb; // ambient + diffuse term
     }
 
-    if (ao) {
+    if (ao /*&& !bfmod*/) {
         //fragColor.rgb *= max(1.0 - aoFactor, 0.0);
         //fragColor.a = min(color.a + aoFactor, 1.0);
         fragColor.a = min(pow(aoFactor / aoThreshold, aoExponent), 1.0);

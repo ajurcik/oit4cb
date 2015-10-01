@@ -42,6 +42,6 @@ void main() {
     fragColor.rgb += 0.8 * max(0.0, dot(n, l)) * color.rgb;
     fragColor.rgb += pow(max(0.0, dot(r, e)), 64.0) * vec3(1.0);
 
-    storeFragment(fragColor, -pos.z /*gl_FragCoord.z*/, 0.0);
+    storeFragment(fragColor, -pos.z /*gl_FragCoord.z*/, -1.0);
     discard;
 }

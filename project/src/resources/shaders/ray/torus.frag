@@ -297,7 +297,7 @@ void storeIntersection(vec3 intersection, vec3 ray, vec4 color, bool outer) {
     float silhouetteFactor = dot(normal, -ray) + 1.0;
     float bfmodFactor = 1.0 - dot(normal, -ray /* + C */);
 
-    if (ao) {
+    if (ao /*&& !outer*/) {
         /*if (!outer) {
             fragColor.rgb *= 0.5 * (1.0 + max(1.0 - aoFactor, 0.0));
         }*/

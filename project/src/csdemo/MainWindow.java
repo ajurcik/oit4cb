@@ -71,6 +71,18 @@ public class MainWindow extends javax.swing.JFrame {
         add(panel, BorderLayout.CENTER);
         
         scene = new Scene();
+        scene.setDynamicsListener(new DynamicsListener() {
+            @Override
+            public void dynamicsLoaded(Dynamics dynamics) {
+                snapshotSpinner.setValue(1);
+                snapshotLabel.setText(Integer.toString(dynamics.getSnapshotCount()));
+            }
+
+            @Override
+            public void snapshotChanged(int snapshot) {
+                snapshotSpinner.setValue(snapshot + 1);
+            }
+        });
         
         panel.addGLEventListener(scene);
         
@@ -244,8 +256,14 @@ public class MainWindow extends javax.swing.JFrame {
         renderPointCheckBox = new javax.swing.JCheckBox();
         pointText = new javax.swing.JTextField();
         moleculeVisibleCheckBox = new javax.swing.JCheckBox();
-        testGromacsButton = new javax.swing.JButton();
+        jPanel1 = new javax.swing.JPanel();
         renderingModeComboBox = new javax.swing.JComboBox();
+        testGromacsButton = new javax.swing.JButton();
+        jLabel5 = new javax.swing.JLabel();
+        jLabel23 = new javax.swing.JLabel();
+        ligandThresholdSpinner = new javax.swing.JSpinner();
+        dynamicsInterpolationComboBox = new javax.swing.JComboBox();
+        jLabel24 = new javax.swing.JLabel();
         filler3 = new javax.swing.Box.Filler(new java.awt.Dimension(0, 310), new java.awt.Dimension(0, 310), new java.awt.Dimension(32767, 310));
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
@@ -291,8 +309,14 @@ public class MainWindow extends javax.swing.JFrame {
         dynamicsPanel.add(playButton);
         dynamicsPanel.add(filler5);
 
+        snapshotSpinner.setModel(new javax.swing.SpinnerNumberModel(Integer.valueOf(1), Integer.valueOf(1), null, Integer.valueOf(1)));
         snapshotSpinner.setMinimumSize(new java.awt.Dimension(50, 20));
         snapshotSpinner.setPreferredSize(new java.awt.Dimension(50, 20));
+        snapshotSpinner.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                snapshotSpinnerStateChanged(evt);
+            }
+        });
         dynamicsPanel.add(snapshotSpinner);
         dynamicsPanel.add(filler1);
 
@@ -1071,13 +1095,8 @@ public class MainWindow extends javax.swing.JFrame {
 
         develPanel.add(debugPanel);
 
-        testGromacsButton.setText("Test Gromacs");
-        testGromacsButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                testGromacsButtonActionPerformed(evt);
-            }
-        });
-        develPanel.add(testGromacsButton);
+        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder("Test"));
+        jPanel1.setLayout(new java.awt.GridBagLayout());
 
         renderingModeComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "OIT", "KRONE" }));
         renderingModeComboBox.addActionListener(new java.awt.event.ActionListener() {
@@ -1085,7 +1104,77 @@ public class MainWindow extends javax.swing.JFrame {
                 renderingModeComboBoxActionPerformed(evt);
             }
         });
-        develPanel.add(renderingModeComboBox);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
+        jPanel1.add(renderingModeComboBox, gridBagConstraints);
+
+        testGromacsButton.setText("Test Gromacs");
+        testGromacsButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                testGromacsButtonActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.FIRST_LINE_START;
+        jPanel1.add(testGromacsButton, gridBagConstraints);
+
+        jLabel5.setText("Ligand distance:");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_TRAILING;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 4);
+        jPanel1.add(jLabel5, gridBagConstraints);
+
+        jLabel23.setText("Rendering mode:");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_TRAILING;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 4);
+        jPanel1.add(jLabel23, gridBagConstraints);
+
+        ligandThresholdSpinner.setModel(new javax.swing.SpinnerNumberModel(Float.valueOf(15.0f), Float.valueOf(0.0f), null, Float.valueOf(1.0f)));
+        ligandThresholdSpinner.setPreferredSize(new java.awt.Dimension(50, 20));
+        ligandThresholdSpinner.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                ligandThresholdSpinnerStateChanged(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
+        jPanel1.add(ligandThresholdSpinner, gridBagConstraints);
+
+        dynamicsInterpolationComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "NEAREST", "LINEAR" }));
+        dynamicsInterpolationComboBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                dynamicsInterpolationComboBoxActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
+        jPanel1.add(dynamicsInterpolationComboBox, gridBagConstraints);
+
+        jLabel24.setText("Dynamics interpolation:");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_TRAILING;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 4);
+        jPanel1.add(jLabel24, gridBagConstraints);
+
+        develPanel.add(jPanel1);
         develPanel.add(filler3);
 
         jTabbedPane1.addTab("Development", develPanel);
@@ -1314,7 +1403,7 @@ public class MainWindow extends javax.swing.JFrame {
             //JOptionPane.showMessageDialog(this, "Number of snapshots: " + snapshots);
             //Dynamics data = loader.loadDynamics(topology, trajectory, 100);
             //JOptionPane.showMessageDialog(this, "Numbers of drugs: " + data.getDrugCount());
-            scene.loadDynamicsFromGROMACS(topology, trajectory);
+            scene.loadDynamicsFromGROMACS(topology, trajectory, 1000);
         } catch (Exception ex) {
             ex.printStackTrace(System.err);
         }
@@ -1382,6 +1471,22 @@ public class MainWindow extends javax.swing.JFrame {
         scene.setMoleculeVisible(moleculeVisibleCheckBox.isSelected());
     }//GEN-LAST:event_moleculeVisibleCheckBoxActionPerformed
 
+    private void snapshotSpinnerStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_snapshotSpinnerStateChanged
+        scene.setDynamicsSnapshot(((int) snapshotSpinner.getValue()) - 1);
+    }//GEN-LAST:event_snapshotSpinnerStateChanged
+
+    private void ligandThresholdSpinnerStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_ligandThresholdSpinnerStateChanged
+        scene.setLigandThreshold((float) ligandThresholdSpinner.getValue());
+    }//GEN-LAST:event_ligandThresholdSpinnerStateChanged
+
+    private void dynamicsInterpolationComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_dynamicsInterpolationComboBoxActionPerformed
+        if (dynamicsInterpolationComboBox.getSelectedIndex() == 0) {
+            scene.setDynamicsInterpolation(Interpolation.NEAREST);
+        } else {
+            scene.setDynamicsInterpolation(Interpolation.LINEAR);
+        }
+    }//GEN-LAST:event_dynamicsInterpolationComboBoxActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -1440,6 +1545,7 @@ public class MainWindow extends javax.swing.JFrame {
     private javax.swing.JTextField dataTextField;
     private javax.swing.JPanel debugPanel;
     private javax.swing.JPanel develPanel;
+    private javax.swing.JComboBox dynamicsInterpolationComboBox;
     private javax.swing.JPanel dynamicsPanel;
     private javax.swing.Box.Filler filler1;
     private javax.swing.Box.Filler filler2;
@@ -1462,13 +1568,18 @@ public class MainWindow extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel20;
     private javax.swing.JLabel jLabel21;
     private javax.swing.JLabel jLabel22;
+    private javax.swing.JLabel jLabel23;
+    private javax.swing.JLabel jLabel24;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;
     private javax.swing.JLabel jLabel9;
+    private javax.swing.JPanel jPanel1;
     private javax.swing.JTabbedPane jTabbedPane1;
+    private javax.swing.JSpinner ligandThresholdSpinner;
     private javax.swing.JCheckBox moleculeVisibleCheckBox;
     private javax.swing.JPanel otherPanel;
     private javax.swing.JPanel paramsPanel;

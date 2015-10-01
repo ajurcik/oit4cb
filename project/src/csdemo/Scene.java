@@ -193,6 +193,7 @@ public class Scene implements GLEventListener {
     private int snapshot;
     private float t;
     private long lastUpdateTime;
+    private DynamicsListener dynamicsListener;
     
     private boolean writeResults = false;
     private boolean writePerformanceInfo = false;
@@ -246,9 +247,9 @@ public class Scene implements GLEventListener {
     private float probeRadius = 1.4f;
     private Surface surfaceType = Surface.SES;
     private boolean clipSurface = false;
-    private float alpha = 0.5f;
+    private float opacity = 0.5f;
     private boolean running = false;
-    private float speed = 5.0f;
+    private float speed = 2.0f;
     private int width;
     private int height;
     private Color sphereColor = Color.RED;
@@ -266,6 +267,7 @@ public class Scene implements GLEventListener {
     private float threshold = 0f;
     private boolean clipCavities = false;
     private Color tunnelColor = Color.GREEN;
+    private Interpolation interpolation = Interpolation.NEAREST;
     
     // debug parameters
     private boolean autoupdate = true;
@@ -290,6 +292,7 @@ public class Scene implements GLEventListener {
     private int testTorusProgram;
     private int testPolygonProgram;
     private boolean moleculeVisible = false;
+    private float ligandThreshold = 15f;
 
     // spherical polygon
     private final Polygon polygon = new Polygon();
@@ -311,7 +314,7 @@ public class Scene implements GLEventListener {
     private static final boolean PERFORMANCE_TESTS_ENABLED = false;
     
     public void setAlpha(float alpha) {
-        this.alpha = alpha;
+        this.opacity = alpha;
     }
     
     public void setProbeRadius(float probeRadius) {
@@ -389,6 +392,10 @@ public class Scene implements GLEventListener {
     public void setSpeed(float speed) {
         this.speed = speed;
     }
+
+    public void setDynamicsInterpolation(Interpolation interpolation) {
+        this.interpolation = interpolation;
+    }
     
     public void setRenderSpheres(boolean renderSpheres) {
         this.renderSpheres = renderSpheres;
@@ -457,6 +464,10 @@ public class Scene implements GLEventListener {
     public void setMoleculeVisible(boolean visible) {
         this.moleculeVisible = visible;
     }
+
+    public void setLigandThreshold(float distance) {
+        this.ligandThreshold = distance;
+    }
     
     public void togglePolygonMode() {
         mode = (++mode) % 3;
@@ -464,6 +475,10 @@ public class Scene implements GLEventListener {
     
     public void toggleWholeMolecule() {
         displayWholeMolecule = !displayWholeMolecule;
+    }
+
+    public void setDynamicsListener(DynamicsListener listener) {
+        this.dynamicsListener = listener;
     }
     
     @Override
@@ -555,6 +570,9 @@ public class Scene implements GLEventListener {
         testPolygonProgram = polygonProgram;
         
         // TODO move to MainWindow
+        if (dynamicsListener != null) {
+            dynamicsListener.dynamicsLoaded(dynamics);
+        }
         atomCount = dynamics.getMolecule().getAtomCount();
         
         dynamics.getMolecule().computeBonds();
@@ -1496,7 +1514,7 @@ public class Scene implements GLEventListener {
         Point3f drugCenter = new Point3f();
         for (Drug drug : dynamics.getDrugs()) {
             drug.getCenter(snapshot, drugCenter);
-            if (cavityCenter.distance(drugCenter) <= 15f) {
+            if (cavityCenter.distance(drugCenter) <= ligandThreshold) {
                 renderAcetone(gl, drug, viewport);
             }
         }
@@ -1514,6 +1532,7 @@ public class Scene implements GLEventListener {
         
         Utils.setUniform(gl, resolveProgram, "window", viewport[2], viewport[3]);
         Utils.setUniform(gl, resolveProgram, "maxNumFragments", MAX_FRAGMENTS);
+        Utils.setUniform(gl, resolveProgram, "opacity", opacity);
         
         // draw fullscreen quad
         gl.glBegin(GL_QUADS);
@@ -1636,7 +1655,7 @@ public class Scene implements GLEventListener {
         gl.glBindBufferBase(GL_SHADER_STORAGE_BUFFER, DEBUG_BUFFER_INDEX, debugBuffer);
         gl.glBindBufferBase(GL_UNIFORM_BUFFER, MINMAX_CAVITY_AREA_BUFFER_INDEX, ar.getMinMaxBuffer());
         
-        gl.glColor4f(sphereColor.getRed() / 255f, sphereColor.getGreen() / 255f, sphereColor.getBlue() / 255f, alpha);
+        gl.glColor4f(sphereColor.getRed() / 255f, sphereColor.getGreen() / 255f, sphereColor.getBlue() / 255f, opacity);
         
         gl.glActiveTexture(GL_TEXTURE0);
         gl.glBindTexture(GL_TEXTURE_BUFFER, gr.getCirclesTex());
@@ -1734,7 +1753,7 @@ public class Scene implements GLEventListener {
             Vector3f view, Vector3f up, Vector3f right, int[] viewport) {
         gl.glUseProgram(program);
         
-        gl.glColor4f(triangleColor.getRed() / 255f, triangleColor.getGreen() / 255f, triangleColor.getBlue() / 255f, alpha);
+        gl.glColor4f(triangleColor.getRed() / 255f, triangleColor.getGreen() / 255f, triangleColor.getBlue() / 255f, opacity);
         
         gl.glBindBufferBase(GL_UNIFORM_BUFFER, MINMAX_CAVITY_AREA_BUFFER_INDEX, ar.getMinMaxBuffer());
         
@@ -1822,7 +1841,7 @@ public class Scene implements GLEventListener {
         // draw tori
         gl.glUseProgram(program);
         
-        gl.glColor4f(torusColor.getRed() / 255f, torusColor.getGreen() / 255f, torusColor.getBlue() / 255f, alpha);
+        gl.glColor4f(torusColor.getRed() / 255f, torusColor.getGreen() / 255f, torusColor.getBlue() / 255f, opacity);
         
         gl.glBindBufferBase(GL_UNIFORM_BUFFER, MINMAX_CAVITY_AREA_BUFFER_INDEX, ar.getMinMaxBuffer());
         
@@ -1960,12 +1979,12 @@ public class Scene implements GLEventListener {
     }
     
     private void stick(GL2 gl, float[] positions, float[] nextPositions, int p0, int p1, int[] viewport) {
-        float p0x = linearInterpolation(positions[3 * p0],     nextPositions[3 * p0],     t);
-        float p0y = linearInterpolation(positions[3 * p0 + 1], nextPositions[3 * p0 + 1], t);
-        float p0z = linearInterpolation(positions[3 * p0 + 2], nextPositions[3 * p0 + 2], t);
-        float p1x = linearInterpolation(positions[3 * p1],     nextPositions[3 * p1], t);
-        float p1y = linearInterpolation(positions[3 * p1 + 1], nextPositions[3 * p1 + 1], t);
-        float p1z = linearInterpolation(positions[3 * p1 + 2], nextPositions[3 * p1 + 2], t);
+        float p0x = interpolate(positions[3 * p0],     nextPositions[3 * p0],     t, interpolation);
+        float p0y = interpolate(positions[3 * p0 + 1], nextPositions[3 * p0 + 1], t, interpolation);
+        float p0z = interpolate(positions[3 * p0 + 2], nextPositions[3 * p0 + 2], t, interpolation);
+        float p1x = interpolate(positions[3 * p1],     nextPositions[3 * p1], t,     interpolation);
+        float p1y = interpolate(positions[3 * p1 + 1], nextPositions[3 * p1 + 1], t, interpolation);
+        float p1z = interpolate(positions[3 * p1 + 2], nextPositions[3 * p1 + 2], t, interpolation);
         
         Vector3f dir = new Vector3f(p1x - p0x, p1y - p0y, p1z - p0z);
         Vector3f up = new Vector3f(0f, 1f, 0f);
@@ -2186,11 +2205,15 @@ public class Scene implements GLEventListener {
         }
         
         preprocessMolecule(dynamics.getMolecule());
+        
+        if (dynamicsListener != null) {
+            dynamicsListener.dynamicsLoaded(dynamics);
+        }
     }
     
     public void loadDynamicsFromGROMACS(File topology, File trajectory) {
         try {
-            dynamics = new GromacsStructureLoader().loadDynamics(topology, trajectory, 100);
+            dynamics = new GromacsStructureLoader().loadDynamics(topology, trajectory);
             atomCount = dynamics.getMolecule().getAtomCount();
             System.out.println("Atoms: " + atomCount);
             System.out.println("Snapshots: " + dynamics.getSnapshotCount());
@@ -2199,6 +2222,27 @@ public class Scene implements GLEventListener {
         }
         
         preprocessMolecule(dynamics.getMolecule());
+        
+        if (dynamicsListener != null) {
+            dynamicsListener.dynamicsLoaded(dynamics);
+        }
+    }
+    
+    public void loadDynamicsFromGROMACS(File topology, File trajectory, int limit) {
+        try {
+            dynamics = new GromacsStructureLoader().loadDynamics(topology, trajectory, limit);
+            atomCount = dynamics.getMolecule().getAtomCount();
+            System.out.println("Atoms: " + atomCount);
+            System.out.println("Snapshots: " + dynamics.getSnapshotCount());
+        } catch (Exception ex) {
+            ex.printStackTrace(System.err);
+        }
+        
+        preprocessMolecule(dynamics.getMolecule());
+        
+        if (dynamicsListener != null) {
+            dynamicsListener.dynamicsLoaded(dynamics);
+        }
     }
     
     public void loadDynamicsFromResource(String name, int start, int end) {
@@ -2212,6 +2256,10 @@ public class Scene implements GLEventListener {
         }
         
         preprocessMolecule(dynamics.getMolecule());
+        
+        if (dynamicsListener != null) {
+            dynamicsListener.dynamicsLoaded(dynamics);
+        }
     }
     
     private void preprocessMolecule(Molecule dynamics) {
@@ -2364,6 +2412,12 @@ public class Scene implements GLEventListener {
         return running;
     }
     
+    public void setDynamicsSnapshot(int snapshot) {
+        lastUpdateTime = System.currentTimeMillis();
+        this.snapshot = Math.min(snapshot, dynamics.getSnapshotCount() - 1);
+        uploaded = false;
+    }
+    
     public void setRenderingMode(int mode) {
         if (mode == 0) {
             testTriangleProgram = triangleProgram;
@@ -2386,6 +2440,10 @@ public class Scene implements GLEventListener {
                 snapshot = (snapshot + snapshotDiff) % dynamics.getSnapshotCount();
                 diff = diff - (long) (snapshotDiff * 1000L / speed);
                 lastUpdateTime = time;
+                // notify
+                if (dynamicsListener != null) {
+                    dynamicsListener.snapshotChanged(snapshot);
+                }
             }
             t = ((float) diff * speed) / 1000f;
         } else {
@@ -2399,9 +2457,9 @@ public class Scene implements GLEventListener {
         float[] nextPositions = molecule.getAtomPositions(nextSnapshot);
         for (int i = 0; i < molecule.getAtomCount(); i++) {
             int offset = 3 * i;
-            atomsPos.put(linearInterpolation(positions[offset],     nextPositions[offset],     t));
-            atomsPos.put(linearInterpolation(positions[offset + 1], nextPositions[offset + 1], t));
-            atomsPos.put(linearInterpolation(positions[offset + 2], nextPositions[offset + 2], t));
+            atomsPos.put(interpolate(positions[offset],     nextPositions[offset],     t, interpolation));
+            atomsPos.put(interpolate(positions[offset + 1], nextPositions[offset + 1], t, interpolation));
+            atomsPos.put(interpolate(positions[offset + 2], nextPositions[offset + 2], t, interpolation));
             // copy radius
             atomsPos.put(molecule.getAtom(i).r);
         }
@@ -2413,7 +2471,16 @@ public class Scene implements GLEventListener {
         gl.glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
     }
     
-    private static float linearInterpolation(float a, float b, float t) {
+    private static float interpolate(float a, float b, float t, Interpolation interpolation) {
+        if (interpolation == Interpolation.LINEAR) {
+            return linearInterpolate(a, b, t);
+        } else {
+            // nearest
+            return (t < 0.5f) ? a : b;
+        }
+    }
+    
+    private static float linearInterpolate(float a, float b, float t) {
         return (1f - t) * a + t * b;
     }
     
