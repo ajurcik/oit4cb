@@ -1,37 +1,3 @@
-Overview (0.5 page) (AJ, JP)
-\begin{itemize}
-  \item "Technical Part" (AJ)
-  \item SES
-  \item Cavity
-  \item Ray-casting + parameters for vis
-\end{itemize}
-
-\subsection{Overview}
-The computation of SES is not a trivial task, which also requires a substantial computation and algorithmic capabilities. 
-Therefore, it would be essential to posses a technique that could provide us with instant computation and interactive and meaningful visualization of cavities in the context of molecular surface.
-
-The data comes in a form of MD trajectories describing the motion of individual atoms. 
-Each trajectory time step includes a set of atoms, described by their positions and their radii. 
-Our rendering pipeline consists of several steps that are performed on a per-frame basis. 
-For better explanation, we split the computations into two groups. 
-The first group deals with data processing that involves the computation of the surface primitives, inner voids, and additional attributes used in later stages. The second group of computations relates to visualization. 
-This includes ray-casting of the formed primitives, the estimate of ambient occlusion and opacity calculation; before the final stage represented by the image formation. More specifically, we perform the following steps \textcolor{red}{(TODO need more detail from Adam)}:
-	\begin{enumerate}
-	  \item We employ the contour-buildup algorithm to construct the molecular surface. Additionally, we enhance the computation as well as the performance (\textcolor{red}{only memory efficiency, bit in the CB article, they do not describe their data structures. I inspected the MegaMol code.}) by several changes (see Sec.~\ref{sec:ecb}).
-		\item For cavity extraction we introduce the so-called \textit{surface graph} (Sec.~\ref{sec:graph}), which allows us to compute the internal voids, i.e., cavities.
-		\item Each one of the three primitives \textcolor{red}{Bara: which primitives?? you are talking about them later} is visualized using ray-casting (Sec.~\ref{sec:vis}). (ray-casting, opacity calculation, etc.)
-		\item We compute ambient occlusion, stored in the grid.
-		\item We perform transparent surface rendering by means of an A-buffer. The actual opacity of each surface element is modulated through ambient occlusion values.
-		\item In the last stage, we blend all acquired samples together.
-	\end{enumerate}
-
-\begin{figure*}[htb]
-  \centering
-  \includegraphics[width=\textwidth]{image/overview.png}
-  \caption{\textcolor{red}{TODO}.}
-	\label{fig:overview}
-\end{figure*}
-
 \subsection{Extended CB Algorithm}
 \label{sec:ecb}
 Our extended CB algorithm is based on the existing research that utilizes the GPU capabilities~\cite{krone2011parallel}.
