@@ -22,8 +22,10 @@ It is based on the theory of implicit surfaces where the value of the implicit f
 The implicit function is composed of three types of patches from which the SES is constructed.
 
 However, none of these solutions dealt with molecular dynamics. 
-Krone et al.~\cite{krone2009interactive} presented their approach to the visualization of the SES using GPU ray casting technique which allowed to achieve interactive frame rates. \textcolor{red}{TODO: how it is in comparison with our solution?} 
-Another approach by Lindow et al.~\cite{lindow2010accelerated} even accelerates the construction of the SES by scaling the parallel contour-buildup algorithm to more GPU cores and using boundary quadrangles as rasterization primitives. \textcolor{red}{TODO: how it is in comparison with our solution?}
+Krone et al.~\cite{krone2009interactive} presented their approach to the visualization of the SES using GPU ray casting technique which allowed to achieve interactive frame rates. 
+Another approach by Lindow et al.~\cite{lindow2010accelerated} even accelerates the construction of the SES by scaling the parallel contour-buildup algorithm to more CPU cores and using boundary quadrangles as rasterization primitives.
+Moreover, Krone et al.~\cite{krone2011parallel} proposed a parallel version of the contour-buildup algorithm for GPUs that performed better for larger structures.
+In our technique, we come from their work and extend it so that the computed SES can be rendered using correct transparency.
 
 Similarly, the analytical approaches are applicable to the protein inner voids. 
 We focus only on the analytical computation and visualization of cavities which can contain a potential protein binding site.
