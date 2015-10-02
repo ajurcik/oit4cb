@@ -3,7 +3,6 @@ package csdemo;
 import com.jogamp.opencl.CLBuffer;
 import com.jogamp.opencl.CLCommandQueue;
 import com.jogamp.opencl.CLDevice;
-import com.jogamp.opencl.CLEvent;
 import com.jogamp.opencl.CLEventList;
 import com.jogamp.opencl.CLKernel;
 import com.jogamp.opencl.CLPlatform;
@@ -83,7 +82,7 @@ public class CLGraph {
         CLKernel unlabelledKernel = bfsProgram.createCLKernel("unlabelled");
         
         //edu.princeton.cs.algs4.Graph graph = GraphGenerator.regular(40960, 3);
-        List<List<Integer>> myGraph = generateGraph(128/*, 64, 32, 32, 16*/);//adjacencyMatrix(graph);
+        List<List<Integer>> myGraph = generateGraph(4096, 64, 32, 32, 16);//adjacencyMatrix(graph);
         /*try {
             //myGraph = readGraph("test-graph-32.txt");
             writeGraph(myGraph);
@@ -210,12 +209,6 @@ public class CLGraph {
             queue.putWriteBuffer(unlabelled, false)
                     .put1DRangeKernel(unlabelledKernel, 0, globalWorkSize, localWorkSize)
                     .putReadBuffer(unlabelled, true);
-            
-            // performance
-            long startTime = events.getEvent(0).getProfilingInfo(CLEvent.ProfilingCommand.START);
-            long endTime = events.getEvent(iter - 1).getProfilingInfo(CLEvent.ProfilingCommand.END);
-            long bttoTime = endTime - startTime;
-            System.out.println("Time elapsed (OpenCL: bfs - btto): " + (bttoTime / 1000000.0) + " ms");
             
             start = unlabelled.getBuffer().get(0);
             done = start < 0;

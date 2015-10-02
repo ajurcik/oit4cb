@@ -1,11 +1,11 @@
 \label{sec:vis}
 
-To enable our transparent visualization, we require an ordered list of fragments for each screen pixel. This list of fragments is also commonly referred as an A-buffer. We implemented the A-buffer using per-pixel linked lists~\cite{yang2010real}. In our case, the A-buffer fragments represent three types of surface patches analytically computed for a given ray.
+To enable our focus and context transparent visual, we require an ordered list of fragments for each screen pixel. This list of fragments is also commonly referred as an A-buffer. We implemented the A-buffer using per-pixel linked lists~\cite{yang2010real}. In our case, the A-buffer fragments represent three types of surface patches analytically computed for a given ray.
 
 \subsection{Ray-casting}
 \label{sec:spherical-patches}
 To form fragments of each surface patch we employ a ray-casting technique. To provide a high performance, the ray-patch intersection is computed analytically.
-In 2013, Kauker et al.~\cite{kauker2013rendering} proposed to ray-cast a toroidal patch using a saddle part of a torus and two clipping planes defined by its delimiting triangles (Fig.~\ref{fig:torus}).
+In 2013, Kauker et al.~\cite{kauker2013rendering} proposed to ray-cast a toroidal patch using a torus and two clipping planes defined by its delimiting triangles (Fig.~\ref{fig:torus-vs}).
 \begin{figure}[htp]
   \centering
   \begin{subfigure}[t]{0.55\columnwidth}
@@ -19,27 +19,21 @@ In 2013, Kauker et al.~\cite{kauker2013rendering} proposed to ray-cast a toroida
     \includegraphics[width=1.3in]{image/torus-planes.png}
     %\caption{Clipping by planes defined by spherical triangles.}
   \end{subfigure}
-	\caption{Ray-tracing of a toroidal patch. The saddle part of the torus (left) is cut by so called \textit{visibility sphere}.
+\caption{Ray-tracing of a toroidal patch. The saddle part of the torus (left) is cut by so called \textit{visibility sphere}.
 A patch (right) is cut from the whole toroidal ring by clipping planes defined by spherical triangles.}
-	\label{fig:torus}
+\label{fig:torus-vs}
 \end{figure}
 
-We employ this approach and, moreover, we compute these clipping planes for a toroidal patch when writing it into a buffer for ray-casting.
-Additionally, we set normals of these clipping planes so that they are facing towards the toroidal patch and we define two types of clipping operations: \textit{AND} and \textit{OR}.
-We use these two operations to clip the patches whose angular length around the torus axis is either at most $\pi$ (\textit{AND}) or greater (\textit{OR}).
-The \textit{AND} and \textit{OR} operations are defined as their name suggests.
-The \textit{AND} operation leaves only fragments that appear on positive sides of both clipping planes, while the \textit{OR} operation leaves fragments that appear on the positive side of the first or the second clipping plane.
+We employ this approach and, moreover, we modify the data structure being used in the original algorithm to store and retrieve all spherical triangles incident to a torus (Fig.~\ref{fig:hashing}). In order to get all neighboring triangles for a torus, we hash the triangles by three keys; i.e., one for each torus which is connected to a triangle.
+For this purpose, we implemented a simple hash table, which is based on linear addressing scheme \cite{alcantara2011efficient}.
 
-%and, moreover, we modify the data structure being used in the original algorithm to store and retrieve all spherical triangles incident to a torus (Fig.~\ref{fig:hashing}). In order to get all neighboring triangles for a torus, we hash the triangles by three keys; i.e., one for each torus which is connected to a triangle.
-%For this purpose, we implemented a simple hash table, which is based on linear addressing scheme \cite{alcantara2011efficient}.
-
-%\begin{figure}[htb]
-%  \centering
-%  \includegraphics[width=3.3in]{image/hashing.png}
-%  \caption{An illustration of the data structure for storing spherical triangles. Triangles $t_1$ and $t_2$ are stored linearly in an array and their incident torus $\tau$ is connected to them using a hash table.}
-%	\label{fig:hashing}
-%\end{figure}
-%This allows us, to ray-cast toroidal patches directly instead of tori.
+\begin{figure}[htb]
+  \centering
+  \includegraphics[width=3.3in]{image/hashing.png}
+  \caption{An illustration of the data structure for storing spherical triangles. Triangles $t_1$ and $t_2$ are stored linearly in an array and their incident torus $\tau$ is connected to them using a hash table.}
+	\label{fig:hashing}
+\end{figure}
+This allows us, to ray-cast toroidal patches directly instead of tori.
 
 
 Ray-casting the sphere is a trivial task; nevertheless, in our case the surface sphere of molecules might be formed by an arbitrary number of spherical patches lying in different surface components. To avoid obvious rendering issues, i.e., distinct coloring, transparency or visibility, we perform ray-casting of each spherical patch separately.
