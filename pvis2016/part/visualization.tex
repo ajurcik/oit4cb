@@ -11,21 +11,22 @@ In 2013, Kauker et al.~\cite{kauker2013rendering} proposed to ray-cast a toroida
   \begin{subfigure}[t]{0.55\columnwidth}
     \centering
     \includegraphics[width=1.7in]{image/torus-vs.png}
-    \caption{Clipping by \textit{visibility sphere}.}
+    %\caption{Clipping by \textit{visibility sphere}.}
 		\label{fig:torus-vs}
   \end{subfigure}%
   \quad
   \begin{subfigure}[t]{0.4\columnwidth}
     \centering
     \includegraphics[width=1.3in]{image/torus-planes.png}
-    \caption{Clipping by planes defined by spherical triangles.}
+    %\caption{Clipping by planes defined by spherical triangles.}
   \end{subfigure}
-\caption{Ray-tracing of a toroidal patch. The saddle part of the torus (a) is cut by so called \textit{visibility sphere}.
-A patch (b) is cut from the whole toroidal ring by clipping planes.}
+\caption{Ray-tracing of a toroidal patch. The saddle part of the torus (left) is cut by so called \textit{visibility sphere}.
+A patch (right) is cut from the whole toroidal ring by clipping planes defined by spherical triangles.}
 \end{figure}
 
 We employ this approach and, moreover, we modify the data structure being used in the original algorithm to store and retrieve all spherical triangles incident to a torus (Fig.~\ref{fig:hashing}). In order to get all neighboring triangles for a torus, we hash the triangles by three keys; i.e., one for each torus which is connected to a triangle.
 For this purpose, we implemented a simple hash table, which is based on linear addressing scheme \cite{alcantara2011efficient}.
+
 \begin{figure}[htb]
   \centering
   \includegraphics[width=3.3in]{image/hashing.png}
@@ -54,19 +55,19 @@ Finally, if the sum of all intersections, i.e., for all the sides, is even then 
   \begin{subfigure}[c]{0.52\columnwidth}
     \centering
     \includegraphics[height=1.9in]{image/patch.png}
-    \caption{%Point in spherical patch test.
-		The intersection $I_1$ lies on an intersection line between two planes containing arcs $OP$ and $AB$.}
+    %\caption{%Point in spherical patch test.
+		%The intersection $I_1$ lies on an intersection line between two planes containing arcs $OP$ and $AB$.}
 		\label{fig:spherical-patch}
   \end{subfigure}%
   \quad
   \begin{subfigure}[c]{0.44\columnwidth}
     \centering
     \includegraphics[height=1.6in]{image/outer.png}
-    \caption{%A torus formed by carbon ($C_C$) and hydrogen ($C_H$) atoms.
-		The center of the torus ($C_{t}$) lies outside the atom centers, while the center of its visibility sphere $C_{vs}$ lies between $C_C$ and $C_H$.}
+    %\caption{%A torus formed by carbon ($C_C$) and hydrogen ($C_H$) atoms.
+		%The center of the torus ($C_{t}$) lies outside the atom centers, while the center of its visibility sphere $C_{vs}$ lies between $C_C$ and $C_H$.}
 		\label{fig:outer-point}
   \end{subfigure}
-\caption{Point in spherical patch test (a). A torus formed by carbon ($C_C$) and hydrogen ($C_H$) atoms (b).}
+\caption{Left: Point in spherical patch test. The intersection $I_1$ lies on an intersection line between two planes containing arcs $OP$ and $AB$. Right: Torus formed by carbon ($C_C$) and hydrogen ($C_H$) atoms. The center of the torus ($C_{t}$) lies outside the atom centers, while the center of its visibility sphere $C_{vs}$ lies between $C_C$ and $C_H$.}
 \end{figure}
 
 Since we deal with spherical patches and not the planar ones, the situation is bit more complex and we cannot choose point $O$ arbitrarily. 
