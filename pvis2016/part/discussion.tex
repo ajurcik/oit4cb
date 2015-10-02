@@ -93,12 +93,12 @@ In this way, the computation of ray-primitive intersection is evaluated multiple
 As a side effect of exploiting the hash data structure (Sec.~\ref{sec:ecb}) for storing spherical triangles, our technique consumes less GPU memory than the original GPU parallel approach.
 This is due to the fact that the original method uses a linear buffer to store spherical triangles.
 An index into this buffer, i.e., position where the triangle is stored, is computed based on the $i$ and $j$ indices of spheres $i < j < k$ that formed the triangle.
-The range of $j$ is optimized in terms of limiting a maximal number of neighbors ($maxNeighbors$) that a sphere can have, so that the range of $j$ can be remapped to $\[0, maxNeighbors\]$.
+The range of $j$ is optimized in terms of limiting a maximal number of neighbors ($maxNeighbors$) that a sphere can have, so that the range of $j$ can be remapped to $\left[0, maxNeighbors\right]$.
 There is also a limit on a total number of triangles ($maxTriangles$) that can be stored for each pair of spheres.
 Putting it all together, the memory complexity of the original structure is:
 
 \begin{equation}
-$|A| \cdot maxNeighbors \cdot maxTriangles$,
+|A| \cdot maxNeighbors \cdot maxTriangles,
 \end{equation}
 
 where $|A|$ is the number of atoms of the molecule and typical settings for the other two constants are $maxNeighbors = 64$, $maxTriangles = 64$.
