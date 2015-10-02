@@ -4,22 +4,24 @@ Such knowledge helps to understand the biological processes in organisms and in 
 Many researchers have been focusing on the analysis of protein structures, i.e., their constitution. 
 Recent discoveries confirm that the function of proteins is not fully determined only by their structure but also their dynamic movements play a significant role \cite{Hensen2012}.
 This even stresses the importance of studying and exploring the trajectories of molecular dynamics (MD) in detail. 
-As the captured or simulated trajectories are dramatically increasing their size, their real-time exploration becomes a necessity. 
+As the length of the captured or simulated trajectories is dramatically increasing, their real-time exploration becomes a necessity. 
 The domain experts require a visual insight into the protein structure and its dynamic movement instantly, without tedious precomputation or offline rendering which is currently their only option.
-This is especially crucial when analyzing MD trajectories containing thousands of frames, where the users cannot spent much time analyzing just a single frame either due to computational or visualization setbacks. 
-Moreover, the exploratory process of MD trajectories is often concerned with the visual identification of binding sites of ligands to a host protein.
-These sites represent a molecular surface features known as cavities, pockets, or tunnels.
-There is a legacy of tools and approaches that allow us to extract these features.
-Two major challenges in regards to the surface feature analysis, i.e., for instance cavities, are their fast extraction and their visualization in the most informative manner. 
+This is especially crucial when analyzing MD trajectories containing thousands of frames, where the users cannot spent much time analyzing just a single frame either due to computational or visualization limitations. 
+Moreover, the exploratory process of MD trajectories is often concerned with the visual identification of protein binding sites where a ligand can interact with the host protein.
+These sites represent different molecular surface features known as cavities, pockets, or tunnels.
+There is a legacy of tools and approaches that enable to extract these features.
+Two major challenges in regards to the surface feature analysis are their fast extraction and their visualization in the most informative manner. 
 
-We are facing all these challenges by introducing a novel system for real-time visualization and exploration of protein molecular dynamics when the user can interactively manipulate with the structure and thus explore the protein, its inner cavities, and its behavior efficiently. 
+In our approach we are focusing mainly on cavities which represent the protein inner void space directly inaccessible from the molecular surface. 
+We are facing the mentioned challenges by introducing a novel approach to real-time visualization and exploration of protein molecular dynamics when the user can interactively manipulate with the structure and thus explore the protein, its inner cavities, and its behavior efficiently. 
 This is reached by introducing several enhancements (Fig.~\ref{fig:teaser}), such as real-time computation and rendering of transparent molecular surface and real-time detection and rendering of inner cavities.
 
 %In this paper, we introduce a new technique (Fig.~\ref{fig:teaser}) that enables to compute and visualize the solvent excluded surface. Additionally, we propose a new way for computing molecular surface features, like cavities or tunnels. Finally, we introduce a visualization technique that allows to interactively visualize the computed cavities in the context of the molecular surface.
 
 More specifically, the main contributions of our solution are:
 \begin{itemize}
-  \item Enhanced computation of solvent-excluded surface (SES) of the molecule. We propose three new kernels that account for \textcolor{red}{speedup of the existing state-of-the-art approach~\cite{krone2011parallel}}.
+  \item  Improved representation of the solvent-excluded surface (SES) of the molecule. We compute the exact representation of individual surface primitives.
+	%Enhanced computation of solvent-excluded surface (SES) of the molecule. We propose three new kernels that account for \textcolor{red}{speedup of the existing state-of-the-art approach~\cite{krone2011parallel}}.
   \item A novel real-time algorithm for the extraction of cavities. We present new fast cavity extraction method that is based on solvent-excluded surface (SES).
   \item Improved performance of visualization of transparent molecular surfaces~\cite{kauker2013rendering}. We describe our interactive focus and context visualization of cavities within the molecule.
   
