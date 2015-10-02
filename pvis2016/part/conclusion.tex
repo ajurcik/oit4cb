@@ -1,6 +1,9 @@
-Future work
-\begin{itemize}
-  \item More tight bounds for ray-casting may further improve the performance. This holds especially for tori because each torus is ray-casted xxx (about 2) times in average. (AJ)
-  \item The ray-casting could be done using OpenCL which could lower bandwidth because the data common to many fragments could be fetched only once and shared using local (shared) memory. (AJ)
-	\item Transfer function.
-\end{itemize}
+In this paper we presented our approach to the real-time computation and visualization of the transparent molecular surface and exact representation of inner cavities. 
+This was reached by introducing the exact representation of individual surface primitives, proposing a novel real-time algorithm for cavity extraction based on the solvent-excluded surface, and improving the performance of one of the existing approaches to visualization of transparent surfaces.
+The usability of our solution was demonstrated on a case study which addressed the problem of interactive visual exploration of molecular dynamics.
+The evaluation done by the domain experts revealed a possible extension of our solution which would remove the problem with perception of the ligand position wrt. highly transparent molecular surface.
+Another possible extensions are related to the performance. 
+Using more tight bounds for ray-casting may further improve the performance. 
+This holds especially for tori because each torus is {\textcolor{red}{ray-casted xxx (about 2) times in average. (AJ)
+The ray-casting could be done using OpenCL which could lower bandwidth because the data common to many fragments could be fetched only once and shared using local (shared) memory. (AJ)
+Transfer function.}

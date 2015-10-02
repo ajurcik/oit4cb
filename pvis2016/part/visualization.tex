@@ -36,19 +36,19 @@ For this purpose, we implemented a simple hash table, which is based on linear a
 This allows us, to ray-cast toroidal patches directly instead of tori.
 
 
-Ray-casting the sphere is a trivial task; nevertheless, in our case the surface sphere of molecules is formed by an arbitrary number of spherical patches lying in different surface components. To avoid obvious rendering issues, i.e., distinct coloring, transparency or visibility, we perform ray-casting of each spherical patch separately.
+Ray-casting the sphere is a trivial task; nevertheless, in our case the surface sphere of molecules might be formed by an arbitrary number of spherical patches lying in different surface components. To avoid obvious rendering issues, i.e., distinct coloring, transparency or visibility, we perform ray-casting of each spherical patch separately.
 This allows us to visually distinguish between different surface components.
 
 Since the boundaries of a spherical patch are formed by small circle arcs, we apply an odd-even rule for polygons~\cite{shimrat1962algorithm} to test whether a point lies inside the patch. Firstly, we compute intersection points, $P_{front}$ and $P_{back}$, of a given ray with the patch sphere.
 Here, we describe the point-patch test for point $P_{front}=P$ only, since the same test is applied to $P_{back}$.
 Before we apply the odd-even rule, we choose a point $O$ lying outside the patch.
-Then, we test line $OP$, the shortest path on a sphere, for an intersection with each of the circle arcs delimiting the patch.
+Then, we test line $OP$, the shortest path on a sphere, for an intersection with each of the arcs delimiting the patch.
 The intersection of a line $OP$ with the small circle arc, given by points $AB$, is computed in two steps (Fig.~\ref{fig:outer-point}a):
 \begin{enumerate}
   \item Intersections of the circles containing the line and the arc, which can intersect in up to $2$ points.
   \item Intersection points are tested whether they belong to both the segment $OP$ and the arc $AB$.
 \end{enumerate}
-Finally, if the sum of all intersections, i.e., all sides, is even then the point lies inside the patch.
+Finally, if the sum of all intersections, i.e., for all the sides, is even then the point lies inside the patch.
 
 \begin{figure}[htp]
   \centering
@@ -70,7 +70,7 @@ Finally, if the sum of all intersections, i.e., all sides, is even then the poin
 \caption{Point in spherical patch test (a). A torus formed by carbon ($C_C$) and hydrogen ($C_H$) atoms (b).}
 \end{figure}
 
-In $3D$, the situation is bit more complex and we cannot choose point $O$ arbitrarily. 
+Since we deal with spherical patches and not the planar ones, the situation is bit more complex and we cannot choose point $O$ arbitrarily. 
 %Otherwise, we would count intersections of patch's sides with a great circle containing $P$.
 %Then, the intersection count would be the same regardless of $P$ being inside or outside the patch, making the rule inapplicable.
 Instead, we compute $O$ by intersecting a patch sphere by an axis of one of its delimiting tori.
@@ -93,24 +93,28 @@ In this way, we get two intersection points from which we choose the one that li
 %\end{figure}
 
 \subsection{Opacity modulation}
-After the interaction points were computed, we sort and store them in the linked list. Thus, for a given ray, we acquire a list of fragments $\{f_1,\ldots,f_n \}$, where each pair represents an entry and an exit point for the molecular surface. For simplicity, the values of $f$ represent depths of fragments. We denote the entire distance the ray passes through the molecule as $l=|f_1-f_n|$. 
-As we step along each fragment $f_i$, we define its opacity $\alpha_i$ as follows:
+After the intersection points were computed, we sort, in front-to-back manner, and store them in the linked list. Thus, for a given ray, we acquire a list of fragments $\{f_1,\ldots,f_n \}$, where each pair represents an entry and an exit point for the molecular surface. For simplicity, the values of $f$ represent depths of fragments. We denote the entire distance the ray passes through the molecule as $l=|f_1-f_n|$. 
+As we step along each fragment $f_i$, we define the opacity $\alpha_i$ of even fragments, i.e., those representing the entry surface points, as follows:
 \begin{equation}
   \alpha_i = O^{\phi(x)},
-	\label{eq:alphaDist},
+	\label{eq:alphaDistEven}
 \end{equation}	
 where $O$ represents a user defined parameter affecting the overall opacity and $\phi(x)$ suppress or amplifies the opacity and is defined as
 \begin{equation}
   \phi(x) = K-(K-1)x,
 	\label{eq:exponent}
 \end{equation}	
-where $K$ is the maximum value of the exponent and $x=|f_{i+1}-f_i|/l$ represents the ratio of the fragment interval to the entire length $l$. Note that if $x=1$, i.e., having just two fragments on the ray, then $\phi(x)=1$ determining the $\alpha_i=O$.
-
-Figure~\ref{fig:Oparam} showcases $4$ different combinations of parameters $K$ and $O$.
+where $K$ is the maximum value of the exponent and $x=|f_{i+1}-f_i|/l$ represents the ratio of the fragment interval to the entire length $l$. Note that if $x=1$, i.e., having just two fragments on the ray, then $\phi(x)=1$ determining the $\alpha_i=O$. The opacity of odd fragments, i.e., representing the exist surface points, is defined as
+\begin{equation}
+  \alpha_i = O^{L},
+	\label{eq:alphaDistOdd}
+\end{equation}	
+where $L$ is a user defined modulator to suppress or enhance the back-faces.
+Figure~\ref{fig:Oparam} showcases $4$ different combinations of parameters $K$ and $O$ with the back-face modulator being constantly set to $L=1$.
 \begin{figure*}[htb]
   \centering
   \includegraphics[width=\textwidth]{image/Oparam.png}
-  \caption{An example of application of parameters $K$ and $O$. From left to right: $K=4$,$O=0.9$; $K=4$,$O=0.2$,$K=8$,$O=0.8$,$K=16$,$O=0.8$. For high values of $O$, i.e., the image on the far left, we notice only negligible changes, therefore we do not include the examples of altering $K$.}
+  \caption{An example of application of parameters $K$ and $O$ on protein $1cqw$. Note that higher values of the overall opacity $O$ emphasize the front molecular surface, while higher values of maximum exponent $K$ give more prominence to the internal surfaces and cavities.}
 	\label{fig:Oparam}
 \end{figure*}
 \subsection{Cavity area estimation}
