@@ -48,7 +48,7 @@ Thus, techniques based on the A-buffer fit to our approach much better because t
 When using single pass rendering, it is necessary to store all participating or all important fragments into a data structure for later composition.
 First approach storing the participating fragments was introduced by Yang et al.~\cite{yang2010real}. Salvi et al.~\cite{salvi2011adaptive} presented the second mentioned approach which stores all important fragments.
 %The cost of single pass rendering is the necessity of storing all participating \cite{yang2010real} or all important \cite{salvi2011adaptive} fragments into a data structure for later composition.
-The fragment storing leads to an unbounded requirement on the memory size that was addressed by Maule et al.~\cite{maule2012memory} or Vasilakis et al.~\cite{vasilakis2015k+buffer}.
+This leads to an unbounded requirement on the memory size that was addressed by Maule et al.~\cite{maule2012memory} or Vasilakis et al.~\cite{vasilakis2015k+buffer}.
 Finally, some of the existing techniques aim to decrease both time and memory complexity.
 McGuire and Bavoil~\cite{mcguire2013weighted} employ the idea of partial coverage to reach this goal, whereas Enderton et al.~\cite{enderton2011stochastic} introduce stochastic transparency for the same purpose. 
 Here each fragment of the transparent geometry covers a random subset of pixel samples of size proportional to alpha. 
@@ -66,10 +66,9 @@ In our technique, we try to avoid the storing and subsequent sorting of a high n
 %Grottel et al.~\cite{grottel2012object} presented their method reaching interactive frame rates for large and dynamic data sets. 
 %Recently, their approach was extended by~\cite{staib2015ambient}.
 %This method is applicable to transparent particles as well.
-
-%\textcolor{red}{TODO move to Visualization or remove completely: For enhancing the understanding of the interior of the molecular structure, we employed the technique presented by Borland\cite{borland2011ambient}. 
-%His technique, called ambient occlusion opacity mapping, enables to determine a variable opacity at each point on the molecular surface.
-%In consequence, the interior structures can be more opaque than the outer structures, i.e., molecular surface.}
+\textcolor{red}{TODO move to Visualization or remove completely: For enhancing the understanding of the interior of the molecular structure, we employed the technique presented by Borland\cite{borland2011ambient}. 
+His technique, called ambient occlusion opacity mapping, enables to determine a variable opacity at each point on the molecular surface.
+In consequence, the interior structures can be more opaque than the outer structures, i.e., molecular surface.}
 
 
 %\begin{itemize}
