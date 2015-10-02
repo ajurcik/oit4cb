@@ -34,20 +34,19 @@ The subsequent exploration is supported by graph based visualizations.
 
 
 \subsection{Order-Independent Transparency}
-Current hardware enables implementation of well known approaches to order-independent transparency (OIT) such as Virtual Pixel Maps \cite{mammen1989transparency} or A-buffer \cite{carpenter1984abuffer}.
+Current hardware enables implementation of well known approaches to order-independent transparency (OIT) such as Virtual Pixel Maps (depth peeling) \cite{mammen1989transparency} or A-buffer \cite{carpenter1984abuffer}.
 While rendering computer graphics with correct transparency has become possible in real-time already in the previous decade \cite{everitt2001interactive}, the topic is still hot nowadays.
-There are appearing new techniques in the literature that are focusing on pushing the limits of previous methods, e.g., time complexity \cite{bavoil2008order}, memory requirements \cite{maule2012memory} \cite{vasilakis2015k+buffer} or precision \cite{enderton2011stochastic}.
+There are appearing new techniques in the literature that are focusing on pushing the limits of previous methods.
+Regarding memory bounded techniques, Bavoil et al. introduced peeling of two depth layers in one rendering pass \cite{bavoil2008order}, thus halving the time complexity of the original depth peeling approach \cite{everitt2001interactive}.
+For us, performing more rendering passes, would become a bottleneck because of our ray-tracing approach to surface rendering.
+Instead, techniques based on A-buffer enable to render the scene in one pass, thus fitting better to our approach.
+The cost of single pass rendering is the necessity of storing all participating \cite{yang2010real} or all important \cite{salvi2011adaptive} fragments into a data structure for later composition.
+This leads to unbounded requirement on memory size that has been addressed by \cite{maule2012memory} or \cite{vasilakis2015k+buffer}.
+Finally, there are techniques that try to lower both the time and memory complexity by employing specific coloring of objects \cite{mcguire2013weighted} or introducing statistics \cite{enderton2011stochastic}.
 
-\textcolor{red}{TODO OIT in molecules.}
-
-%\cite{carpenter1984abuffer}
-%\cite{everitt2001interactive}
-%\cite{bavoil2008order}
-\cite{yang2010real}
-%\cite{enderton2011stochastic}
-\cite{salvi2011adaptive}
-%\cite{maule2012memory}%star
-PUXELS \cite{kauker2013rendering}
+When rendering molecules, the application of described OIT approaches to molecular surfaces is straightforward when they are represented as meshes.
+For analytic surfaces, Kauker et al. proposed to store lists (or arrays) of all fragments produced by basic shapes for later processing using CSG operations \cite{kauker2013rendering}.
+In our technique, we try to avoid storing, and then sorting, of high number of fragments by ray-casting only the fragments that are part of the molecular surface.
 
 
 \subsection{Ambient Occlusion}
