@@ -1,5 +1,5 @@
 Our approach touches several research areas, including computation and visualization of protein cavities and their surfaces. 
-Further we focus on the real-time visualization of surfaces and an ambient occlusion technique enhancing the depth perception of the molecular surface. 
+Further we focus on the real-time visualization of surfaces and their transparency which is achieved using the order-independent transparency approach. 
 Thus in this section we describe the existing techniques related to these topics.
 
 \subsection{Extraction and Visualization of Surfaces of Molecules and Their Cavities}
@@ -34,40 +34,48 @@ The subsequent exploration is supported by graph based visualizations.
 
 
 \subsection{Order-Independent Transparency}
-Current hardware enables implementation of well known approaches to order-independent transparency (OIT) such as Virtual Pixel Maps (depth peeling) \cite{mammen1989transparency} or A-buffer \cite{carpenter1984abuffer}.
-While rendering computer graphics with correct transparency has become possible in real-time already in the previous decade \cite{everitt2001interactive}, the topic is still hot nowadays.
-There are appearing new techniques in the literature that are focusing on pushing the limits of previous methods.
-Regarding memory bounded techniques, Bavoil et al. introduced peeling of two depth layers in one rendering pass \cite{bavoil2008order}, thus halving the time complexity of the original depth peeling approach \cite{everitt2001interactive}.
-For us, performing more rendering passes, would become a bottleneck because of our ray-tracing approach to surface rendering.
-Instead, techniques based on A-buffer enable to render the scene in one pass, thus fitting better to our approach.
-The cost of single pass rendering is the necessity of storing all participating \cite{yang2010real} or all important \cite{salvi2011adaptive} fragments into a data structure for later composition.
-This leads to unbounded requirement on memory size that has been addressed by \cite{maule2012memory} or \cite{vasilakis2015k+buffer}.
-Finally, there are techniques that try to lower both the time and memory complexity by employing specific coloring of objects \cite{mcguire2013weighted} or introducing statistics \cite{enderton2011stochastic}.
+One of the most popular techniques for rendering transparent objects is the order-independent transparency (OIT) which does not require the geometry to be sorted.
+Here the traditional approaches are Virtual Pixel Maps (know also as Depth Peeling) \cite{mammen1989transparency} or A-buffer \cite{carpenter1984abuffer}.
+Thanks to the performance of the current hardware these methods can be successfully adopted to large and dynamic scenes.
+The Virtual Pixel Maps technique is based on the idea of sorting at the pixel level and accumulating the transparency effect on a multipass basis. 
+The A-buffer uses the Fourier window which in general helps to resolve the visibility problem among an arbitrary collection of opaque, transparent, and intersecting objects.
 
-When rendering molecules, the application of described OIT approaches to molecular surfaces is straightforward when they are represented as meshes.
-For analytic surfaces, Kauker et al. proposed to store lists (or arrays) of all fragments produced by basic shapes for later processing using CSG operations \cite{kauker2013rendering}.
-In our technique, we try to avoid storing, and then sorting, of high number of fragments by ray-casting only the fragments that are part of the molecular surface.
+While the algorithms for rendering of correctly transparent objects in real-time have emerged already in the previous decade \cite{everitt2001interactive}, new approaches removing the limitations of these methods are still emerging.
+Bavoil et al.~\cite{bavoil2008order} introduced the peeling of two depth layers in one rendering pass, thus halving the time complexity of the original Depth Peeling approach \cite{everitt2001interactive}.
+
+!!!For us, performing more rendering passes, would become a bottleneck because of our ray-tracing approach to surface rendering.
+!!!Instead, techniques based on A-buffer enable to render the scene in one pass, thus fitting better to our approach.
+
+When using single pass rendering, it is necessary to store all participating or all important fragments into a data structure for later composition.
+First approach storing the participating fragments was introduced by Yang et al.~\cite{yang2010real}. Salvi et al.~\cite{salvi2011adaptive} presented the second mentioned approach which stores all important fragments.
+%The cost of single pass rendering is the necessity of storing all participating \cite{yang2010real} or all important \cite{salvi2011adaptive} fragments into a data structure for later composition.
+This leads to an unbounded requirement on the memory size that was addressed by Maule et al.~\cite{maule2012memory} or Vasilakis et al.~\cite{vasilakis2015k+buffer}.
+Finally, some of the existing techniques aim to decrease both time and memory complexity.
+McGuire and Bavoil~\cite{mcguire2013weighted} employ specific coloring of objects to reach this goal, whereas Enderton et al.~\cite{enderton2011stochastic} introduce statistics for the same purpose.
+
+Applying the mentioned OIT approaches to molecular surfaces is straightforward because they are represented as meshes.
+For analytic surfaces, Kauker et al.~\cite{kauker2013rendering} proposed to store lists (or arrays) of all fragments produced by the basic shapes for later processing using CSG operations.
+In our technique, we try to avoid the storing and subsequent sorting of a high number of fragments by ray-casting only the fragments that belong to the molecular surface.
 
 
-\subsection{Ambient Occlusion}
-Ambient occlusion is one of the most popular techniques for enhancement of the depth perception in molecular visualization.
-Tarini et al.~\cite{tarini2006ambient} as first used this technique for real-time molecular visualization.
-As this technique is computationally very demanding, several solutions focusing on this limitation appeared.
-Grottel et al.~\cite{grottel2012object} presented their method reaching interactive frame rates for large and dynamic data sets. 
-Recently, their approach was extended by~\cite{staib2015ambient}.
-This method is applicable to transparent particles as well.
-Ambient occlusion technique was used also by Borland\cite{borland2011ambient} for enhancing the understanding of the interior of the molecular structure.
+%\subsection{Ambient Occlusion}
+%Ambient occlusion is one of the most popular techniques for enhancement of the depth perception in molecular visualization.
+%Tarini et al.~\cite{tarini2006ambient} as first used this technique for real-time molecular visualization.
+%As this technique is computationally very demanding, several solutions focusing on this limitation appeared.
+%Grottel et al.~\cite{grottel2012object} presented their method reaching interactive frame rates for large and dynamic data sets. 
+%Recently, their approach was extended by~\cite{staib2015ambient}.
+%This method is applicable to transparent particles as well.
+!!!For enhancing the understanding of the interior of the molecular structure, we employed the technique presented by Borland\cite{borland2011ambient}. 
 His technique, called ambient occlusion opacity mapping, enables to determine a variable opacity at each point on the molecular surface.
 In consequence, the interior structures can be more opaque than the outer structures, i.e., molecular surface.
-Because of the very convincing visual results, we employed this transparency modulation technique to our solution as well.
 
 
-\begin{itemize}
-  \item \textcolor{red}{Performance drop of SES rendering on newer hardware (GF 680 GTX) --- we can perform better. We contacted authors, they do not know exactly why, they think it is change in the internal architecture between Fermi and Kepler (AJ)}
-  \item \textcolor{red}{Slow rendering of SAS. Too many layers in pixels --- we can do better by surface layers detection (AJ)}
-\end{itemize}
+%\begin{itemize}
+%  \item \textcolor{red}{Performance drop of SES rendering on newer hardware (GF 680 GTX) --- we can perform better. We contacted authors, they do not know exactly why, they think it is change in the internal architecture between Fermi and Kepler (AJ)}
+%  \item \textcolor{red}{Slow rendering of SAS. Too many layers in pixels --- we can do better by surface layers detection (AJ)}
+%\end{itemize}
 
-\textcolor{red}{There are more solutions taken from computer graphics; e.g., OIT (JP)}
+%\textcolor{red}{There are more solutions taken from computer graphics; e.g., OIT (JP)}
 
 %Such binding site can be located inside a cavity or a tunnel, while the molecular surface might contain tens of cavities per single simulation time step. 
 

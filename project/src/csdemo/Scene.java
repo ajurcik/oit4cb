@@ -270,7 +270,7 @@ public class Scene implements GLEventListener {
     private float tunnelAOThreshold = 0.85f;
     private Interpolation interpolation = Interpolation.NEAREST;
     private float frontOpacityMaxExponent = 8f;
-    private float backOpacityExponent = 0.25f;
+    private float backOpacityExponent = 2f;
     
     // debug parameters
     private boolean autoupdate = true;
