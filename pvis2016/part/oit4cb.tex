@@ -5,16 +5,19 @@ First we present the algorithms for the computation of molecular surfaces and ca
 \subsection{Surface computation}
 \label{sec:ecb}
 Our surface computation algorithm is based on the existing research that utilizes the GPU capabilities~\cite{krone2011parallel}.
-In the former study, the SES is represented as three different sets of surface primitives -- spheres, tori, and spherical triangles, that are ray-casted to obtain opaque surface visualization. 
+In the former study, the SES is represented as three different sets of surface primitives -- spheres, tori, and spherical triangles depicted in red, blue and green in Figure~\ref{fig:cb-oit} respectively.
+%, that are ray-casted to obtain opaque surface visualization. 
 %While ray-casting spheres and tori, some sections of the final image will be later occluded by the spherical triangles.
-\textcolor{red}{While ray-casting spheres and tori}, there are also produced pixels that are not visible in the final image, because of their occlusion by pixels on the surface (see Figure~\ref{fig:cb-krone}).
-To enable transparent visualization of the surface, we extended the algorithm such that it employs following primitives:
+Nevertheless, while rendering them opaquely, it produces pixels that are not visible in the final image due to their occlusion by other surface pixels (Fig.~\ref{fig:cb-oit}).
+In our case, we aim for transparent surface visualization, therefore we extend the algorithm such that it employs following primitives:
+i) \textit{spherical triangles}, as was already described by Krone et al.~\cite{krone2011parallel} and Lindow et al.~\cite{lindow2010accelerated}, ii)
+\textit{toroidal patches}, delimited by two spherical triangles, and iii) \textit{spherical patches}, enclosed by edges of three or more toroidal patches.
 %\textcolor{red}{JP: This needs to be explained: Therefore, to visualize contour surface representation using transparency}, we extended the algorithm so that it computes a SES represented with:
-\begin{itemize}
-	\item Spherical triangles.
-  \item Toroidal patches -- a toroidal patch is delimited by two spherical triangles.
-	\item Spherical patches -- a spherical patch is enclosed by edges of three or more toroidal patches.
-\end{itemize}
+%\begin{itemize}
+	%\item Spherical triangles.
+  %\item Toroidal patches -- a toroidal patch is delimited by two spherical triangles.
+	%\item Spherical patches -- a spherical patch is enclosed by edges of three or more toroidal patches.
+%\end{itemize}
 
 \begin{figure}[htp]
   \centering
@@ -22,25 +25,27 @@ To enable transparent visualization of the surface, we extended the algorithm su
     \centering
     \includegraphics[width=1.5in]{image/cb-krone.png}
    % \caption{The original method \cite{krone2011parallel} rendered with transparency.}
-		\label{fig:cb-krone}
+	%	\label{fig:cb-krone}
   \end{subfigure}%
   ~
   \begin{subfigure}[t]{0.48\columnwidth}
     \centering
     \includegraphics[width=1.5in]{image/cb-oit.png}
    % \caption{Our extended method.}
-		\label{fig:cb-oit}
+		
   \end{subfigure}
+	
 \caption{Comparison between the original method~\cite{krone2011parallel} rendered with transparency (left) and our extended method (right).
 %The transparent SES of three atoms produced by the original parallel CB algorithm (a), and our extended algorithm (b). 
 The original method renders parts of spheres (red) and tori (blue) that lie below the surface.
 Our method produces only primitives that are part of the surface.
 %More, our algorithm is also able to handle patches on a sphere that form different surfaces, i.e., the outer and one or more inner.
 }
+\label{fig:cb-oit}
 \end{figure}
 
 In comparison with the previous solution our main contribution here lies in the computation of toroidal and spherical patches.
-Using them we avoid the situation when the previous algorithm renders parts of tori and spheres which do not form the final surface (see Figure~\ref{fig:cb-oit}).
+Using them we avoid the situation when the previous algorithm renders parts of tori and spheres which do not form the final surface (Fig.~\ref{fig:cb-oit}).
 
 %Regarding tori, Kauker et al.~\cite{kauker2013rendering} proposed to ray-cast a toroidal patch using a torus and two clipping planes defined by its delimiting triangles.
 
@@ -74,10 +79,9 @@ Using them we avoid the situation when the previous algorithm renders parts of t
 %	\label{fig:hashing}
 %\end{figure}
 
-To be able to compute toroidal patches, we introduce a novel data structure that enables to store and retrieve all spherical triangles incident to a torus (Fig.~\ref{fig:hashing41}). In order to get all neighboring triangles for a torus, we hash the triangles by three keys; i.e., one for each torus which is connected to a triangle.
-For this purpose, we implemented a simple hash table, which is based on linear addressing scheme \cite{alcantara2011efficient}.
-We find toroidal patches on a torus by retrieving all its neighboring triangles and sorting them relatively by their angular position around the torus.
-We use the bubble sort algorithm for this sorting.
+To be able to compute toroidal patches, we introduce a novel data structure that enables us to store and retrieve all spherical triangles incident to a torus (Fig.~\ref{fig:hashing41}). In order to get all neighboring triangles for a torus, we hash the triangles by three keys; i.e., one for each torus which is connected to a triangle.
+For this purpose, we implemented a simple hash table, which is based on linear addressing scheme~\cite{alcantara2011efficient}.
+We compute toroidal patches on a torus by retrieving all its neighboring triangles and sorting them relatively by their angular position around the torus axis. We employ bubble sort algorithm for this sorting.
 When sorted, the pairs of neighboring triangles define the toroidal patches and corresponding edges.
 Additionally, we check whether the first two triangles form a visible patch.
 If not, then the first triangle forms a visible patch with the last one and we rotate the sorted list of triangles by one item.
@@ -89,8 +93,8 @@ If not, then the first triangle forms a visible patch with the last one and we r
 \end{figure}
 This allows us, to ray-cast toroidal patches directly instead of tori.
 
-As described, a spherical patch is bounded by toroidal patches (Fig~\ref{fig:graph}). We extended the surface computation algorithm by adding three new GPU kernels that compute the sets of toroidal patches forming the spherical patches (see Section~\ref{sec:graph}).
-When visualizing the surface, each such set is used to ray-cast a spherical patch (see Section~\ref{sec:spherical-patches}).
+As described, a spherical patch is bounded by toroidal patches (Fig~\ref{fig:graph}). We extend the surface computation algorithm by adding three new GPU kernels that compute the sets of toroidal patches forming the spherical patches (see Section~\ref{sec:graph}).
+When rendering the surface, each such a set is used to ray-cast a spherical patch (see Section~\ref{sec:spherical-patches}).
 
 %\begin{figure}[htb]
 %  \centering
@@ -124,13 +128,12 @@ When visualizing the surface, each such set is used to ray-cast a spherical patc
 
 The computed surface contains primitives of both the outer molecular surface and the surfaces of inner cavities.
 %\footnote{\textcolor{red}{JP: This should be written in more friendly fashion and with clear defined terms. Terms to be explained: surface is continuitous (geometrical?, since $C^1$ continuous it is not), graphs (2D/3D, does it contain loops?), primitive, component}}
-Kauker et al. \cite{kauker2013rendering} were in their study interested in visualizing only the outer surface.
+Kauker et al. \cite{kauker2013rendering} aimed at visualizing the outer surface solely.
 %\footnote{\textcolor{red}{AJ: Maybe, this could be part of related work}}
-Therefore, they called the inner parts of the surface as inner remains as it was source of occlusion.
-However, the domain experts are often interested in the exploration of inner cavities because of their significant role in reactivity of the molecule.
+Therefore, they call the inner parts of the surface as inner remains as it represents the source of occlusion.
+However, in our case we aim at the exploration of inner cavities due to their significant role in reactivity of the molecule.
 %We think that for SES, the user might want to visualize cavities within the molecule and hence it is useful to let him decide on what to visualize.
-So it is advantageous for the user to have the option to visualize both molecular surface and inner cavities and interactively change this decision.
-It means that the cavities can be shown or hidden on demand.
+Additionally, it is advantageous for the user to have the option to visualize both molecular surface and inner cavities and interactively alter between both of them; i.e., the cavities can be shown or hidden on demand.
 %Contrary, for SAS, the cavities are visualized much smaller than in the case of SES and therefore visualizing them does not help assessing their shape or volume.
 %The difference \textcolor{red}{stems from} the definitions of the surfaces.
 %In the case of SAS, we therefore propose to clip the inner surfaces to enhance the visualization.
@@ -146,40 +149,40 @@ It means that the cavities can be shown or hidden on demand.
 	\label{fig:graph}
 \end{figure}
 
-The hiding of cavities is possible due to the fact that their surfaces are completely separated from the molecular surface.
+To hide a cavity is straightforward, since its surface is completely separated from the molecular surface.
 %\textcolor{red}{\cite{borland2011ambient}}.
 %\footnote{\textcolor{red}{JP: Too many ideas in one sentence. Split into two or more.}}
 More specifically, one component represents the outer molecular surface and each single cavity corresponds to another component.
-For the contour representation of the surface, \textcolor{red}{isolated} components can be easily detected by applying connected component (CC) analysis to a structure which we call the \textit{surface graph}.
+%For the contour representation of the surface, 
+Such independent components can be easily detected by applying connected component (CC) analysis to a structure which we call the \textit{surface graph}.
 %\footnote{\textcolor{red}{JP: Introduce here "terminus techniques"; i.e., SES is composed of three types of patches etc.}}
-We define our \textit{surface graph} using triangles as vertices and toroidal patches (recall that a toroidal patch is delimited by two triangles) as edges connecting them (see Fig.~\ref{fig:graph}).
+We define the \textit{surface graph} using triangles representing vertices and toroidal patches (recall that a ) representing edges since each toroidal patch is delimited by two triangles (Fig.~\ref{fig:graph}).
 %\footnote{\textcolor{red}{I don't understand the following sentence. What is former graph representation? The whole sentence should be rewritten.}}
 %Moreover, using the former graph representation makes also the implementation of used graph algorithms and graph data structures on the GPU easier.
 Moreover, we also tried to apply the CC analysis to a graph with spheres as vertices and toroidal patches as edges.
-But, the idea showed to be not useful because spheres may contain more than one patches that can form parts of different surfaces.
-More, the implementation of used graph algorithms and data structures on the GPU would be more complex.
-This is caused mainly by the fact that a sphere has arbitrary number of neighboring tori, while a triangle has exactly three tori as its neighbors.
-Hence, all vertices in our graph are of degree three.
+Nevertheless, a sphere might contain more than a single patch contributing to different surfaces.
+Thus the implementation of the graph algorithms and data structures on the GPU would be more complex.
+This is mainly due to the fact that a sphere has arbitrary number of neighboring tori, while a triangle has exactly three tori as its neighbors. Hence, all vertices in our graph are of degree three.
 
 Finally, the surface contains also tori that are not delimited by any triangles.
-We call these tori as \textit{isolated}, because they do not have any neighboring triangle (see Figure~\ref{fig:isolated-hole}).
-\textit{Isolated} tori are excluded from the \textit{surface graph} and they are handled later in the computation (see Section~\ref{sec:isolated}).
+We call these tori \textit{isolated} since they do not have any neighboring triangles (Fig.~\ref{fig:isolated-hole}).
+The \textit{isolated} tori are excluded from the \textit{surface graph} and are handled later in the computation (see Section~\ref{sec:isolated}).
 
 %\subsubsection{Extraction of surfaces}
 
-To extract the surfaces, i.e., the outer surface and the surfaces of the cavities, we build a \textit{surface graph} from the computed surface and apply the CC analysis to it.
+%To extract the surfaces, i.e., the outer surface and the surfaces of the cavities, we build a \textit{surface graph} from the computed surface and apply the CC analysis to it.
 The whole computation is done on the GPU, in order to avoid additional data transfers between main memory and graphics card.
 %\footnote{\textcolor{red}{Input, output}}
 We split the analysis of the surface into three steps:
 
 \begin{enumerate}
-  \item Building adjacency matrix of \textit{surface graph} $G = (E, V)$.
+  \item Building the adjacency matrix of \textit{surface graph} $G = (E, V)$.
 	\item Finding all connected components of $G$.
 	\item Finding cycles in $G$ that represent patches on spheres.
 \end{enumerate}
 
 For each step, we introduce a GPU kernel implemented as a GLSL compute shader.
-In details, our algorithm works as follows.
+%In details, our algorithm works as follows.
 %First, we modified the output of the original GPU parallel CB to obtain the input which is needed for the analysis and rendering of transparent toroidal patches.
 
 First, we build the adjacency matrix of $G$ from the set of edges $E$.
@@ -199,12 +202,12 @@ For each non-\textit{isolated} toroidal patch an edge $e$ is added to $E$ by wri
 %Consequently, we save GPU memory because the original arcs structure was sparse (see Appendix ?).
 %Now, we store n arcs together with $3 n$ keys in a hash table which data/free ratio is 2. \textcolor{red}{TODO: More precision.}}
 The first kernel then transforms the buffer of edges $E$ into the adjacency matrix of $G$.
-The matrix will have one row for each vertex (triangle) and three columns for its three neighbors (toroidal patches).%, because each triangle has exactly (at most?) three neighboring toroidal patches in the surface.
+The matrix contains one row for each vertex, i.e., triangle, and three columns for its three neighbors, i.e., toroidal patches.%, because each triangle has exactly (at most?) three neighboring toroidal patches in the surface.
 
 In the second step, all connected components of $G$ are found and labeled using the breadth-first search (BFS) algorithm.
 %Our implementation of the BFS algorithm is suboptimal, because its time complexity is $O(d \cdot n)$ where d is the length of the longest shortest path among all vertices in a component.
 %In the worst case, d can be n.
-We decided to choose a very simple, yet inefficient \cite{merrill2012scalable}, quadratic-work implementation, because of the ability to have the BFS implemented in a one kernel.
+We opt for a simple, quadratic-work implementation~\cite{merrill2012scalable}, because of the ability to have the BFS implemented in a single kernel.
 Our decision is supported by the performance measurements (see Section~\ref{sec:performance}) where the computation of surface components takes {\tweakedsim}5 ms for a molecule with {\tweakedsim}10.000 atoms while the computation of SES and its ray-casting together takes {\tweakedsim}119 ms.
 
 In the last step, the cycles representing the spherical patches are extracted.
@@ -216,8 +219,8 @@ A spherical patch is labeled by the label of any of its delimiting edges.
 \label{sec:isolated}
 
 We handle \textit{isolated} tori in two steps.
-First, a label for a torus must be found -- recall that an \textit{isolated} torus is not part of the \textit{surface graph}.
-Second, for each \textit{isolated} torus, we clip fragments in its neighboring spherical patches that are overlaid by the torus. Otherwise, these fragments would create a false surface layer between a torus and a spherical patch (see Figure~\ref{fig:isolated-hole}).
+First, a label for a torus is retrieved. Note that an \textit{isolated} torus is not part of the \textit{surface graph}.
+Second, for each \textit{isolated} torus, we clip fragments in its neighboring spherical patches that are overlaid by the torus. Otherwise, these fragments would create a false surface layer between a torus and a spherical patch (Fig.~\ref{fig:isolated-hole}).
 
 \begin{figure}[htp]
   \centering
@@ -240,7 +243,7 @@ Second, for each \textit{isolated} torus, we clip fragments in its neighboring s
 
 An \textit{isolated} torus can be encountered, while writing toroidal patches for ray-casting.
 We add this torus into the buffer for ray-casting and we also mark it for later processing.
-Later on, when the detection of surface components is done, we run another kernel which assigns the \textit{isolated} tori with their surface labels.
+Later on, when the detection of surface components is done, we run another kernel which assigns the \textit{isolated} tori to their surface labels.
 The assignment is done by inspecting neighboring spheres of the tori.
 There can be two cases:
 \begin{enumerate}
@@ -250,5 +253,5 @@ There can be two cases:
 
 The clipping of fragments in affected spherical patches can be done using a clipping plane or a visibility sphere of a torus.
 We use the latter approach, since visibility spheres for tori were already computed in a previous phase of our technique.
-Here, our kernel writes a texture, similarly to Krone et al.~\cite{krone2011parallel}, which stores for each sphere all visibility spheres that intersect it.
-When ray-casting spherical patches, we use this texture to discard all fragments that are inside of an intersecting visibility sphere.
+Here, our kernel writes a texture, similarly to Krone et al.~\cite{krone2011parallel}, which stores all visibility spheres that intersect the sphere .
+When ray-casting spherical patches, we use this texture to discard all fragments that are inside of the intersecting visibility sphere.
