@@ -1,7 +1,7 @@
 \begin{figure*}[tb]
   \centering
   \includegraphics[width=\textwidth]{image/overview.pdf}
-  \caption{Illustration of the visualization pipeline. The input data contains snapshots of MD trajectories which are processed to construct the molecular surface elements and cavities. Further, the surface areas of cavities are estimated, which are used as the color codes, ranging from yellow (smallest) to magenta (largest). Finally, the surface elements are ray-casted to compose the surface fragments used in the final stage to visualize the surfaces transparently via a user defined opacity modulation.}
+  \caption{Illustration of the visualization pipeline. The input data contains snapshots of MD trajectories which are processed to construct the molecular surface elements and cavities. Further, the surface areas of cavities are estimated, which are used as the color codes, ranging from yellow (smallest) to magenta (largest). Finally, the surface elements are ray-cast to compose the surface fragments used in the final stage to visualize the surfaces transparently via a user defined opacity modulation.}
 	\label{fig:overview}
 \end{figure*}
 
@@ -14,7 +14,7 @@ Our rendering pipeline consists of several steps that are performed on a per-fra
 For better explanation, we split the computations into two groups. 
 The first group deals with data processing that involves the computation of the surface primitives and inner voids, i.e., cavities.
 The second group of computations focuses on visualization of the generated primitives. 
-This group includes the estimation of sizes of voids, ray-casting of the generated surface primitives and opacity calculation; before the final stage represented by the image formation. More specifically, we perform the following steps (Fig.~\ref{fig:overview}):
+This group includes the estimation of sizes of voids, ray-casting the generated surface primitives and opacity calculation; before the final stage represented by the image formation. More specifically, we perform the following steps (Fig.~\ref{fig:overview}):
 	\begin{enumerate}
 	  \item We employ the contour-buildup algorithm to construct the molecular surface. Additionally, we enhance the computation to enable i) transparent rendering of the surface and ii) extraction of cavities (Sec.~\ref{sec:ecb}).
 		\item For cavity extraction, we introduce the so-called \textit{surface graph} (Sec.~\ref{sec:graph}), which allows us to detect the isolated surface components.

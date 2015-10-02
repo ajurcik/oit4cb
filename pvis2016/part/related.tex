@@ -22,7 +22,7 @@ It is based on the theory of implicit surfaces where the value of the implicit f
 The implicit function is composed of three types of patches from which the SES is constructed.
 
 However, none of these solutions dealt with molecular dynamics. 
-Krone et al.~\cite{krone2009interactive} presented their approach to the visualization of the SES using GPU ray casting technique which allowed to achieve interactive frame rates. 
+Krone et al.~\cite{krone2009interactive} presented their approach to the visualization of the SES using GPU ray-casting technique which allowed to achieve interactive frame rates. 
 Another approach by Lindow et al.~\cite{lindow2010accelerated} even accelerates the construction of the SES by scaling the parallel contour-buildup algorithm to more CPU cores and using boundary quadrangles as rasterization primitives.
 Moreover, Krone et al.~\cite{krone2011parallel} proposed a parallel version of the contour-buildup algorithm for GPUs that performed better for larger structures.
 In our technique, we come from their work and extend it so that the computed SES can be rendered using correct transparency.
@@ -56,7 +56,7 @@ After averaging, the results possess correct alpha-blended colors.
 
 Applying the mentioned OIT approaches to molecular surfaces is straightforward because they are represented as meshes.
 For analytic surfaces, Kauker et al.~\cite{kauker2013rendering} proposed to store lists (or arrays) of all fragments produced by the basic shapes for later processing using CSG operations.
-In our technique, we try to avoid the storing and subsequent sorting of a high number of fragments by ray-casting only the fragments that belong to the molecular surface.
+In our technique, we try to avoid the storing and subsequent sorting of a high number of fragments by ray-cast only the fragments that belong to the molecular surface.
 
 
 %\subsection{Ambient Occlusion}
