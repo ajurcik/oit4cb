@@ -5,15 +5,16 @@ First we present the algorithms for the computation of molecular surfaces and ca
 \subsection{Surface computation}
 \label{sec:ecb}
 Our surface computation algorithm is based on the existing research that utilizes the GPU capabilities~\cite{krone2011parallel}.
-In the former study, the SES is represented as three different sets of surface primitives -- spheres, tori, and spherical triangles, that are ray-casted to obtain opaque surface visualization. 
+In the former study, the SES is represented as three different sets of surface primitives -- spheres, tori, and spherical triangles depicted in red, blue and green in Figure~\ref{fig:cb-oit} respectively.
+%, that are ray-casted to obtain opaque surface visualization. 
 %While ray-casting spheres and tori, some sections of the final image will be later occluded by the spherical triangles.
-\textcolor{red}{While ray-casting spheres and tori}, there are also produced pixels that are not visible in the final image, because of their occlusion by pixels on the surface (see Figure~\ref{fig:cb-krone}).
-To enable transparent visualization of the surface, we extended the algorithm such that it employs following primitives:
+Nevertheless, while rendering them opaquely, it produces pixels that are not visible in the final image due to their occlusion by other surface pixels (Fig.~\ref{fig:cb-oit}).
+In our case, we aim for transparent surface visualization, therefore we extend the algorithm such that it employs following primitives:
 %\textcolor{red}{JP: This needs to be explained: Therefore, to visualize contour surface representation using transparency}, we extended the algorithm so that it computes a SES represented with:
 \begin{itemize}
-	\item Spherical triangles.
-  \item Toroidal patches -- a toroidal patch is delimited by two spherical triangles.
-	\item Spherical patches -- a spherical patch is enclosed by edges of three or more toroidal patches.
+	\item Spherical triangle -- delimited by two tori.
+  \item Toroidal patch -- delimited by two spherical triangles.
+	\item Spherical patch -- enclosed by edges of three or more toroidal patches.
 \end{itemize}
 
 \begin{figure}[htp]
@@ -40,7 +41,7 @@ Our method produces only primitives that are part of the surface.
 \end{figure}
 
 In comparison with the previous solution our main contribution here lies in the computation of toroidal and spherical patches.
-Using them we avoid the situation when the previous algorithm renders parts of tori and spheres which do not form the final surface (see Figure~\ref{fig:cb-oit}).
+Using them we avoid the situation when the previous algorithm renders parts of tori and spheres which do not form the final surface (Fig.~\ref{fig:cb-oit}).
 
 %Regarding tori, Kauker et al.~\cite{kauker2013rendering} proposed to ray-cast a toroidal patch using a torus and two clipping planes defined by its delimiting triangles.
 
