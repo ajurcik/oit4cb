@@ -156,7 +156,7 @@ More specifically, one component represents the outer molecular surface and each
 %For the contour representation of the surface, 
 Such independent components can be easily detected by applying connected component (CC) analysis to a structure which we call the \textit{surface graph}.
 %\footnote{\textcolor{red}{JP: Introduce here "terminus techniques"; i.e., SES is composed of three types of patches etc.}}
-We define the \textit{surface graph} using triangles representing vertices and toroidal patches (recall that a ) representing edges since each toroidal patch is delimited by two triangles (Fig.~\ref{fig:graph}).
+We define the \textit{surface graph} using triangles representing vertices and toroidal patches representing edges since each toroidal patch is delimited by two triangles (Fig.~\ref{fig:graph}).
 %\footnote{\textcolor{red}{I don't understand the following sentence. What is former graph representation? The whole sentence should be rewritten.}}
 %Moreover, using the former graph representation makes also the implementation of used graph algorithms and graph data structures on the GPU easier.
 Moreover, we also tried to apply the CC analysis to a graph with spheres as vertices and toroidal patches as edges.
@@ -219,13 +219,8 @@ A spherical patch is labeled by the label of any of its delimiting edges.
 \label{sec:isolated}
 
 We handle \textit{isolated} tori in two steps.
-<<<<<<< .mine
 First, a label for a torus is retrieved. Note that an \textit{isolated} torus is not part of the \textit{surface graph}.
 Second, for each \textit{isolated} torus, we clip fragments in its neighboring spherical patches that are overlaid by the torus. Otherwise, these fragments would create a false surface layer between a torus and a spherical patch (Fig.~\ref{fig:isolated-hole}).
-=======
-First, a label for a torus must be found -- recall that an \textit{isolated} torus is not part of the \textit{surface graph}.
-Second, for each \textit{isolated} torus, we clip fragments in its neighboring spherical patches that are overlaid by the torus. Otherwise, these fragments would create a false surface layer between a torus and a spherical patch (see Figure~\ref{fig:isolated-hole} right).
->>>>>>> .theirs
 
 \begin{figure}[htp]
   \centering
