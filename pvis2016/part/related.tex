@@ -43,15 +43,19 @@ The A-buffer uses the Fourier window which in general helps to resolve the visib
 While the algorithms for rendering of correctly transparent objects in real-time have emerged already in the previous decade \cite{everitt2001interactive}, new approaches removing the limitations of these methods are still emerging.
 Bavoil et al.~\cite{bavoil2008order} introduced the peeling of two depth layers in one rendering pass, thus halving the time complexity of the original Depth Peeling approach \cite{everitt2001interactive}.
 
-For us, performing more rendering passes, would become a bottleneck because of our ray-tracing approach to surface rendering.
-Instead, techniques based on A-buffer enable to render the scene in one pass, thus fitting better to our approach.
-The cost of single pass rendering is the necessity of storing all participating \cite{yang2010real} or all important \cite{salvi2011adaptive} fragments into a data structure for later composition.
-This leads to unbounded requirement on memory size that has been addressed by \cite{maule2012memory} or \cite{vasilakis2015k+buffer}.
-Finally, there are techniques that try to lower both the time and memory complexity by employing specific coloring of objects \cite{mcguire2013weighted} or introducing statistics \cite{enderton2011stochastic}.
+!!!For us, performing more rendering passes, would become a bottleneck because of our ray-tracing approach to surface rendering.
+!!!Instead, techniques based on A-buffer enable to render the scene in one pass, thus fitting better to our approach.
 
-When rendering molecules, the application of described OIT approaches to molecular surfaces is straightforward when they are represented as meshes.
-For analytic surfaces, Kauker et al. proposed to store lists (or arrays) of all fragments produced by basic shapes for later processing using CSG operations \cite{kauker2013rendering}.
-In our technique, we try to avoid storing, and then sorting, of high number of fragments by ray-casting only the fragments that are part of the molecular surface.
+When using single pass rendering, it is necessary to store all participating or all important fragments into a data structure for later composition.
+First approach storing the participating fragments was introduced by Yang et al.~\cite{yang2010real}. Salvi et al.~\cite{salvi2011adaptive} presented the second mentioned approach which stores all important fragments.
+%The cost of single pass rendering is the necessity of storing all participating \cite{yang2010real} or all important \cite{salvi2011adaptive} fragments into a data structure for later composition.
+This leads to an unbounded requirement on the memory size that was addressed by Maule et al.~\cite{maule2012memory} or Vasilakis et al.~\cite{vasilakis2015k+buffer}.
+Finally, some of the existing techniques aim to decrease both time and memory complexity.
+McGuire and Bavoil~\cite{mcguire2013weighted} employ specific coloring of objects to reach this goal, whereas Enderton et al.~\cite{enderton2011stochastic} introduce statistics for the same purpose.
+
+Applying the mentioned OIT approaches to molecular surfaces is straightforward because they are represented as meshes.
+For analytic surfaces, Kauker et al.~\cite{kauker2013rendering} proposed to store lists (or arrays) of all fragments produced by the basic shapes for later processing using CSG operations.
+In our technique, we try to avoid the storing and subsequent sorting of a high number of fragments by ray-casting only the fragments that belong to the molecular surface.
 
 
 %\subsection{Ambient Occlusion}
@@ -61,7 +65,7 @@ In our technique, we try to avoid storing, and then sorting, of high number of f
 %Grottel et al.~\cite{grottel2012object} presented their method reaching interactive frame rates for large and dynamic data sets. 
 %Recently, their approach was extended by~\cite{staib2015ambient}.
 %This method is applicable to transparent particles as well.
-For enhancing the understanding of the interior of the molecular structure, we employed the technique presented by Borland\cite{borland2011ambient}. 
+!!!For enhancing the understanding of the interior of the molecular structure, we employed the technique presented by Borland\cite{borland2011ambient}. 
 His technique, called ambient occlusion opacity mapping, enables to determine a variable opacity at each point on the molecular surface.
 In consequence, the interior structures can be more opaque than the outer structures, i.e., molecular surface.
 
