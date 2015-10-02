@@ -83,3 +83,9 @@ Our technique was implemented mainly using OpenGL employing GLSL compute shaders
 We also utilize OpenCL to accelerate a kernel which computes positions of spherical triangles in the original algorithm \cite{krone2011parallel}.
 The GLSL implementation of this kernel performed for a molecule with {\tweakedsim}10000 atoms is about 5x slower than the OpenCL/CUDA one.
 From the tests we did, we assume that the key of such performance loss is the extensive use of the global memory in the kernel which is handled differently in OpenGL and OpenCL/CUDA.
+
+From the results, it can be seen that in terms of performance, the main limitation of our technique is ray-casting of the computed surface.
+More specifically, the demanding parts are rendering of spherical and toroidal patches that take together 75-80\% of the whole rendering time.
+We anticipate that the performance of ray-casting these patches could be improved by using tighter bounding boxes for them when splatting.
+In fact, we employ bounding squares for both spheres containing spherical patches and visibility spheres containing visible parts of tori.
+In this way, the computation of ray-primitive intersection is evaluated multiple times for spheres and tori that form more than one surface patch.
