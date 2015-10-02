@@ -13,14 +13,7 @@ When all features are set for the first frame (see Figure~\ref{fig:animation}), 
 In this phase they do not have any control of this process so it is impossible to detect an error inside the animation and stop the generation.
 These errors, such as occlusions or wrong clip plane positions, are detected when playing the final animation.
 The only solution is to adjust the input settings and launch the whole process once again.
-For better imagination, in case of the example video (from which Figure~\ref{fig:animation} is captured), it took two days to produce the solution which comprehensibly shows the whole process of ligand penetration to the protein active site.
-
-\begin{figure}[htb]
-  \centering
-  \includegraphics[width=2.5in]{image/animation.png}
-  \caption{One time step from the animation aiming to show the penetration of the ligand to the protein active site. For better insight, different representations of the molecule and the ligand, surface transparency, clip plane, and different coloring was used.}
-	\label{fig:animation}
-\end{figure}
+For better imagination, in case of the example video (from which Figure~\ref{fig:animation} (top) is captured), it took two days to produce the solution which comprehensibly shows the whole process of ligand penetration to the protein active site.
 
 Our new system is able to overcome the following limitations of the above-described workflow:
 \begin{itemize} 
@@ -32,14 +25,13 @@ Our new system is able to overcome the following limitations of the above-descri
 In consequence, our system enables to reach similar results in real-time. 
 In one aspect it even overcomes the existing solution as the users can interactively manipulate with the scene on the fly~--~perform scene transformations, change the appearance of the protein and ligand, or change the probe size used for the generation of protein surface.
 
-Figure \ref{fig:animation2} shows one time step of the animation generated using the same dataset as for Figure~\ref{fig:animation}.
-
-\begin{figure}[htb]
+\begin{figure}[htp]
   \centering
-  \includegraphics[width=2.5in]{image/ligand.png}
-  \caption{One time step of the animation generated using our algorithm. It shows the same molecule and its dynamics as in Fig.~\ref{fig:animation}. By enabling the interactive manipulation with the scene within the animation, the user can clearly see the transportation route without the necessity to use any clip plane.}
-	\label{fig:animation2}
+    \includegraphics[width=2.5in]{image/animation.png}
+  \caption{Top: One time step from the animation aiming to show the penetration of the ligand to the protein active site. For better insight, different representations of the molecule and the ligand, surface transparency, clip plane, and different coloring was used. Bottom: One time step of the same animation generated using our algorithm. It shows the same molecule and its dynamics. By enabling the interactive manipulation with the scene within the animation, the user can clearly see the transportation route without the necessity to use any clip plane.}
+\label{fig:animation}
 \end{figure}
+Figure \ref{fig:animation} (bottom) shows one time step of the animation generated using the same dataset as for the top part of this Figure.
 
 When the results of the algorithm were evaluated by the domain experts, they confirmed that our solution is highly practical with respect to the described task because the time to complete this task is reduced dramatically.
 Moreover, they also appreciated the visual appearance which they considered to be more appealing than the previous solutions.

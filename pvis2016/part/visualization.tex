@@ -12,8 +12,7 @@ In 2013, Kauker et al.~\cite{kauker2013rendering} proposed to ray-cast a toroida
     \centering
     \includegraphics[width=1.7in]{image/torus-vs.png}
     %\caption{Clipping by \textit{visibility sphere}.}
-		\label{fig:torus-vs}
-  \end{subfigure}%
+	\end{subfigure}%
   \quad
   \begin{subfigure}[t]{0.4\columnwidth}
     \centering
@@ -22,6 +21,7 @@ In 2013, Kauker et al.~\cite{kauker2013rendering} proposed to ray-cast a toroida
   \end{subfigure}
 \caption{Ray-tracing of a toroidal patch. The saddle part of the torus (left) is cut by so called \textit{visibility sphere}.
 A patch (right) is cut from the whole toroidal ring by clipping planes defined by spherical triangles.}
+\label{fig:torus-vs}
 \end{figure}
 
 We employ this approach and, moreover, we modify the data structure being used in the original algorithm to store and retrieve all spherical triangles incident to a torus (Fig.~\ref{fig:hashing}). In order to get all neighboring triangles for a torus, we hash the triangles by three keys; i.e., one for each torus which is connected to a triangle.
@@ -43,7 +43,8 @@ Since the boundaries of a spherical patch are formed by small circle arcs, we ap
 Here, we describe the point-patch test for point $P_{front}=P$ only, since the same test is applied to $P_{back}$.
 Before we apply the odd-even rule, we choose a point $O$ lying outside the patch.
 Then, we test line $OP$, the shortest path on a sphere, for an intersection with each of the arcs delimiting the patch.
-The intersection of a line $OP$ with the small circle arc, given by points $AB$, is computed in two steps (Fig.~\ref{fig:outer-point}a):
+The intersection of a line $OP$ with the small circle arc, given by points $AB$, is computed in two steps (Fig.~\ref{fig:outer-point} left):
+
 \begin{enumerate}
   \item Intersections of the circles containing the line and the arc, which can intersect in up to $2$ points.
   \item Intersection points are tested whether they belong to both the segment $OP$ and the arc $AB$.
@@ -57,7 +58,7 @@ Finally, if the sum of all intersections, i.e., for all the sides, is even then 
     \includegraphics[height=1.9in]{image/patch.png}
     %\caption{%Point in spherical patch test.
 		%The intersection $I_1$ lies on an intersection line between two planes containing arcs $OP$ and $AB$.}
-		\label{fig:spherical-patch}
+		%\label{fig:spherical-patch}
   \end{subfigure}%
   \quad
   \begin{subfigure}[c]{0.44\columnwidth}
@@ -65,9 +66,9 @@ Finally, if the sum of all intersections, i.e., for all the sides, is even then 
     \includegraphics[height=1.6in]{image/outer.png}
     %\caption{%A torus formed by carbon ($C_C$) and hydrogen ($C_H$) atoms.
 		%The center of the torus ($C_{t}$) lies outside the atom centers, while the center of its visibility sphere $C_{vs}$ lies between $C_C$ and $C_H$.}
-		\label{fig:outer-point}
   \end{subfigure}
-\caption{Left: Point in spherical patch test. The intersection $I_1$ lies on an intersection line between two planes containing arcs $OP$ and $AB$. Right: Torus formed by carbon ($C_C$) and hydrogen ($C_H$) atoms. The center of the torus ($C_{t}$) lies outside the atom centers, while the center of its visibility sphere $C_{vs}$ lies between $C_C$ and $C_H$.}
+	\caption{Left: Point in spherical patch test. The intersection $I_1$ lies on an intersection line between two planes containing arcs $OP$ and $AB$. Right: Torus formed by carbon ($C_C$) and hydrogen ($C_H$) atoms. The center of the torus ($C_{t}$) lies outside the atom centers, while the center of its visibility sphere $C_{vs}$ lies between $C_C$ and $C_H$.}
+	\label{fig:outer-point}
 \end{figure}
 
 Since we deal with spherical patches and not the planar ones, the situation is bit more complex and we cannot choose point $O$ arbitrarily. 
