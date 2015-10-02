@@ -17,19 +17,19 @@ To visualize the SES transparently, we extended the surface computation part of 
   \begin{subfigure}[t]{0.48\columnwidth}
     \centering
     \includegraphics[width=1.5in]{image/cb-krone.png}
-    \caption{The original method \cite{krone2011parallel} rendered with transparency.}
+   % \caption{The original method \cite{krone2011parallel} rendered with transparency.}
 		\label{fig:cb-krone}
   \end{subfigure}%
   ~
   \begin{subfigure}[t]{0.48\columnwidth}
     \centering
     \includegraphics[width=1.5in]{image/cb-oit.png}
-    \caption{Our extended method.}
+   % \caption{Our extended method.}
   \end{subfigure}
-\caption{Comparison between the original method rendered with transparency and our extended method.
+\caption{Comparison between the original method~\cite{krone2011parallel} rendered with transparency (left) and our extended method (right).
 %The transparent SES of three atoms produced by the original parallel CB algorithm (a), and our extended algorithm (b). 
-The original method (a) renders parts of spheres (red) and tori (blue) that lie below the surface.
-Our method (b) produces only primitives that are part of the surface.
+The original method renders parts of spheres (red) and tori (blue) that lie below the surface.
+Our method produces only primitives that are part of the surface.
 %More, our algorithm is also able to handle patches on a sphere that form different surfaces, i.e., the outer and one or more inner.
 }
 \end{figure}
@@ -44,17 +44,17 @@ Regarding tori, Kauker et al.~\cite{kauker2013rendering} proposed to ray-cast a 
   \begin{subfigure}[t]{0.55\columnwidth}
     \centering
     \includegraphics[width=1.7in]{image/torus-vs.png}
-    \caption{Clipping by \textit{visibility sphere}.}
+    %\caption{Clipping by \textit{visibility sphere}.}
 		\label{fig:torus-vs}
   \end{subfigure}%
   \quad
   \begin{subfigure}[t]{0.4\columnwidth}
     \centering
     \includegraphics[width=1.3in]{image/torus-planes.png}
-    \caption{Clipping by planes defined by spherical triangles.}
+    %\caption{Clipping by planes defined by spherical triangles.}
   \end{subfigure}
-\caption{Ray-tracing of a toroidal patch. The saddle part of the torus (a) is cut by so called \textit{visibility sphere}.
-A patch (b) is cut from the whole toroidal ring by clipping planes.}
+\caption{Ray-tracing of a toroidal patch. The saddle part of the torus (left) is cut by so called \textit{visibility sphere}.
+A patch (right) is cut from the whole toroidal ring by clipping planes defined by spherical triangles.}
 \end{figure}
 
 We employ his approach and modify the data structure that is used in the original algorithm to store spherical triangles in such a way that we are able to obtain all triangles incident to a torus.
