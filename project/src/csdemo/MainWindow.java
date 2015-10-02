@@ -1221,7 +1221,7 @@ public class MainWindow extends javax.swing.JFrame {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 4);
         jPanel1.add(jLabel26, gridBagConstraints);
 
-        backOpacityExponentSpinner.setModel(new javax.swing.SpinnerNumberModel(Float.valueOf(0.25f), Float.valueOf(0.0f), null, Float.valueOf(0.05f)));
+        backOpacityExponentSpinner.setModel(new javax.swing.SpinnerNumberModel(Float.valueOf(2.0f), Float.valueOf(0.0f), null, Float.valueOf(1.0f)));
         backOpacityExponentSpinner.setPreferredSize(new java.awt.Dimension(50, 20));
         backOpacityExponentSpinner.addChangeListener(new javax.swing.event.ChangeListener() {
             public void stateChanged(javax.swing.event.ChangeEvent evt) {
