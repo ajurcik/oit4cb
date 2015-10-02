@@ -1,10 +1,14 @@
-\subsection{Extended CB Algorithm}
+In this section we describe our approach to the extraction of molecular surface and surfaces of inner cavities which we denote as surface features.
+First we present the algorithms for the computation of molecular surfaces and cavities and then we show how we deal with special cases occurring within the surface construction.
+
+%Extended CB Algorithm
+\subsection{Surface computation}
 \label{sec:ecb}
-Our extended CB algorithm is based on the existing research that utilizes the GPU capabilities~\cite{krone2011parallel}.
+Our surface computation algorithm is based on the existing research that utilizes the GPU capabilities~\cite{krone2011parallel}.
 In the former study, the SES is represented as three different sets of surface primitives -- spheres, tori, and spherical triangles, that are ray-casted to obtain opaque surface visualization. 
 %While ray-casting spheres and tori, some sections of the final image will be later occluded by the spherical triangles.
-While ray-casting spheres and tori, there are also produced pixels that are not visible in the final image, because of their occlusion by pixels on the surface (see Figure~\ref{fig:cb-krone}).
-To visualize the SES transparently, we extended the surface computation part of the algorithm such that it computes these primitives:
+\textcolor{red}{While ray-casting spheres and tori}, there are also produced pixels that are not visible in the final image, because of their occlusion by pixels on the surface (see Figure~\ref{fig:cb-krone}).
+To enable transparent visualization of the surface, we extended the algorithm such that it employs following primitives:
 %\textcolor{red}{JP: This needs to be explained: Therefore, to visualize contour surface representation using transparency}, we extended the algorithm so that it computes a SES represented with:
 \begin{itemize}
 	\item Spherical triangles.
@@ -25,6 +29,7 @@ To visualize the SES transparently, we extended the surface computation part of 
     \centering
     \includegraphics[width=1.5in]{image/cb-oit.png}
    % \caption{Our extended method.}
+		\label{fig:cb-oit}
   \end{subfigure}
 \caption{Comparison between the original method~\cite{krone2011parallel} rendered with transparency (left) and our extended method (right).
 %The transparent SES of three atoms produced by the original parallel CB algorithm (a), and our extended algorithm (b). 
@@ -35,41 +40,51 @@ Our method produces only primitives that are part of the surface.
 \end{figure}
 
 In comparison with the previous solution our main contribution here lies in the computation of toroidal and spherical patches.
-Using them we avoid the situation when the previous algorithm renders parts of tori and spheres which do not form the final surface.
+Using them we avoid the situation when the previous algorithm renders parts of tori and spheres which do not form the final surface (see Figure~\ref{fig:cb-oit}).
 
-Regarding tori, Kauker et al.~\cite{kauker2013rendering} proposed to ray-cast a toroidal patch using a torus and two clipping planes defined by its delimiting triangles.
+%Regarding tori, Kauker et al.~\cite{kauker2013rendering} proposed to ray-cast a toroidal patch using a torus and two clipping planes defined by its delimiting triangles.
 
-\begin{figure}[htp]
-  \centering
-  \begin{subfigure}[t]{0.55\columnwidth}
-    \centering
-    \includegraphics[width=1.7in]{image/torus-vs.png}
-    %\caption{Clipping by \textit{visibility sphere}.}
-		\label{fig:torus-vs}
-  \end{subfigure}%
-  \quad
-  \begin{subfigure}[t]{0.4\columnwidth}
-    \centering
-    \includegraphics[width=1.3in]{image/torus-planes.png}
-    %\caption{Clipping by planes defined by spherical triangles.}
-  \end{subfigure}
-\caption{Ray-tracing of a toroidal patch. The saddle part of the torus (left) is cut by so called \textit{visibility sphere}.
-A patch (right) is cut from the whole toroidal ring by clipping planes defined by spherical triangles.}
-\end{figure}
+%\begin{figure}[htp]
+%  \centering
+%  \begin{subfigure}[t]{0.55\columnwidth}
+%    \centering
+%    \includegraphics[width=1.7in]{image/torus-vs.png}
+%    \caption{Clipping by \textit{visibility sphere}.}
+%		\label{fig:torus-vs}
+%  \end{subfigure}%
+%  \quad
+%  \begin{subfigure}[t]{0.4\columnwidth}
+%    \centering
+%    \includegraphics[width=1.3in]{image/torus-planes.png}
+%    \caption{Clipping by planes defined by spherical triangles.}
+%  \end{subfigure}
+%\caption{Ray-tracing of a toroidal patch. The saddle part of the torus (a) is cut by so called \textit{visibility sphere}.
+%A patch (b) is cut from the whole toroidal ring by clipping planes.}
+%\end{figure}
 
-We employ his approach and modify the data structure that is used in the original algorithm to store spherical triangles in such a way that we are able to obtain all triangles incident to a torus.
+%We employ his approach and modify the data structure that is used in the original algorithm to store spherical triangles in such a way that we are able to obtain all triangles incident to a torus.
 %In this way, we ray-cast toroidal patches directly instead of tori.
-In order to get all neighboring triangles for a torus, we hash the triangles by three keys -- one for each torus which is connected to a triangle.
-For this, we implemented a simple hash table (see Figure~\ref{fig:hashing}) which is based on linear addressing scheme \cite{alcantara2011efficient}.
+%In order to get all neighboring triangles for a torus, we hash the triangles by three keys -- one for each torus which is connected to a triangle.
+%For this, we implemented a simple hash table (see Figure~\ref{fig:hashing}) which is based on linear addressing scheme \cite{alcantara2011efficient}.
 
+%\begin{figure}[htb]
+%  \centering
+%  \includegraphics[width=3.3in]{image/hashing.png}
+%  \caption{Our novel data structure for storing spherical triangles. Triangles $t_1$ and $t_2$ are stored linearly in an array and their incident torus $\tau$ is connected to them using a hash table.}
+%	\label{fig:hashing}
+%\end{figure}
+
+To be able to compute toroidal patches, we introduce a novel data structure that enables to store and retrieve all spherical triangles incident to a torus (Fig.~\ref{fig:hashing41}). In order to get all neighboring triangles for a torus, we hash the triangles by three keys; i.e., one for each torus which is connected to a triangle.
+For this purpose, we implemented a simple hash table, which is based on linear addressing scheme \cite{alcantara2011efficient}.
 \begin{figure}[htb]
   \centering
   \includegraphics[width=3.3in]{image/hashing.png}
-  \caption{Our novel data structure for storing spherical triangles. Triangles $t_1$ and $t_2$ are stored linearly in an array and their incident torus $\tau$ is connected to them using a hash table.}
-	\label{fig:hashing}
+  \caption{An illustration of the data structure for storing spherical triangles. Triangles $t_1$ and $t_2$ are stored linearly in an array and their incident torus $\tau$ is connected to them using a hash table.}
+	\label{fig:hashing41}
 \end{figure}
+This allows us, to ray-cast toroidal patches directly instead of tori.
 
-Since a spherical patch is bounded by toroidal patches, we extended the original algorithm by adding three new GPU kernels that compute the sets of toroidal patches forming the spherical patches (see Section~\ref{sec:graph}).
+As described, a spherical patch is bounded by toroidal patches (Fig~\ref{fig:graph}). We extended the surface computation algorithm by adding three new GPU kernels that compute the sets of toroidal patches forming the spherical patches (see Section~\ref{sec:graph}).
 When visualizing the surface, each such set is used to ray-cast a spherical patch (see Section~\ref{sec:spherical-patches}).
 
 %\begin{figure}[htb]
@@ -81,7 +96,8 @@ When visualizing the surface, each such set is used to ray-cast a spherical patc
 %	\label{fig:kernels}
 %\end{figure}
 
-\subsection{Surface graph}
+%Surface graph
+\subsection{Cavity computation}
 \label{sec:graph}
    
 %\begin{itemize}
@@ -102,10 +118,9 @@ When visualizing the surface, each such set is used to ray-cast a spherical patc
 %\end{itemize}
 
 The computed surface contains primitives of both the outer molecular surface and the surfaces of inner cavities.
-\footnote{\textcolor{red}{JP: This should be written in more friendly fashion and with clear defined terms.
-Terms to be explained: surface is continuitous (geometrical?, since $C^1$ continuous it is not), graphs (2D/3D, does it contain loops?), primitive, component}}
+%\footnote{\textcolor{red}{JP: This should be written in more friendly fashion and with clear defined terms. Terms to be explained: surface is continuitous (geometrical?, since $C^1$ continuous it is not), graphs (2D/3D, does it contain loops?), primitive, component}}
 Kauker et al. \cite{kauker2013rendering} were in their study interested in visualizing only the outer surface.
-\footnote{\textcolor{red}{AJ: Maybe, this could be part of related work}}
+%\footnote{\textcolor{red}{AJ: Maybe, this could be part of related work}}
 Therefore, they called the inner parts of the surface as inner remains as it was source of occlusion.
 However, the domain experts are often interested in the exploration of inner cavities because of their significant role in reactivity of the molecule.
 %We think that for SES, the user might want to visualize cavities within the molecule and hence it is useful to let him decide on what to visualize.
@@ -126,36 +141,37 @@ It means that the cavities can be shown or hidden on demand.
 	\label{fig:graph}
 \end{figure}
 
-For both \textcolor{red}{SAS} and SES, the hiding of cavities is straightforward \footnote{\textcolor{red}{AJ: It was quite hard job to do it:)}} because of the fact that their surfaces are completely separated from the molecular surface. \textcolor{red}{\cite{borland2011ambient}}.
+The hiding of cavities is possible due to the fact that their surfaces are completely separated from the molecular surface.
+%\textcolor{red}{\cite{borland2011ambient}}.
 %\footnote{\textcolor{red}{JP: Too many ideas in one sentence. Split into two or more.}}
 More specifically, one component represents the outer molecular surface and each single cavity corresponds to another component.
-For the contour representation of the surface, isolated components can be easily detected by applying connected component (CC) analysis to a structure which we call the \textit{surface graph}.
-\footnote{\textcolor{red}{JP: Introduce here "terminus techniques"; i.e., SES is composed of three types of patches etc.}}
-We build our \textit{surface graph} using triangles as vertices and toroidal patches (recall that a toroidal patch is delimited by two triangles) as edges connecting them (see Figure~\ref{fig:graph}).
+For the contour representation of the surface, \textcolor{red}{isolated} components can be easily detected by applying connected component (CC) analysis to a structure which we call the \textit{surface graph}.
+%\footnote{\textcolor{red}{JP: Introduce here "terminus techniques"; i.e., SES is composed of three types of patches etc.}}
+We define our \textit{surface graph} using triangles as vertices and toroidal patches (recall that a toroidal patch is delimited by two triangles) as edges connecting them (see Fig.~\ref{fig:graph}).
 %\footnote{\textcolor{red}{I don't understand the following sentence. What is former graph representation? The whole sentence should be rewritten.}}
 %Moreover, using the former graph representation makes also the implementation of used graph algorithms and graph data structures on the GPU easier.
-Moreover, we also tried to do the CC analysis on a graph with spheres as vertices and toroidal patches as edges.
+Moreover, we also tried to apply the CC analysis to a graph with spheres as vertices and toroidal patches as edges.
 But, the idea showed to be not useful because spheres may contain more than one patches that can form parts of different surfaces.
 More, the implementation of used graph algorithms and data structures on the GPU would be more complex.
 This is caused mainly by the fact that a sphere has arbitrary number of neighboring tori, while a triangle has exactly three tori as its neighbors.
 Hence, all vertices in our graph are of degree three.
 
-Finally, the surface contains also tori that are not \textcolor{red}{cut} by any triangle.
+Finally, the surface contains also tori that are not delimited by any triangles.
 We call these tori as \textit{isolated}, because they do not have any neighboring triangle (see Figure~\ref{fig:isolated-hole}).
 \textit{Isolated} tori are excluded from the \textit{surface graph} and they are handled later in the computation (see Section~\ref{sec:isolated}).
 
-\subsubsection{Extraction of surfaces}
+%\subsubsection{Extraction of surfaces}
 
-To extract the surfaces, i.e., the outer surface and the surfaces of the \textcolor{green}{inner voids}, we build a \textit{surface graph} from the computed surface and apply the CC analysis to it.
-The whole computation is done on the GPU, so that we avoid additional data transfers between main memory and graphics card.
+To extract the surfaces, i.e., the outer surface and the surfaces of the cavities, we build a \textit{surface graph} from the computed surface and apply the CC analysis to it.
+The whole computation is done on the GPU, in order to avoid additional data transfers between main memory and graphics card.
 %\footnote{\textcolor{red}{Input, output}}
 We split the analysis of the surface into three steps:
 \begin{enumerate}
   \item Building adjacency matrix of \textit{surface graph} $G = (E, V)$.
 	\item Finding all connected components of $G$.
-	\item Finding \textcolor{red}{circles/cycles} in $G$ that represent patches on spheres.
+	\item Finding cycles in $G$ that represent patches on spheres.
 \end{enumerate}
-For each step, we introduce a new GPU kernel implemented as a GLSL compute shader.
+For each step, we introduce a GPU kernel implemented as a GLSL compute shader.
 
 %First, we modified the output of the original GPU parallel CB to obtain the input which is needed for the analysis and rendering of transparent toroidal patches.
 To build the adjacency matrix of $G$ we utilize the hash table of triangles.
@@ -190,7 +206,7 @@ To do this, we assign the edges in $E$ by their neighboring spheres into buckets
 We then order the edges in buckets, so that they represent one or more cycles in $G$.
 A spherical patch is labeled by the label of any of its delimiting edges.
 
-\subsection{Special case -- isolated torus}
+\subsubsection{Special case -- isolated torus}
 \label{sec:isolated}
 
 We handle \textit{isolated} tori in two steps.
