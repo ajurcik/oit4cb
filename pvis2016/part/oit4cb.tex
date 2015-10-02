@@ -76,6 +76,11 @@ Using them we avoid the situation when the previous algorithm renders parts of t
 
 To be able to compute toroidal patches, we introduce a novel data structure that enables to store and retrieve all spherical triangles incident to a torus (Fig.~\ref{fig:hashing41}). In order to get all neighboring triangles for a torus, we hash the triangles by three keys; i.e., one for each torus which is connected to a triangle.
 For this purpose, we implemented a simple hash table, which is based on linear addressing scheme \cite{alcantara2011efficient}.
+We find toroidal patches on a torus by retrieving all its neighboring triangles and sorting them relatively by their angular position around the torus.
+We use the bubble sort algorithm for this sorting.
+When sorted, the pairs of neighboring triangles define the toroidal patches and corresponding edges.
+Additionally, we check whether the first two triangles form a visible patch.
+If not, then the first triangle forms a visible patch with the last one and we rotate the sorted list of triangles by one item.
 \begin{figure}[htb]
   \centering
   \includegraphics[width=3.3in]{image/hashing.png}
@@ -166,25 +171,26 @@ To extract the surfaces, i.e., the outer surface and the surfaces of the cavitie
 The whole computation is done on the GPU, in order to avoid additional data transfers between main memory and graphics card.
 %\footnote{\textcolor{red}{Input, output}}
 We split the analysis of the surface into three steps:
+
 \begin{enumerate}
   \item Building adjacency matrix of \textit{surface graph} $G = (E, V)$.
 	\item Finding all connected components of $G$.
 	\item Finding cycles in $G$ that represent patches on spheres.
 \end{enumerate}
-For each step, we introduce a GPU kernel implemented as a GLSL compute shader.
 
+For each step, we introduce a GPU kernel implemented as a GLSL compute shader.
+In details, our algorithm works as follows.
 %First, we modified the output of the original GPU parallel CB to obtain the input which is needed for the analysis and rendering of transparent toroidal patches.
-To build the adjacency matrix of $G$ we utilize the hash table of triangles.
-During the writing of toroidal patches into a buffer for ray-casting, we also write a list of edges $E$ of $G$.
+
+First, we build the adjacency matrix of $G$ from the set of edges $E$.
+%To build $G$, we utilize the hash table of triangles.
+In fact, $E$ is prepared earlier in the surface computation phase, when we compute toroidal patches for ray-casting.
+To compute these patches, we determine their delimiting triangles, thus knowing incident vertices of edges of $G$.
+%\textcolor{red}{In the hash table, each triangle is hashed using all three pairs of spheres -- $(i, j)$, $(i, k)$ and $(j, k)$ that produced it.
+%To retrieve a triangle for a torus, we query the hash table with a pair of its neighboring spheres as a key.}
+%and therefore we also write edges for these patches into $E$.
 For each non-\textit{isolated} toroidal patch an edge $e$ is added to $E$ by writing its incident vertices into a buffer of edges.
-Here, we find the incident vertices of $e$ by querying the hash table of triangles.
-In the hash table, each triangle is hashed using all three pairs of atoms -- $(i, j)$, $(i, k)$ and $(j, k)$, that form the three small circles that produced it.
-Then, the toroidal patches (and also edges) for a torus can be found by retrieving all triangles incident to a torus and sorting them relatively by their angular position around the torus.
-We use the bubble sort algorithm for this sorting.
-When sorted, the pairs of neighboring triangles define the toroidal patches and corresponding edges.
-We also check whether the first two triangles form a visible patch.
-If not, then the first triangle forms a visible patch with the last one and we rotate the sorted list of triangles by one item.
-\textcolor{red}{The test is done...}
+%Here, we find the incident vertices of $e$ by querying the hash table of triangles.
 %In the original algorithm \cite{krone2011parallel}, an arc intersection was stored only for atoms whose indices fulfilled $i < j < k$.
 %This is insufficient for rendering the toroidal patches transparent as they can't be rendered as a one whole patch because the parts that would be hidden by the opaque surface would be visible.
 %Instead, we split each torus into its visible patches based on their neighboring triangles that delimit them.
@@ -192,21 +198,21 @@ If not, then the first triangle forms a visible patch with the last one and we r
 %\textcolor{red}{For this purpose, we store the computed arc intersections in a linear buffer (employing atomics) and together produce a hash structure which enables us to find the triangles by their two of the three atom indices.
 %Consequently, we save GPU memory because the original arcs structure was sparse (see Appendix ?).
 %Now, we store n arcs together with $3 n$ keys in a hash table which data/free ratio is 2. \textcolor{red}{TODO: More precision.}}
-Finally, the buffer of edges $E$ is transformed into the adjacency matrix by a kernel.
+The first kernel then transforms the buffer of edges $E$ into the adjacency matrix of $G$.
 The matrix will have one row for each vertex (triangle) and three columns for its three neighbors (toroidal patches).%, because each triangle has exactly (at most?) three neighboring toroidal patches in the surface.
 
-In the second step, all connected components of $G$ are found and labeled using the \textcolor{red}{BFS} algorithm.
+In the second step, all connected components of $G$ are found and labeled using the breadth-first search (BFS) algorithm.
 %Our implementation of the BFS algorithm is suboptimal, because its time complexity is $O(d \cdot n)$ where d is the length of the longest shortest path among all vertices in a component.
 %In the worst case, d can be n.
-We decided to choose a very simple yet inefficient \cite{merrill2012scalable} quadratic-work implementation because of the ability of BFS implementation as a one kernel.
-Our decision is supported by the performance measurements (see Section~\ref{sec:performance}) where the computation of surface components takes {\tweakedsim}5 ms for a molecule with {\tweakedsim}10.000 atoms while the computation of SES and its ray-casting together take {\tweakedsim}\textcolor{red}{x} ms.
+We decided to choose a very simple, yet inefficient \cite{merrill2012scalable}, quadratic-work implementation, because of the ability to have the BFS implemented in a one kernel.
+Our decision is supported by the performance measurements (see Section~\ref{sec:performance}) where the computation of surface components takes {\tweakedsim}5 ms for a molecule with {\tweakedsim}10.000 atoms while the computation of SES and its ray-casting together takes {\tweakedsim}119 ms.
 
 In the last step, the cycles representing the spherical patches are extracted.
 To do this, we assign the edges in $E$ by their neighboring spheres into buckets.
-We then order the edges in buckets, so that they represent one or more cycles in $G$.
+We then order the edges in buckets by their adjacency, so that they represent one or more cycles in $G$.
 A spherical patch is labeled by the label of any of its delimiting edges.
 
-\subsubsection{Special case -- isolated torus}
+\subsubsection{Special case -- Isolated torus}
 \label{sec:isolated}
 
 We handle \textit{isolated} tori in two steps.
@@ -243,6 +249,6 @@ There can be two cases:
 \end{enumerate}
 
 The clipping of fragments in affected spherical patches can be done using a clipping plane or a visibility sphere of a torus.
-We use the latter approach, since visibility spheres for tori were already computed in a previous step of our technique.
-Here, our kernel writes a texture, similarly to Krone et al.~\cite{krone2011parallel}, which stores for an atom sphere all its intersecting visibility spheres.
-When ray-casting spherical patches, we use this texture to lookup all visibility spheres and discard all fragments being inside them.
+We use the latter approach, since visibility spheres for tori were already computed in a previous phase of our technique.
+Here, our kernel writes a texture, similarly to Krone et al.~\cite{krone2011parallel}, which stores for each sphere all visibility spheres that intersect it.
+When ray-casting spherical patches, we use this texture to discard all fragments that are inside of an intersecting visibility sphere.
