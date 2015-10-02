@@ -1,25 +1,25 @@
 The contribution of our proposed system will be demonstrated on a case study which corresponds to real problems the biochemists are currently facing. 
-Then also the detailed performance analysis will be discussed.
+Later, we present the detailed performance analysis.
 
 \subsection{Case Study~--~Real-time visual exploration of MD simulation}
-The case study deals with the situation when the biochemists want to visually explore the inner processes which are occurring inside the molecule. 
-An example of such process can be the penetration of a small molecule (ligand) into the active site of the protein where the ligand reacts with the protein and the product of such reaction can form the basis of new chemical matters, e.g., new drugs. 
-The current workflow generating the desired visual appearance of the animation showing such processes consists of many trial and error attempts which makes the whole workflow very lengthy. 
-To describe it in more detail, the biochemists start in the first time step of the whole simulation and try to manually determine the best viewpoint.
-As the view inside the molecule, where the processes usually occur, is crucial, they are using clip planes to enable this.
+The case study deals with the situation when the biochemists want to visually explore the inner processes occurring inside the molecule. 
+An example of such a process can be the penetration of a small molecule (ligand) into the active site of the protein where the ligand reacts with the protein and the product of such reaction can form the basis of new chemical matters, e.g., new drugs. 
+The current workflow generating the desired visual appearance of the animation showing such processes consists of many trial and error attempts, which makes the whole workflow very lengthy. 
+To describe this process in more detail, the biochemists start in the first time step of the whole simulation and try to manually determine the best viewpoint.
+As the view inside the molecule, where the processes usually occur, is crucial, they utilize clip planes to achieve this.
 The manual setting of the clip planes introduces other possible error to the final animation.
-The dynamic movements of the molecule can cause its rotation and the clip plane set in the first time step can have in the following steps completely wrong position.
-When all features are set for the first frame (see Figure~\ref{fig:animation}), the biochemists use an offline rendering tool for generating the whole animation.
-In this phase they do not have any control of this process so it is impossible to detect an error inside the animation and stop the generation.
+The dynamic movements of the molecule can cause its rotation and the clip plane settings in the first time step might have completely wrong positions in the following steps .
+When all the visual parameters are set in the first frame (Fig.~\ref{fig:animation}), the biochemists use an offline rendering tool for generating the whole animation.
+In this phase they do not posses any control of this process so it is impossible to detect an error inside the animation and stop the generation.
 These errors, such as occlusions or wrong clip plane positions, are detected when playing the final animation.
 The only solution is to adjust the input settings and launch the whole process once again.
-For better imagination, in case of the example video (from which Figure~\ref{fig:animation} (top) is captured), it took two days to produce the solution which comprehensibly shows the whole process of ligand penetration to the protein active site.
+For better illustration, in case of the example video (from which Figure~\ref{fig:animation} (top) is captured), it took two days to produce the solution which comprehensibly shows the whole process of ligand penetration to the protein active site.
 
 Our new system is able to overcome the following limitations of the above-described workflow:
 \begin{itemize} 
 \item The MD simulation can be observed in real time which enables the user to interactively adjust the appearance and viewpoint.
 \item The highly transparent molecular surface removes the necessity of using clip planes.
-\item The user had full control of the animation process so we completely remove the trial and error phase of the workflow. 
+\item The user has the full control of the animation process so we completely remove the trial and error phase of the workflow. 
 \end{itemize}
 
 In consequence, our system enables to reach similar results in real-time. 
