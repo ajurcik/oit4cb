@@ -31,8 +31,7 @@ i) \textit{spherical triangles}, as was already described by Krone et al.~\cite{
   \begin{subfigure}[t]{0.48\columnwidth}
     \centering
     \includegraphics[width=1.5in]{image/cb-oit.png}
-   % \caption{Our extended method.}
-		
+		%\label{fig:cb-oit}
   \end{subfigure}
 	
 \caption{Comparison between the original method~\cite{krone2011parallel} rendered with transparency (left) and our extended method (right).
@@ -46,6 +45,7 @@ Our method produces only primitives that are part of the surface.
 
 In comparison with the previous solution our main contribution here lies in the computation of toroidal and spherical patches.
 Using them we avoid the situation when the previous algorithm renders parts of tori and spheres which do not form the final surface (Fig.~\ref{fig:cb-oit}).
+
 
 %Regarding tori, Kauker et al.~\cite{kauker2013rendering} proposed to ray-cast a toroidal patch using a torus and two clipping planes defined by its delimiting triangles.
 
@@ -219,8 +219,13 @@ A spherical patch is labeled by the label of any of its delimiting edges.
 \label{sec:isolated}
 
 We handle \textit{isolated} tori in two steps.
+<<<<<<< .mine
 First, a label for a torus is retrieved. Note that an \textit{isolated} torus is not part of the \textit{surface graph}.
 Second, for each \textit{isolated} torus, we clip fragments in its neighboring spherical patches that are overlaid by the torus. Otherwise, these fragments would create a false surface layer between a torus and a spherical patch (Fig.~\ref{fig:isolated-hole}).
+=======
+First, a label for a torus must be found -- recall that an \textit{isolated} torus is not part of the \textit{surface graph}.
+Second, for each \textit{isolated} torus, we clip fragments in its neighboring spherical patches that are overlaid by the torus. Otherwise, these fragments would create a false surface layer between a torus and a spherical patch (see Figure~\ref{fig:isolated-hole} right).
+>>>>>>> .theirs
 
 \begin{figure}[htp]
   \centering
@@ -228,17 +233,17 @@ Second, for each \textit{isolated} torus, we clip fragments in its neighboring s
     \centering
     \includegraphics[height=1.4in]{image/isolated-cutaway2.png}
     %\caption{An \textit{isolated} torus.}
-		\label{fig:isolated-cutaway}
+		%\label{fig:isolated-cutaway}
   \end{subfigure}%
   \quad
   \begin{subfigure}[t]{0.4\columnwidth}
     \centering
     \includegraphics[height=1.4in]{image/isolated-hole.png}
     %\caption{A hole in a spherical patch.}
-		\label{fig:isolated-hole}
   \end{subfigure}
 \caption{Example of an isolated torus between two spheres.
 	Left: Isolated tori do not have neighboring triangles, therefore the surface component to which they belong cannot be determined directly from the surface graph. 	Right: An isolated torus cuts circular holes into its neighboring spherical patches.}
+\label{fig:isolated-hole}
 \end{figure}
 
 An \textit{isolated} torus can be encountered, while writing toroidal patches for ray-casting.
