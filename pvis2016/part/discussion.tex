@@ -68,7 +68,7 @@ The results of our measurements for static molecules are presented in Table~\ref
   \scriptsize
   \begin{center}
     \begin{tabular}{ccccccc}
-      Molecule & \# Atoms & CB & SG & AO+Area & Ray-casting & Total \\
+      Molecule & \# Atoms & CB & SG & Area & Ray-casting & Total \\
 			%        &       & buildup  & graph   & Area & casting &       \\
 							&       & (ms)     & (ms)    & (ms) & (ms) & (FPS) \\
     \hline
@@ -89,3 +89,21 @@ More specifically, the demanding parts are rendering of spherical and toroidal p
 We anticipate that the performance of ray-casting these patches could be improved by using tighter bounding boxes for them when splatting.
 In fact, we employ bounding squares for both spheres containing spherical patches and visibility spheres containing visible parts of tori.
 In this way, the computation of ray-primitive intersection is evaluated multiple times for spheres and tori that form more than one surface patch.
+
+As a side effect of exploiting the hash data structure (Sec.~\ref{sec:ecb}) for storing spherical triangles, our technique consumes less GPU memory than the original GPU parallel approach.
+This is due to the fact that the original method uses a linear buffer to store spherical triangles.
+An index into this buffer, i.e., position where the triangle is stored, is computed based on the $i$ and $j$ indices of spheres $i < j < k$ that formed the triangle.
+The range of $j$ is optimized in terms of limiting a maximal number of neighbors ($maxNeighbors$) that a sphere can have, so that the range of $j$ can be remapped to $\[0, maxNeighbors\]$.
+There is also a limit on a total number of triangles ($maxTriangles$) that can be stored for each pair of spheres.
+Putting it all together, the memory complexity of the original structure is:
+
+\begin{equation}
+$|A| \cdot maxNeighbors \cdot maxTriangles$,
+\end{equation}
+
+where $|A|$ is the number of atoms of the molecule and typical settings for the other two constants are $maxNeighbors = 64$, $maxTriangles = 64$.
+We took this settings from the MegaMol visualization framework.
+
+Our structure complexity is $|T| + hashFreeRatio \cdot 3 |T|$ where $hashFreeRatio = 2$.
+
+The ratio of atoms to triangles is approximately (value from experiments) $\frac{|A|}{|T|} > \frac{1}{4}$ so that $\frac{|A| \cdot maxNeighbors^2}{|T|(1 + 3 \cdot hashFreeRatio)} > \frac{64^2}{28} > 146$ which means that the original structure is more than 100 times larger for only 64 neighbors. Actually, our maximum neighbor count is 128, to be able to compute surface of molecules that contain hydrogens.
