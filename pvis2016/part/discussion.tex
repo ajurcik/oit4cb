@@ -37,10 +37,19 @@ Figure \ref{fig:animation2} shows one time step of the animation generated using
 \begin{figure}[htb]
   \centering
   \includegraphics[width=3.3in]{image/animation.png}
-  \caption{\textcolor{red}{TODO}One time step of the animation generated using our system.}
+  \caption{\textcolor{red}{TODO}One time step of the animation generated using our algorithm.}
 	\label{fig:animation2}
 \end{figure}
 
+When the results of the algorithm were evaluated by the domain experts, they confirmed that our solution is highly practical with respect to the described task because the time to complete this task is reduced dramatically.
+Moreover, they also appreciated the visual appearance which they considered to be more appealing than the previous solutions.
+They confirmed that our approach can be directly used for creating presentation materials, such as images to publications or animations for presentations.
+
+The domain experts were also asked to identify the weak points of our current solution.
+They agreed that when using a highly transparent molecular surface, the position of a ligand can be hard to assess when using only one viewpoint.
+In other words, the user has to manipulate with the structure in order to decide if the ligand is still located in the outer solvent or if it already penetrated to the inner part of the protein.
+However, this situation is caused due to the transparency itself and a solution has to be based on a combination with other methods.
+This opens one of the possible directions for the future extension.
 
 \subsection{Performance Analysis}
 \label{sec:performance}
@@ -51,12 +60,12 @@ Figure \ref{fig:animation2} shows one time step of the animation generated using
   \item Limits
 \end{itemize}
 
-We tested our technique on commodity hardware to show that it enables users to solve their tasks in real-time without high demands on their hardware.
+We tested our technique on commodity hardware to show that it enables the users to solve their tasks in real-time without high hardware requirements.
 \textcolor{red}{Test also on high-end hardware --- GTX 980?}
-The tests were run on Intel Core i5 760 (2.80 GHz) with 4 GB of RAM and NVIDIA GeForce 680 GTX with 4 GB of VRAM as a graphics card.
+The tests were performed using Intel Core i5 760 (2.80 GHz) with 4 GB of RAM and NVIDIA GeForce 680 GTX with 4 GB of VRAM as a graphics card.
 For rendering, we used resolution of 1024 $\times$ 768 and we tried to fit the molecule such that it covered most of the image.
 Regarding transparency, we limited the maximum depth complexity to 24 fragments per pixel.
-The results of our measurements for static molecules are given in Table~\ref{tab:static}.
+The results of our measurements for static molecules are presented in Table~\ref{tab:static}.
 
 \setlength{\tabcolsep}{4.4pt}
 
@@ -77,7 +86,7 @@ The results of our measurements for static molecules are given in Table~\ref{tab
   \end{center}
 \end{table}
 
-Our technique is implemented mainly using OpenGL employing GLSL compute shaders as GPU kernels.
+Our technique was implemented mainly using OpenGL employing GLSL compute shaders as GPU kernels.
 We also utilize OpenCL to accelerate a kernel which computes positions of spherical triangles in the original algorithm \cite{krone2011parallel}.
-The GLSL implementation of this kernel performed for a molecule with {\tweakedsim}10000 atoms about 5x slower than the OpenCL/CUDA one.
+The GLSL implementation of this kernel performed for a molecule with {\tweakedsim}10000 atoms is about 5x slower than the OpenCL/CUDA one.
 From the tests we did, we assume that the key of such performance loss is the extensive use of the global memory in the kernel which is handled differently in OpenGL and OpenCL/CUDA.
