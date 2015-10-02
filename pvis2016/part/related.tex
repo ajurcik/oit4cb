@@ -34,10 +34,15 @@ The subsequent exploration is supported by graph based visualizations.
 
 
 \subsection{Order-Independent Transparency}
-Current hardware enables implementation of well known approaches to order-independent transparency (OIT) such as Virtual Pixel Maps (depth peeling) \cite{mammen1989transparency} or A-buffer \cite{carpenter1984abuffer}.
-While rendering computer graphics with correct transparency has become possible in real-time already in the previous decade \cite{everitt2001interactive}, the topic is still hot nowadays.
-There are appearing new techniques in the literature that are focusing on pushing the limits of previous methods.
-Regarding memory bounded techniques, Bavoil et al. introduced peeling of two depth layers in one rendering pass \cite{bavoil2008order}, thus halving the time complexity of the original depth peeling approach \cite{everitt2001interactive}.
+One of the most popular techniques for rendering transparent objects is the order-independent transparency (OIT) which does not require the geometry to be sorted.
+Here the traditional approaches are Virtual Pixel Maps (know also as Depth Peeling) \cite{mammen1989transparency} or A-buffer \cite{carpenter1984abuffer}.
+Thanks to the performance of the current hardware these methods can be successfully adopted to large and dynamic scenes.
+The Virtual Pixel Maps technique is based on the idea of sorting at the pixel level and accumulating the transparency effect on a multipass basis. 
+The A-buffer uses the Fourier window which in general helps to resolve the visibility problem among an arbitrary collection of opaque, transparent, and intersecting objects.
+
+While the algorithms for rendering of correctly transparent objects in real-time have emerged already in the previous decade \cite{everitt2001interactive}, new approaches removing the limitations of these methods are still emerging.
+Bavoil et al.~\cite{bavoil2008order} introduced the peeling of two depth layers in one rendering pass, thus halving the time complexity of the original Depth Peeling approach \cite{everitt2001interactive}.
+
 For us, performing more rendering passes, would become a bottleneck because of our ray-tracing approach to surface rendering.
 Instead, techniques based on A-buffer enable to render the scene in one pass, thus fitting better to our approach.
 The cost of single pass rendering is the necessity of storing all participating \cite{yang2010real} or all important \cite{salvi2011adaptive} fragments into a data structure for later composition.
@@ -49,25 +54,24 @@ For analytic surfaces, Kauker et al. proposed to store lists (or arrays) of all 
 In our technique, we try to avoid storing, and then sorting, of high number of fragments by ray-casting only the fragments that are part of the molecular surface.
 
 
-\subsection{Ambient Occlusion}
-Ambient occlusion is one of the most popular techniques for enhancement of the depth perception in molecular visualization.
-Tarini et al.~\cite{tarini2006ambient} as first used this technique for real-time molecular visualization.
-As this technique is computationally very demanding, several solutions focusing on this limitation appeared.
-Grottel et al.~\cite{grottel2012object} presented their method reaching interactive frame rates for large and dynamic data sets. 
-Recently, their approach was extended by~\cite{staib2015ambient}.
-This method is applicable to transparent particles as well.
-Ambient occlusion technique was used also by Borland\cite{borland2011ambient} for enhancing the understanding of the interior of the molecular structure.
+%\subsection{Ambient Occlusion}
+%Ambient occlusion is one of the most popular techniques for enhancement of the depth perception in molecular visualization.
+%Tarini et al.~\cite{tarini2006ambient} as first used this technique for real-time molecular visualization.
+%As this technique is computationally very demanding, several solutions focusing on this limitation appeared.
+%Grottel et al.~\cite{grottel2012object} presented their method reaching interactive frame rates for large and dynamic data sets. 
+%Recently, their approach was extended by~\cite{staib2015ambient}.
+%This method is applicable to transparent particles as well.
+For enhancing the understanding of the interior of the molecular structure, we employed the technique presented by Borland\cite{borland2011ambient}. 
 His technique, called ambient occlusion opacity mapping, enables to determine a variable opacity at each point on the molecular surface.
 In consequence, the interior structures can be more opaque than the outer structures, i.e., molecular surface.
-Because of the very convincing visual results, we employed this transparency modulation technique to our solution as well.
 
 
-\begin{itemize}
-  \item \textcolor{red}{Performance drop of SES rendering on newer hardware (GF 680 GTX) --- we can perform better. We contacted authors, they do not know exactly why, they think it is change in the internal architecture between Fermi and Kepler (AJ)}
-  \item \textcolor{red}{Slow rendering of SAS. Too many layers in pixels --- we can do better by surface layers detection (AJ)}
-\end{itemize}
+%\begin{itemize}
+%  \item \textcolor{red}{Performance drop of SES rendering on newer hardware (GF 680 GTX) --- we can perform better. We contacted authors, they do not know exactly why, they think it is change in the internal architecture between Fermi and Kepler (AJ)}
+%  \item \textcolor{red}{Slow rendering of SAS. Too many layers in pixels --- we can do better by surface layers detection (AJ)}
+%\end{itemize}
 
-\textcolor{red}{There are more solutions taken from computer graphics; e.g., OIT (JP)}
+%\textcolor{red}{There are more solutions taken from computer graphics; e.g., OIT (JP)}
 
 %Such binding site can be located inside a cavity or a tunnel, while the molecular surface might contain tens of cavities per single simulation time step. 
 
