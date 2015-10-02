@@ -28,7 +28,7 @@ We employ this approach and, moreover, we compute these clipping planes for a to
 Additionally, we set normals of these clipping planes so that they are facing towards the toroidal patch and we define two types of clipping operations: \textit{AND} and \textit{OR}.
 We use these two operations to clip the patches whose angular length around the torus axis is either at most $\pi$ (\textit{AND}) or greater (\textit{OR}).
 The \textit{AND} and \textit{OR} operations are defined as their name suggests.
-The \textit{AND} operation leaves only fragments that appear on positive sides of both clipping planes, while the \textit{OR} operation leaves fragments that appear on the positive side of the first or the second clipping plane.
+The \textit{AND} operation leaves only fragments that appear on the positive sides of both clipping planes, while the \textit{OR} operation leaves fragments that appear on the positive side of the first or the second clipping plane.
 
 %and, moreover, we modify the data structure being used in the original algorithm to store and retrieve all spherical triangles incident to a torus (Fig.~\ref{fig:hashing}). In order to get all neighboring triangles for a torus, we hash the triangles by three keys; i.e., one for each torus which is connected to a triangle.
 %For this purpose, we implemented a simple hash table, which is based on linear addressing scheme \cite{alcantara2011efficient}.
@@ -42,16 +42,17 @@ The \textit{AND} operation leaves only fragments that appear on positive sides o
 %This allows us, to ray-cast toroidal patches directly instead of tori.
 
 
-Ray-casting the sphere is a trivial task; nevertheless, in our case the surface sphere of molecules might be formed by an arbitrary number of spherical patches lying in different surface components. To avoid obvious rendering issues, i.e., distinct coloring, transparency or visibility, we perform ray-casting of each spherical patch separately.
+Ray-casting the sphere is a trivial task; nevertheless, in our case the surface sphere of molecules might be formed by an arbitrary number of spherical patches lying in different surface components. To avoid obvious rendering issues, i.e., distinct coloring, transparency, or visibility, we perform ray-casting of each spherical patch separately.
 This allows us to visually distinguish between different surface components.
 
-Since the boundaries of a spherical patch are formed by small circle arcs, we apply an odd-even rule for polygons~\cite{shimrat1962algorithm} to test whether a point lies inside the patch. Firstly, we compute intersection points, $P_{front}$ and $P_{back}$, of a given ray with the patch sphere.
-Here, we describe the point-patch test for point $P_{front}=P$ only, since the same test is applied to $P_{back}$.
-Before we apply the odd-even rule, we choose a point $O$ lying outside the patch.
+Since the boundaries of a spherical patch are formed by small circle arcs, we apply an odd-even rule for polygons~\cite{shimrat1962algorithm} to test whether a point lies inside the patch. 
+First we compute the intersection points, $P_{front}$ and $P_{back}$, of a given ray with the patch sphere.
+Here we describe the point-patch test for point $P_{front}=P$ only, since the same test is applied to $P_{back}$.
+Before we apply the odd-even rule, we choose a point $T$ lying outside the patch.
 Then, we test line $OP$, the shortest path on a sphere, for an intersection with each of the arcs delimiting the patch.
 The intersection of a line $OP$ with the small circle arc, given by points $AB$, is computed in two steps (Fig.~\ref{fig:outer-point} left):
 \begin{enumerate}
-  \item Intersections of the circles containing the line and the arc, which can intersect in up to $2$ points.
+  \item Intersections of the circles containing the line and the arc, which can intersect in up to two points.
   \item Intersection points are tested whether they belong to both the segment $OP$ and the arc $AB$.
 \end{enumerate}
 Finally, if the sum of all intersections, i.e., for all the sides, is even then the point lies inside the patch.
@@ -76,10 +77,10 @@ Finally, if the sum of all intersections, i.e., for all the sides, is even then 
 \label{fig:outer-point}
 \end{figure}
 
-Since we deal with spherical patches and not the planar ones, the situation is bit more complex and we cannot choose point $O$ arbitrarily. 
+Since we deal with spherical patches and not the planar ones, the situation is bit more complex and we cannot choose point $T$ arbitrarily. 
 %Otherwise, we would count intersections of patch's sides with a great circle containing $P$.
 %Then, the intersection count would be the same regardless of $P$ being inside or outside the patch, making the rule inapplicable.
-Instead, we compute $O$ by intersecting a patch sphere by an axis of one of its delimiting tori.
+Instead, we compute $T$ by intersecting a patch sphere by an axis of one of its delimiting tori.
 In this way, we get two intersection points from which we choose the one that lies in the direction of the torus visibility sphere (Fig.~\ref{fig:outer-point} right).
 
 %\subsection{Ambient Occlusion Opacity Modulation}
@@ -99,7 +100,9 @@ In this way, we get two intersection points from which we choose the one that li
 %\end{figure}
 
 \subsection{Opacity modulation}
-After the intersection points were computed, we sort, in front-to-back manner, and store them in the linked list. Thus, for a given ray, we acquire a list of fragments $\{f_1,\ldots,f_n \}$, where each pair represents an entry and an exit point for the molecular surface. For simplicity, the values of $f$ represent depths of fragments. We denote the entire distance the ray passes through the molecule as $l=|f_1-f_n|$. 
+After the intersection points are computed, we sort them in a front-to-back manner and store them to the linked list. 
+Thus, for a given ray, we acquire a list of fragments $\{f_1,\ldots,f_n \}$, where each pair represents an entry and an exit point for the molecular surface. For simplicity, the values of $f$ represent the depths of fragments. 
+We denote the entire distance the ray passes through the molecule as $l=|f_1-f_n|$. 
 As we step along each fragment $f_i$, we define the opacity $\alpha_i$ of even fragments, i.e., those representing the entry surface points, as follows:
 \begin{equation}
   \alpha_i = O^{\phi(x)},
@@ -111,7 +114,7 @@ where $O$ represents a user defined parameter affecting the overall opacity and 
 	\label{eq:exponent}
 \end{equation}	
 where $K$ is the maximum value of the exponent and $x=|f_{i+1}-f_i|/l$ represents the ratio of the fragment interval to the entire length $l$. Note that if $x=1$, i.e., having just two fragments on the ray, then $\phi(x)=1$ determining the $\alpha_i=O$. The opacity of odd fragments, i.e., representing the exist surface points, is defined as $\alpha_i = O$, thus keeping them unmodulated since they are less prominent in the final image.
-Figure~\ref{fig:Oparam} showcases $4$ different combinations of parameters $K$ and $O$.
+Figure~\ref{fig:Oparam} showcases four different combinations of parameters $K$ and $O$.
 \begin{figure*}[htb]
   \centering
   \includegraphics[width=\textwidth]{image/Oparam.png}
@@ -120,14 +123,14 @@ Figure~\ref{fig:Oparam} showcases $4$ different combinations of parameters $K$ a
 \end{figure*}
 \subsection{Cavity area estimation}
 We enhance the visualization of cavities by coloring their surface by their approximate areas.
-To estimate the area, we sum areas of all triangles that form the cavity surface.
+To estimate the area, we sum the areas of all triangles that form the cavity surface.
 The area of a spherical triangle is calculated as follows:
 
 \begin{equation}
   S = r_{probe}^2 \left[ \left( A + B + C \right) - \pi \right],
 \end{equation}
 
-where $A$, $B$ and $C$ are angles of the triangle. 
+where $A$, $B$, and $C$ are angles of the triangle. 
 %We do the area computation in a GLSL compute shader which computes areas of individual triangles and sums them using atomics.
 Additionally, we neglect areas of spherical and toroidal patches since their influence on the exact cavity area is much smaller compared to triangles.
 %Therefore, the cavity area we compute is \textcolor{red}{underestimated -- maybe an equation?}.
