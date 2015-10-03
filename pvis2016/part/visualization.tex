@@ -49,13 +49,13 @@ Since the boundaries of a spherical patch are formed by small circle arcs, we ap
 First we compute the intersection points, $P_{front}$ and $P_{back}$, of a given ray with the patch sphere.
 Here we describe the point-patch test for point $P_{front}=P$ only, since the same test is applied to $P_{back}$.
 Before we apply the odd-even rule, we choose a point $T$ lying outside the patch.
-Then, we test line $OP$, the shortest path on a sphere, for an intersection with each of the arcs delimiting the patch.
-The intersection of a line $OP$ with the small circle arc, given by points $AB$, is computed in two steps (Fig.~\ref{fig:outer-point} left):
+Then, we test line $TP$, the shortest path on a sphere, for an intersection with each of the arcs delimiting the patch.
+The intersection of a line $TP$ with the small circle arc, given by points $AB$, is computed in two steps (Fig.~\ref{fig:outer-point} left):
 \begin{enumerate}
-  \item Intersections of the circles containing the line and the arc, which can intersect in up to two points.
-  \item Intersection points are tested whether they belong to both the segment $OP$ and the arc $AB$.
+  \item Intersections of the circles containing the line $TP$ and the arc $AB$, which can intersect in up to two points.
+  \item Intersection points are tested whether they belong to both the segment $TP$ and the arc $AB$.
 \end{enumerate}
-Finally, if the sum of all intersections, i.e., for all the sides, is even then the point lies inside the patch.
+Finally, if the sum of all intersections, i.e., for all the sides, is odd then the point lies inside the patch.
 
 \begin{figure}[htp]
   \centering
