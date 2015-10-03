@@ -14,7 +14,7 @@
    viewBox="0 0 744.09448819 1052.3622047"
    id="svg2"
    version="1.1"
-   inkscape:version="0.91 r13725"
+   inkscape:version="0.91pre4 r13712"
    sodipodi:docname="outer.svg"
    inkscape:export-filename="C:\School\Projects\oit4cb\pvis2016\image\outer.png"
    inkscape:export-xdpi="250"
@@ -59,8 +59,8 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="2.0487243"
-     inkscape:cx="48.396534"
-     inkscape:cy="954.11274"
+     inkscape:cx="-58.987363"
+     inkscape:cy="953.62463"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -72,8 +72,8 @@
      inkscape:snap-intersection-paths="true"
      inkscape:snap-global="false"
      inkscape:snap-nodes="true"
-     inkscape:window-width="1366"
-     inkscape:window-height="706"
+     inkscape:window-width="1920"
+     inkscape:window-height="1018"
      inkscape:window-x="-8"
      inkscape:window-y="-8"
      inkscape:window-maximized="1" />
@@ -339,12 +339,14 @@
        x="75.051308"
        y="15.11377"
        id="text4168"
-       sodipodi:linespacing="125%"><tspan
+       sodipodi:linespacing="125%"
+       inkscape:export-xdpi="250"
+       inkscape:export-ydpi="250"><tspan
          sodipodi:role="line"
          id="tspan4170"
          x="75.051308"
          y="15.11377"
-         style="font-size:12.5px">Visiblity sphere</tspan></text>
+         style="font-size:12.5px">Visibility sphere</tspan></text>
     <text
        xml:space="preserve"
        style="font-style:normal;font-weight:normal;font-size:40px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
