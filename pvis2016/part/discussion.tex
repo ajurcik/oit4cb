@@ -50,16 +50,16 @@ This opens one of the possible directions for the future extension.
 We tested our technique on commodity hardware to show that it enables the users to solve their tasks in real-time without high hardware requirements.
 %\textcolor{red}{Test also on high-end hardware --- GTX 980?}
 The tests were performed using Intel Core i5 760 (2.80 GHz) with 4 GB of RAM and NVIDIA GeForce 680 GTX with 4 GB of VRAM as a graphics card.
-For rendering, we used resolution of 1024 $\times$ 768 and we tried to fit the molecule such that it covered most of the image.
+For rendering, we used the resolution of 1024 $\times$ 768 and we fitted the molecule to cover most of the rendered image.
 Regarding transparency, we limited the maximum depth complexity to 24 fragments per pixel.
 The results of our measurements for both static and dynamics molecules are presented in Table~\ref{tab:static}.
-We choose the static structures from Protein Data Bank (PDB)~\cite{sussman1998protein} such that the performance of our technique could be easily compared with other existing or new approaches.
+We choose the static structures from the Protein Data Bank (PDB)~\cite{sussman1998protein} so the performance of our technique could be easily compared with other existing or new approaches on the same dataset.
 
 \setlength{\tabcolsep}{4.5pt}
 
 \begin{table}[htb]
   \caption{Performance of our technique for static and dynamic (*) structures.
-	The table shows timings of key phases of our method: surface computation (CB), cavity computation (SG), area estimation and ray-casting (RC).
+	The table shows timings of the key phases of our method: surface computation (CB), cavity computation (SG), area estimation and ray-casting (RC).
 	For ray-casting, we also include fill rate (FR).
 	Performance of our technique does not vary significantly for static or dynamic data as it operates on a per-frame basis.}
   \label{tab:static}
@@ -96,51 +96,52 @@ We choose the static structures from Protein Data Bank (PDB)~\cite{sussman1998pr
 %\end{table}
 
 Our technique was implemented mainly using OpenGL employing GLSL compute shaders as GPU kernels.
-We also utilize OpenCL to accelerate a kernel which computes positions of spherical triangles in the original algorithm \cite{krone2011parallel}.
+We also utilize OpenCL to accelerate a kernel which computes the positions of spherical triangles in the original algorithm \cite{krone2011parallel}.
 The GLSL implementation of this kernel performed for a molecule with {\tweakedsim}10000 atoms is about 5x slower than the OpenCL/CUDA one.
-From the tests we did, we assume that the key of such performance loss is the extensive use of the global memory in the kernel which is handled differently in OpenGL and OpenCL/CUDA.
+Based on the performed tests we assume that the key reason for such performance loss is the extensive use of the global memory in the kernel which is handled differently in OpenGL and OpenCL/CUDA.
 
-From the results, it can be seen that in terms of performance, the main limitation of our technique is ray-casting of the computed surface.
-More specifically, the demanding parts are rendering of spherical and toroidal patches that take together 75-80\% of the whole rendering time.
+From the results, it can be seen that in terms of performance, the main limitation of our technique is the ray-casting of the computed surface.
+More specifically, the most demanding part is the rendering of spherical and toroidal patches that takes together 75-80\% of the whole rendering time.
 We anticipate that the performance of ray-casting these patches could be improved by using tighter bounding boxes for them when splatting.
 In fact, we employ bounding squares for both spheres containing spherical patches and visibility spheres containing visible parts of tori.
 In this way, the computation of ray-primitive intersection is evaluated multiple times for spheres and tori that form more than one surface patch.
 
-\subsubsection{Improved memory complexity}
+\subsubsection{Improved Memory Complexity}
 
-As a side effect of exploiting the hash data structure (Sec.~\ref{sec:ecb}) for storing spherical triangles, our technique consumes less GPU memory than the approach we come from.
-This is due to the fact that the original method uses a linear buffer to store spherical triangles.
+As a side effect of exploiting the hash data structure (Sec.~\ref{sec:ecb}) for storing spherical triangles, our technique consumes less GPU memory than the original approach we used as a basis.
+This is due to the fact that the original method uses a linear buffer to store the spherical triangles.
 An index into this buffer, i.e., position where a triangle is stored, is computed based on the $i$ and $j$ indices of spheres $i < j < k$ that formed the triangle.
-The range of $j$ is optimized in terms of limiting a maximal number of neighbors ($maxNeighbors$) that a sphere can have, so that the range of $j$ can be remapped to $\left[0, maxNeighbors\right)$.
-There is also a limit on a total number of triangles ($maxTriangles$) that can be stored for each pair of spheres.
+The range of $j$ is optimized in terms of limiting the maximal number of neighbors ($maxNeighbors$) that a sphere can have, so that the range of $j$ can be remapped to $\left[0, maxNeighbors\right)$.
+There is also a limit on the total number of triangles ($maxTriangles$) that can be stored for each pair of spheres.
 Putting it all together, the memory complexity of the original data structure is:
 
 \begin{equation}
 |A| \cdot maxNeighbors \cdot maxTriangles,
 \end{equation}
 
-where $|A|$ is the number of atoms of the molecule and typical settings for the other two constants are $maxNeighbors = 64$, $maxTriangles = 64$.
-We took this settings from the MegaMol visualization framework~\cite{grottel2015megamol}.
+where $|A|$ is the number of atoms of the molecule and the typical settings for the other two constants are $maxNeighbors = 64$, $maxTriangles = 64$.
+We adopted this settings from the MegaMol visualization framework~\cite{grottel2015megamol}.
 
-On the other hand, we store the computed triangles linearly in an array and for each triangle, we additionally store three hash records. The memory complexity of our hash structure is therefore:
+On the other hand, we store the computed triangles linearly in an array and for each triangle, we additionally store three hash records. 
+The memory complexity of our hash structure is therefore:
 
 \begin{equation}
 |T| + hashFreeRatio \cdot 3 |T|,
 \end{equation}
 
-where $|T|$ is number of computed spherical triangles and the typical setting for the constant is $hashFreeRatio = 2$. 
+where $|T|$ is the number of computed spherical triangles and the typical setting for the constant is $hashFreeRatio = 2$. 
 
-To be able to compare the complexities of these two data structures, we estimate the ratio of number of atoms to number of triangles to be (taken from experiments):
+To be able to compare the complexity of these two data structures, we estimate the ratio between the number of atoms and the number of triangles to be (taken from experiments):
 
 \begin{equation}
 \frac{|A|}{|T|} > \frac{1}{4}.
 \end{equation}
 
-Then, the ratio of complexities can be expressed as:
+Then, the complexity ratio can be expressed as:
 
 \begin{equation}
 \frac{|A| \cdot maxNeighbors \cdot maxTriangles}{|T|(1 + 3 \cdot hashFreeRatio)} > \frac{64^2}{28} > 146,
 \end{equation}
 
 which yields that the original structure is more than 100 times larger for only 64 neighbors.
-Actually, our maximum neighbor count is 128, to be able to compute surface of molecules that contain hydrogens, which is a typical case for data produced by molecular dynamics simulation.
+Actually, our maximum neighbor count is 128 to be able to compute the surface of molecules that contains hydrogens, which is a typical case for data produced by molecular dynamics simulations.
