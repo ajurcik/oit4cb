@@ -313,6 +313,7 @@ public class Scene implements GLEventListener {
     
     private Mesh capsule;
     private Drug acetone;
+    private Box box;
     
     private static final boolean PERFORMANCE_TESTS_ENABLED = false;
     
@@ -572,7 +573,7 @@ public class Scene implements GLEventListener {
                     "/resources/shaders/ray/polygon2.geom", "/resources/shaders/ray/krone/polygon2.frag");
             // Load molecule
             //dynamics = new Dynamics(Utils.loadDynamicsFromResource("/resources/md/model", 1, 10));
-            dynamics = new Dynamics(Collections.singletonList(Utils.loadAtomsFromResource("/resources/1CRN.pdb")));
+            dynamics = new Dynamics(Collections.singletonList(Utils.loadAtomsFromResource("/resources/1CRN_3.pdb")));
             System.out.println("Atoms (molecule): " + dynamics.getMolecule().getAtomCount());
             System.out.println("Snapshots: " + dynamics.getSnapshotCount());
         } catch (Exception ex) {
@@ -996,6 +997,9 @@ public class Scene implements GLEventListener {
         } catch (IOException ex) {
             ex.printStackTrace(System.err);
         }
+        
+        box = new Box();
+        box.init(gl, FRAGMENTS_BUFFER_INDEX, FRAGMENTS_INDEX_BUFFER_INDEX);
     }
 
     @Override
@@ -1533,6 +1537,11 @@ public class Scene implements GLEventListener {
                 renderAcetone(gl, drug, viewport);
             }
         }
+        
+        // render box
+        gl.glColor3f(0f, 0f, 0f);
+        glut.glutWireCube(2f);
+        box.render(gl);
         
         //gl.glPopMatrix();
         
