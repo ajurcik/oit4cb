@@ -1437,6 +1437,16 @@ public class Scene implements GLEventListener {
         //Utils.drawAxes(gl, 5.0f);
         
         gl.glPushMatrix();
+        
+        gl.glTranslatef(-4f, -4f, -4f);
+        //Utils.drawAxes(gl, 2f);        
+        gl.glTranslatef(aabbSize / 2f - 4f, aabbSize / 2f - 4f, aabbSize / 2f - 4f);
+        //Utils.drawAxes(gl, 2f);
+        //gl.glRotatef((System.currentTimeMillis() % 5760) / 16f, 0f, 1f, 0f);
+        gl.glTranslatef(-aabbSize / 2f + 4f, -aabbSize / 2f + 4f, -aabbSize / 2f + 4f);
+        //Utils.drawAABB(gl, aabbMin, aabbSize);
+        gl.glTranslatef(+4f, +4f, +4f);
+        
         gl.glTranslatef(aabbMin.x - 4f, aabbMin.y - 4f, aabbMin.z - 4f);
         
         // DEBUG draw small circles
