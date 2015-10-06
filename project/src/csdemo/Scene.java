@@ -60,8 +60,9 @@ public class Scene implements GLEventListener {
     private int sphereProgram;
     private int triangleProgram;
     private int torusProgram;
-    private int torusBoxProgram;
     private int polygonProgram;
+    private int boxTorusProgram;
+    private int boxTriangleProgram;
     private int kroneTriangleProgram;
     private int kroneTorusProgram;
     private int kronePolygonProgram;
@@ -558,10 +559,12 @@ public class Scene implements GLEventListener {
                     "/resources/shaders/ray/triangle.frag");
             torusProgram = Utils.loadProgram(gl, "/resources/shaders/ray/torus.vert",
                     "/resources/shaders/ray/torus.geom", "/resources/shaders/ray/torus.frag");
-            torusBoxProgram = Utils.loadProgram(gl, "/resources/shaders/ray/torusBox.vert",
-                    "/resources/shaders/ray/torusBox.geom", "/resources/shaders/ray/torus.frag");
             polygonProgram = Utils.loadProgram(gl, "/resources/shaders/ray/polygon2.vert",
                     "/resources/shaders/ray/polygon2.geom", "/resources/shaders/ray/polygon2.frag");
+            boxTriangleProgram = Utils.loadProgram(gl, "/resources/shaders/ray/box/triangle.vert",
+                    "/resources/shaders/ray/box/triangle.geom", "/resources/shaders/ray/box/triangle.frag");
+            boxTorusProgram = Utils.loadProgram(gl, "/resources/shaders/ray/torusBox.vert",
+                    "/resources/shaders/ray/torusBox.geom", "/resources/shaders/ray/torus.frag");
             resolveProgram = Utils.loadProgram(gl, "/resources/shaders/resolve.vert",
                     "/resources/shaders/resolve.frag");
             defaultProgram = Utils.loadProgram(gl, "/resources/shaders/default.vert",
@@ -584,8 +587,8 @@ public class Scene implements GLEventListener {
             System.exit(1);
         }
         
-        testTriangleProgram = triangleProgram;
-        testTorusProgram = torusBoxProgram; //torusProgram;
+        testTriangleProgram = boxTriangleProgram;
+        testTorusProgram = boxTorusProgram; //torusProgram;
         testPolygonProgram = polygonProgram;
         
         // TODO move to MainWindow
@@ -839,15 +842,19 @@ public class Scene implements GLEventListener {
         Utils.bindShaderStorageBlock(gl, torusProgram, "ABuffer", FRAGMENTS_BUFFER_INDEX);
         Utils.bindShaderStorageBlock(gl, torusProgram, "ABufferIndex", FRAGMENTS_INDEX_BUFFER_INDEX);
         Utils.bindUniformBlock(gl, torusProgram, "MinMaxCavityArea", MINMAX_CAVITY_AREA_BUFFER_INDEX);
-        // bind torus ray-tracing buffers
-        Utils.bindShaderStorageBlock(gl, torusBoxProgram, "ABuffer", FRAGMENTS_BUFFER_INDEX);
-        Utils.bindShaderStorageBlock(gl, torusBoxProgram, "ABufferIndex", FRAGMENTS_INDEX_BUFFER_INDEX);
-        Utils.bindUniformBlock(gl, torusBoxProgram, "MinMaxCavityArea", MINMAX_CAVITY_AREA_BUFFER_INDEX);
         // bind polygon ray-tracing buffers
         Utils.bindShaderStorageBlock(gl, polygonProgram, "ABuffer", FRAGMENTS_BUFFER_INDEX);
         Utils.bindShaderStorageBlock(gl, polygonProgram, "ABufferIndex", FRAGMENTS_INDEX_BUFFER_INDEX);
         Utils.bindShaderStorageBlock(gl, polygonProgram, "Debug", DEBUG_BUFFER_INDEX);
         Utils.bindUniformBlock(gl, polygonProgram, "MinMaxCavityArea", MINMAX_CAVITY_AREA_BUFFER_INDEX);
+        // bind box triangle ray-tracing buffers
+        Utils.bindShaderStorageBlock(gl, boxTriangleProgram, "ABuffer", FRAGMENTS_BUFFER_INDEX);
+        Utils.bindShaderStorageBlock(gl, boxTriangleProgram, "ABufferIndex", FRAGMENTS_INDEX_BUFFER_INDEX);
+        Utils.bindUniformBlock(gl, boxTriangleProgram, "MinMaxCavityArea", MINMAX_CAVITY_AREA_BUFFER_INDEX);
+        // bind box torus ray-tracing buffers
+        Utils.bindShaderStorageBlock(gl, boxTorusProgram, "ABuffer", FRAGMENTS_BUFFER_INDEX);
+        Utils.bindShaderStorageBlock(gl, boxTorusProgram, "ABufferIndex", FRAGMENTS_INDEX_BUFFER_INDEX);
+        Utils.bindUniformBlock(gl, boxTorusProgram, "MinMaxCavityArea", MINMAX_CAVITY_AREA_BUFFER_INDEX);
         // bind A-buffer buffers
         Utils.bindShaderStorageBlock(gl, defaultProgram, "ABuffer", FRAGMENTS_BUFFER_INDEX);
         Utils.bindShaderStorageBlock(gl, defaultProgram, "ABufferIndex", FRAGMENTS_INDEX_BUFFER_INDEX);
