@@ -54,6 +54,7 @@ out VertexData {
     // OBB
     vec2 faceVertices[3][4];
     int faceCount;
+    vec3 faceNormal[3]; // DEBUG
     // torus
     vec4 objPos;
     vec4 camPos;
@@ -213,7 +214,7 @@ void main() {
     float y2 = obbSize.z;
     float z = obbSize.w;
 
-    vec3 obbC = vertex.objPos.xyz + inSphere.xyz + (x1 - x2) * inTorusAxis.xyz;
+    vec3 obbC = vertex.objPos.xyz + inSphere.xyz + (x1 - x2) / 2.0 * inTorusAxis.xyz;
     obbC += (y1 + y2) / 2.0 * obbUpX1.xyz;
 
     mat3 obbMat;
@@ -243,7 +244,7 @@ void main() {
         vec4 pv3 = gl_ModelViewProjectionMatrix * vec4(obbC + (obbMat * (obbScale * v3)), 1.0);
         pv3 /= pv3.w;
         
-        vec3 n = cross(pv1.xyz - pv0.xyz, pv3.xyz - pv0.xyz);
+        vec3 n = normalize(cross(pv1.xyz - pv0.xyz, pv3.xyz - pv0.xyz));
         //vec4 color = vec4(1.0, 1.0, 0.0, 1.0);
         if (n.z < 0) {
             continue;
@@ -254,6 +255,7 @@ void main() {
         vertex.faceVertices[of][1] = pv1.xy;
         vertex.faceVertices[of][2] = pv2.xy;
         vertex.faceVertices[of][3] = pv3.xy;
+        vertex.faceNormal[of] = n;
         of++;
     }
 

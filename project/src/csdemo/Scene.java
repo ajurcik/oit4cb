@@ -1680,7 +1680,7 @@ public class Scene implements GLEventListener {
                 writePolygons(gl, sphereCount);
                 writeSphereIsolated(gl);
                 //writeDebugi(gl, 2);
-                writeDebug4f(gl, 4);
+                writeDebug4f(gl, 18);
             } catch (IOException e) {
                 e.printStackTrace(System.err);
             }

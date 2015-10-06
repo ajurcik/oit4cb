@@ -287,21 +287,20 @@ void main() {
                         x1 = x2;
                         x2 = tmp;
                     }
-                    //debug[t] = vec4(ta, -dot(ta, tc + C + x1 * ta));
-                    //debug[t + 1] = vec4(-ta, -dot(-ta, tc + C + x2 * -ta));
+                    //debug[torusIdx * 6 + t] = vec4(ta, -dot(ta, tc + C + x1 * ta));
+                    //debug[torusIdx * 6 + t + 1] = vec4(-ta, -dot(-ta, tc + C + x2 * -ta));
                     float y1 = dot(normalize(arc1.xyz - tc), center) * (sc.w - probeRadius);
                     float y2 = sqrt(dist * dist - min(x1 * x1, x2 * x2));
-                    //debug[t + 2] = vec4(center, -dot(center, tc + y1 * center));
-                    //debug[t + 3] = vec4(center, -dot(center, tc + y2 * center));
+                    //debug[torusIdx * 6 + t + 2] = vec4(center, -dot(center, tc + y1 * center));
+                    //debug[torusIdx * 6 + t + 3] = vec4(center, -dot(center, tc + y2 * center));
                     vec3 zAxis = cross(center, ta);
                     float z = sqrt(y2 * y2 * (1.0 - dot(normalize(arc1.xyz - tc), center) * dot(normalize(arc1.xyz - tc), center)));
                     if (operation < 0.0) {
+                        y1 = dot(normalize(arc1.xyz - tc), center) * y2;
                         z = y2;
                     }
-                    //debug[t + 2] = vec4(zAxis, -dot(zAxis, tc + z * zAxis));
-                    //debug[t + 3] = vec4(zAxis, -dot(zAxis, tc + -z * zAxis));
-                    //vec3 obbC = tc + C + (x1 - x2) * ta;
-                    //obbC += (y1 + y2) / 2.0 * center;
+                    //debug[torusIdx * 6 + t + 4] = vec4(zAxis, -dot(zAxis, tc + z * zAxis));
+                    //debug[torusIdx * 6 + t + 5] = vec4(zAxis, -dot(zAxis, tc + -z * zAxis));
                     tori[torusIdx].obbUp = vec4(center, x1);
                     tori[torusIdx].obbSize = vec4(x2, y1, y2, z);
                 }
