@@ -49,7 +49,7 @@ public class Box {
         
         int[] viewport = new int[4];
         gl.glGetIntegerv(GL_VIEWPORT, viewport, 0);
-        Utils.setUniform(gl, boxProgram, "viewport", 0f, 0f, 2f / viewport[2], 2f / viewport[3]);
+        //Utils.setUniform(gl, boxProgram, "viewport", 0f, 0f, 2f / viewport[2], 2f / viewport[3]);
         Utils.setUniform(gl, boxProgram, "window", viewport[2], viewport[3]);
         
         gl.glEnableClientState(GL_VERTEX_ARRAY);

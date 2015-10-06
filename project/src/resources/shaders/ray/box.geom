@@ -1,6 +1,6 @@
 #version 430 core
 
-in vec4 quads[][3];
+//in vec4 quads[][3];
 in vec2 quadsVertices[][3][4];
 in vec4 quadsColor[][3];
 in int quadCount[];
@@ -13,7 +13,7 @@ layout(triangle_strip, max_vertices = 12) out;
 
 void main() {
     for (int q = 0; q < quadCount[0]; q++) {
-        vec4 quad = quads[0][q];
+        //vec4 quad = quads[0][q];
         
         float quadDepth = 10.0;
         if (q == 1) {

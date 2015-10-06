@@ -60,6 +60,7 @@ public class Scene implements GLEventListener {
     private int sphereProgram;
     private int triangleProgram;
     private int torusProgram;
+    private int torusBoxProgram;
     private int polygonProgram;
     private int kroneTriangleProgram;
     private int kroneTorusProgram;
@@ -157,7 +158,7 @@ public class Scene implements GLEventListener {
     private static final int SIZEOF_HASH = 4 * Buffers.SIZEOF_INT;
     private static final int SIZEOF_FRAGMENT = 2 * Buffers.SIZEOF_INT + 2 * Buffers.SIZEOF_FLOAT;
     private static final int SIZEOF_TRIANGLE = 4 * SIZEOF_VEC4;
-    private static final int SIZEOF_TORUS = 5 * SIZEOF_VEC4;
+    private static final int SIZEOF_TORUS = 5 * SIZEOF_VEC4 + 2 * SIZEOF_VEC4;
     private static final int SIZEOF_POLYGON = SIZEOF_VEC4 + 4 * Buffers.SIZEOF_INT;
     private static final int SIZEOF_EDGE = 4 * Buffers.SIZEOF_INT;
     
@@ -557,6 +558,8 @@ public class Scene implements GLEventListener {
                     "/resources/shaders/ray/triangle.frag");
             torusProgram = Utils.loadProgram(gl, "/resources/shaders/ray/torus.vert",
                     "/resources/shaders/ray/torus.geom", "/resources/shaders/ray/torus.frag");
+            torusBoxProgram = Utils.loadProgram(gl, "/resources/shaders/ray/torusBox.vert",
+                    "/resources/shaders/ray/torusBox.geom", "/resources/shaders/ray/torus.frag");
             polygonProgram = Utils.loadProgram(gl, "/resources/shaders/ray/polygon2.vert",
                     "/resources/shaders/ray/polygon2.geom", "/resources/shaders/ray/polygon2.frag");
             resolveProgram = Utils.loadProgram(gl, "/resources/shaders/resolve.vert",
@@ -582,7 +585,7 @@ public class Scene implements GLEventListener {
         }
         
         testTriangleProgram = triangleProgram;
-        testTorusProgram = torusProgram;
+        testTorusProgram = torusBoxProgram; //torusProgram;
         testPolygonProgram = polygonProgram;
         
         // TODO move to MainWindow
@@ -836,6 +839,10 @@ public class Scene implements GLEventListener {
         Utils.bindShaderStorageBlock(gl, torusProgram, "ABuffer", FRAGMENTS_BUFFER_INDEX);
         Utils.bindShaderStorageBlock(gl, torusProgram, "ABufferIndex", FRAGMENTS_INDEX_BUFFER_INDEX);
         Utils.bindUniformBlock(gl, torusProgram, "MinMaxCavityArea", MINMAX_CAVITY_AREA_BUFFER_INDEX);
+        // bind torus ray-tracing buffers
+        Utils.bindShaderStorageBlock(gl, torusBoxProgram, "ABuffer", FRAGMENTS_BUFFER_INDEX);
+        Utils.bindShaderStorageBlock(gl, torusBoxProgram, "ABufferIndex", FRAGMENTS_INDEX_BUFFER_INDEX);
+        Utils.bindUniformBlock(gl, torusBoxProgram, "MinMaxCavityArea", MINMAX_CAVITY_AREA_BUFFER_INDEX);
         // bind polygon ray-tracing buffers
         Utils.bindShaderStorageBlock(gl, polygonProgram, "ABuffer", FRAGMENTS_BUFFER_INDEX);
         Utils.bindShaderStorageBlock(gl, polygonProgram, "ABufferIndex", FRAGMENTS_INDEX_BUFFER_INDEX);
@@ -1240,6 +1247,7 @@ public class Scene implements GLEventListener {
         //setUniform(gl, writeProgram, "maxNumArcs", MAX_ARCS);
         Utils.setUniform(gl, writeProgram, "maxNumTotalArcHashes", MAX_TOTAL_ARC_HASHES);
         Utils.setUniform(gl, writeProgram, "maxHashIterations", MAX_HASH_ITERATIONS);
+        Utils.setUniform(gl, writeProgram, "probeRadius", probeRadius);
         
         if (autoupdate || update) {
             gl.glDispatchCompute((atomCount + 63) / 64, 1, 1); // writeProgram
@@ -1549,9 +1557,9 @@ public class Scene implements GLEventListener {
         }
         
         // render box
-        gl.glColor3f(0f, 0f, 0f);
+        /*gl.glColor3f(0f, 0f, 0f);
         glut.glutWireCube(2f);
-        box.render(gl);
+        box.render(gl);*/
         
         //gl.glPopMatrix();
         
@@ -1672,7 +1680,7 @@ public class Scene implements GLEventListener {
                 writePolygons(gl, sphereCount);
                 writeSphereIsolated(gl);
                 //writeDebugi(gl, 2);
-                //writeDebug4f(gl, 4);
+                writeDebug4f(gl, 4);
             } catch (IOException e) {
                 e.printStackTrace(System.err);
             }
@@ -1685,9 +1693,9 @@ public class Scene implements GLEventListener {
             Vector3f view, Vector3f up, Vector3f right, int[] viewport) {
         gl.glUseProgram(program);
         
-        gl.glBindBuffer(GL_SHADER_STORAGE_BUFFER, debugBuffer);
+        /*gl.glBindBuffer(GL_SHADER_STORAGE_BUFFER, debugBuffer);
         gl.glClearBufferData(GL_SHADER_STORAGE_BUFFER, GL_R32UI, GL_RED_INTEGER, GL_UNSIGNED_INT, IntBuffer.wrap(new int[] { 0 }));
-        gl.glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+        gl.glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);*/
         
         gl.glBindBufferBase(GL_SHADER_STORAGE_BUFFER, DEBUG_BUFFER_INDEX, debugBuffer);
         gl.glBindBufferBase(GL_UNIFORM_BUFFER, MINMAX_CAVITY_AREA_BUFFER_INDEX, ar.getMinMaxBuffer());
@@ -1933,6 +1941,10 @@ public class Scene implements GLEventListener {
         gl.glEnableClientState(GL_TEXTURE_COORD_ARRAY);
         gl.glClientActiveTexture(GL_TEXTURE3);
         gl.glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+        gl.glClientActiveTexture(GL_TEXTURE4);
+        gl.glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+        gl.glClientActiveTexture(GL_TEXTURE5);
+        gl.glEnableClientState(GL_TEXTURE_COORD_ARRAY);
         
         gl.glBindBuffer(GL_ARRAY_BUFFER, toriArrayBuffer);
         gl.glVertexPointer(4, GL_FLOAT, SIZEOF_TORUS, 0);
@@ -1944,6 +1956,10 @@ public class Scene implements GLEventListener {
         gl.glTexCoordPointer(4, GL_FLOAT, SIZEOF_TORUS, 48);
         gl.glClientActiveTexture(GL_TEXTURE3);
         gl.glTexCoordPointer(4, GL_FLOAT, SIZEOF_TORUS, 64);
+        gl.glClientActiveTexture(GL_TEXTURE4);
+        gl.glTexCoordPointer(4, GL_FLOAT, SIZEOF_TORUS, 80);
+        gl.glClientActiveTexture(GL_TEXTURE5);
+        gl.glTexCoordPointer(4, GL_FLOAT, SIZEOF_TORUS, 96);
         
         if (surfaceType == Surface.SES && renderTori) {
             gl.glDrawArrays(GL_POINTS, 0, count);
@@ -1963,6 +1979,10 @@ public class Scene implements GLEventListener {
         gl.glClientActiveTexture(GL_TEXTURE2);
         gl.glDisableClientState(GL_TEXTURE_COORD_ARRAY);
         gl.glClientActiveTexture(GL_TEXTURE3);
+        gl.glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+        gl.glClientActiveTexture(GL_TEXTURE4);
+        gl.glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+        gl.glClientActiveTexture(GL_TEXTURE5);
         gl.glDisableClientState(GL_TEXTURE_COORD_ARRAY);
         
         gl.glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT); // A-buffer

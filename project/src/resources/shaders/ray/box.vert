@@ -29,9 +29,7 @@ vec4 colors[] = {
     vec4(0.0, 1.0, 0.0, 1.0)
 };
 
-uniform vec4 viewport;
-
-out vec4 quads[3];
+//out vec4 quads[3];
 out vec2 quadsVertices[3][4];
 out vec4 quadsColor[3];
 out int quadCount;
@@ -69,7 +67,7 @@ void main() {
             //color.rgb = vec3(0.5, 0.5, 0.5);
         }
 
-        vec2 mins = pv0.xy;
+        /*vec2 mins = pv0.xy;
         vec2 maxs = pv0.xy;
 
         mins = min(mins, pv1.xy);
@@ -81,8 +79,7 @@ void main() {
         mins = min(mins, pv3.xy);
         maxs = max(maxs, pv3.xy);
 
-        vec2 window = 2.0 / viewport.zw;
-        quads[q] = vec4((mins + maxs) * 0.5, maxs - mins);
+        quads[q] = vec4((mins + maxs) * 0.5, maxs - mins);*/
         quadsColor[q] = colors[f]; //color;
         quadsVertices[q][0] = pv0.xy;
         quadsVertices[q][1] = pv1.xy;

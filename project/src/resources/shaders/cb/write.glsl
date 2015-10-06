@@ -13,6 +13,8 @@ struct torus {
     vec4 visibility;
     vec4 plane1;
     vec4 plane2;
+    vec4 obbUp; // PROFILE
+    vec4 obbSize; // PROFILE
 };
 
 const uint INVALID_KEY = 0xffffffff;
@@ -27,6 +29,8 @@ uniform uint maxNumNeighbors;
 uniform uint maxNumArcs;
 uniform uint maxNumTotalArcHashes;
 uniform uint maxHashIterations;
+
+uniform float probeRadius;
 
 uniform samplerBuffer atomsTex;
 uniform usamplerBuffer neighborsTex;
@@ -95,7 +99,8 @@ void main() {
         uint jIdx = texelFetch(neighborsTex, int(index * maxNumNeighbors + j)).r;
         uint arcsCnt = texelFetch(arcCountsTex, int(index * maxNumNeighbors + j)).r;
         
-        vec3 pj = texelFetch(atomsTex, int(jIdx)).rgb;
+        vec4 aj = texelFetch(atomsTex, int(jIdx));
+        vec3 pj = aj.xyz;
 
         // DEBUG
         //triangles[0].probePos = vec4(1.0, 2.0, float(neighborCount) + 0.1, float(arcsCnt) + 0.2);
@@ -270,6 +275,35 @@ void main() {
                         debug[t + 3] = vec4(sc.w * normalize(arc1.xyz - tc), angle(normalize(arc1.xyz - tc), orig, ta)); // DEBUG
                         debug[t + 4] = vec4(sc.w * normalize(arc2.xyz - tc), angle(normalize(arc2.xyz - tc), orig, ta)); // DEBUG
                     }*/
+                    // box bound clipping planes
+                    vec3 v1 = (pi - (tc + C));
+                    vec3 v2 = (pj - (tc + C));
+                    float d1 = length(v1);
+                    float d2 = length(v2);
+                    float x1 = (dist * dist + d1 * d1 - ai.w * ai.w) / (2.0 * d1);
+                    float x2 = (dist * dist + d2 * d2 - aj.w * aj.w) / (2.0 * d2);
+                    if (dot(v1, ta) < 0.0) {
+                        float tmp = x1;
+                        x1 = x2;
+                        x2 = tmp;
+                    }
+                    //debug[t] = vec4(ta, -dot(ta, tc + C + x1 * ta));
+                    //debug[t + 1] = vec4(-ta, -dot(-ta, tc + C + x2 * -ta));
+                    float y1 = dot(normalize(arc1.xyz - tc), center) * (sc.w - probeRadius);
+                    float y2 = sqrt(dist * dist - min(x1 * x1, x2 * x2));
+                    //debug[t + 2] = vec4(center, -dot(center, tc + y1 * center));
+                    //debug[t + 3] = vec4(center, -dot(center, tc + y2 * center));
+                    vec3 zAxis = cross(center, ta);
+                    float z = sqrt(y2 * y2 * (1.0 - dot(normalize(arc1.xyz - tc), center) * dot(normalize(arc1.xyz - tc), center)));
+                    if (operation < 0.0) {
+                        z = y2;
+                    }
+                    //debug[t + 2] = vec4(zAxis, -dot(zAxis, tc + z * zAxis));
+                    //debug[t + 3] = vec4(zAxis, -dot(zAxis, tc + -z * zAxis));
+                    //vec3 obbC = tc + C + (x1 - x2) * ta;
+                    //obbC += (y1 + y2) / 2.0 * center;
+                    tori[torusIdx].obbUp = vec4(center, x1);
+                    tori[torusIdx].obbSize = vec4(x2, y1, y2, z);
                 }
             }
         }

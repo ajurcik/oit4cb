@@ -6,6 +6,8 @@ struct torus {
     vec4 visibility;
     vec4 plane1;
     vec4 plane2;
+    vec4 obbXY; // PROFILE
+    vec4 obbAxisZ; // PROFILE
 };
 
 uniform uint torusCount;

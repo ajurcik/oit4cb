@@ -94,6 +94,7 @@ void storeFragment(vec4 color, float depth, float ao) {
 #define R2 radii.w
 
 void main() {
+    //storeFragment(color, 10.0, 1.0); discard; // DEBUG
     // change color if selected
     vec4 col = (selectCavity && (cavityLabel == label)) ? YELLOW : color;
     col = (label == 999) ? vec4(1.0, 0.0, 0.0, 1.0) : col;
