@@ -106,10 +106,10 @@ void main() {
 
     mat3 obbRot;
     obbRot[0] = plane.xyz;
-    obbRot[2] = ((obbRot[0].x > 0.9) || (obbRot[0].x < -0.9))
+    obbRot[1] = ((obbRot[0].x > 0.9) || (obbRot[0].x < -0.9))
             ? vec3(0.0, 1.0, 0.0) : vec3(1.0, 0.0, 0.0); // normal on tmp
-    obbRot[1] = normalize(cross(obbRot[0], obbRot[2]));
-    obbRot[2] = cross(obbRot[1], obbRot[0]);
+    obbRot[2] = normalize(cross(obbRot[0], obbRot[1]));
+    obbRot[1] = cross(obbRot[2], obbRot[0]);
 
     vec3 obbScale = vec3(sx, syz, syz);
 

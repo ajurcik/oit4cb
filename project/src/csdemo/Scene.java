@@ -2487,6 +2487,10 @@ public class Scene implements GLEventListener {
     
     public void setRenderingMode(int mode) {
         if (mode == 0) {
+            testTriangleProgram = boxTriangleProgram;
+            testTorusProgram = boxTorusProgram;
+            testPolygonProgram = polygonProgram;
+        } else if (mode == 1) {
             testTriangleProgram = triangleProgram;
             testTorusProgram = torusProgram;
             testPolygonProgram = polygonProgram;

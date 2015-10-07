@@ -1137,7 +1137,7 @@ public class MainWindow extends javax.swing.JFrame {
         jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder("Test"));
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
-        renderingModeComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "OIT", "KRONE" }));
+        renderingModeComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "OIT (BOX)", "OIT (SPHERE)", "KRONE" }));
         renderingModeComboBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 renderingModeComboBoxActionPerformed(evt);

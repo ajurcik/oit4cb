@@ -87,7 +87,7 @@ void storeFragment(vec4 color, float depth, float ao) {
 }
 
 void main() {
-    storeFragment(color, 10.0, 1.0); discard; // DEBUG
+    //storeFragment(color, 10.0, 1.0); discard; // DEBUG
     // discard fragment if cavity and clipping enabled
     uint label = texelFetch(labelsTex, int(index)).r;
     float area;
