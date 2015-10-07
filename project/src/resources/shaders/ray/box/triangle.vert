@@ -20,10 +20,9 @@ ivec4 faces[] = {
     ivec4(0, 4, 1, 5)  // -Y
 };
 
-uniform vec3 camIn;
-uniform vec3 camUp;
-uniform vec3 camRight;
+// viewport
 uniform vec4 viewport;
+// surface
 uniform float probeRadius;
 
 out VertexData {

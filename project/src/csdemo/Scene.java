@@ -582,7 +582,7 @@ public class Scene implements GLEventListener {
                     "/resources/shaders/ray/polygon2.geom", "/resources/shaders/ray/krone/polygon2.frag");
             // Load molecule
             //dynamics = new Dynamics(Utils.loadDynamicsFromResource("/resources/md/model", 1, 10));
-            dynamics = new Dynamics(Collections.singletonList(Utils.loadAtomsFromResource("/resources/1VIS.pdb")));
+            dynamics = new Dynamics(Collections.singletonList(Utils.loadAtomsFromResource("/resources/1CRN.pdb")));
             System.out.println("Atoms (molecule): " + dynamics.getMolecule().getAtomCount());
             System.out.println("Snapshots: " + dynamics.getSnapshotCount());
         } catch (Exception ex) {
@@ -1746,9 +1746,11 @@ public class Scene implements GLEventListener {
         Utils.setSampler(gl, program, "aoVolumeTex", 8);
         
         // camera
-        Utils.setUniform(gl, program, "camIn", view.x, view.y, view.z);
-        Utils.setUniform(gl, program, "camUp", up.x, up.y, up.z);
-        Utils.setUniform(gl, program, "camRight", right.x, right.y, right.z);
+        if (program != boxPolygonProgram) {
+            Utils.setUniform(gl, program, "camIn", view.x, view.y, view.z);
+            Utils.setUniform(gl, program, "camUp", up.x, up.y, up.z);
+            Utils.setUniform(gl, program, "camRight", right.x, right.y, right.z);
+        }
         // viewport
         Utils.setUniform(gl, program, "viewport", 0f, 0f, 2f / viewport[2], 2f / viewport[3]);
         Utils.setUniform(gl, program, "window", viewport[2], viewport[3]);
@@ -1834,9 +1836,12 @@ public class Scene implements GLEventListener {
         Utils.setSampler(gl, program, "areasTex", 3);
         Utils.setSampler(gl, program, "aoVolumeTex", 4);
         
-        Utils.setUniform(gl, program, "camIn", view.x, view.y, view.z);
-        Utils.setUniform(gl, program, "camUp", up.x, up.y, up.z);
-        Utils.setUniform(gl, program, "camRight", right.x, right.y, right.z);
+        // camera
+        if (program != boxTriangleProgram) {
+            Utils.setUniform(gl, program, "camIn", view.x, view.y, view.z);
+            Utils.setUniform(gl, program, "camUp", up.x, up.y, up.z);
+            Utils.setUniform(gl, program, "camRight", right.x, right.y, right.z);
+        }
         Utils.setUniform(gl, program, "viewport", 0f, 0f, 2f / viewport[2], 2f / viewport[3]);
         Utils.setUniform(gl, program, "window", viewport[2], viewport[3]);
         Utils.setUniform(gl, program, "maxNumNeighbors", MAX_NEIGHBORS);
@@ -1920,9 +1925,12 @@ public class Scene implements GLEventListener {
         Utils.setSampler(gl, program, "areasTex", 2);
         Utils.setSampler(gl, program, "aoVolumeTex", 3);
         
-        Utils.setUniform(gl, program, "camIn", view.x, view.y, view.z);
-        Utils.setUniform(gl, program, "camUp", up.x, up.y, up.z);
-        Utils.setUniform(gl, program, "camRight", right.x, right.y, right.z);
+        // camera
+        if (program != boxTorusProgram) {
+            Utils.setUniform(gl, program, "camIn", view.x, view.y, view.z);
+            Utils.setUniform(gl, program, "camUp", up.x, up.y, up.z);
+            Utils.setUniform(gl, program, "camRight", right.x, right.y, right.z);
+        }
         Utils.setUniform(gl, program, "viewport", 0f, 0f, 2f / viewport[2], 2f / viewport[3]);
         Utils.setUniform(gl, program, "window", viewport[2], viewport[3]);
         Utils.setUniform(gl, program, "probeRadius", probeRadius);

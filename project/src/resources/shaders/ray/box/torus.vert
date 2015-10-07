@@ -25,9 +25,6 @@ ivec4 faces[] = {
     ivec4(0, 4, 1, 5)  // -Y
 };
 
-uniform vec3 camIn;
-uniform vec3 camUp;
-uniform vec3 camRight;
 uniform vec4 viewport;
 uniform float probeRadius;
 
@@ -145,66 +142,6 @@ void main() {
     vec3 camRight = normalize(cross(camIn, camUp));
     camUp = cross(camIn, camRight);*/
 
-    // TODO: fix computation of bounding box
-    // projected camera vector
-    vec3 c2 = vec3(dot(tmp.xyz, camRight), dot(tmp.xyz, camUp), dot(tmp.xyz, camIn));
-
-    vec3 cpj1 = camIn * c2.z + camRight * c2.x;
-    vec3 cpm1 = camIn * c2.x - camRight * c2.z;
-
-    vec3 cpj2 = camIn * c2.z + camUp * c2.y;
-    vec3 cpm2 = camIn * c2.y - camUp * c2.z;
-    
-    vec2 d;
-    d.x = length(cpj1);
-    d.y = length(cpj2);
-
-    vec2 dInv = vec2(1.0) / d;
-
-    vec2 p = inSphere.w*inSphere.w * dInv;
-    vec2 q = d - p;
-    vec2 h = sqrt(p * q);
-    //h = vec2(0.0);
-    
-    p *= dInv;
-    h *= dInv;
-
-    cpj1 *= p.x;
-    cpm1 *= h.x;
-    cpj2 *= p.y;
-    cpm2 *= h.y;
-
-    //vec3 testPos = objPos.xyz + cpj1 + cpm1;
-    vec3 testPos = inSphere.xyz + vertex.objPos.xyz + cpj1 + cpm1;
-    vec4 projPos = gl_ModelViewProjectionMatrix * vec4(testPos, 1.0);
-    projPos /= projPos.w;
-    vec2 mins = projPos.xy;
-    vec2 maxs = projPos.xy;
-
-    testPos -= 2.0 * cpm1;
-    projPos = gl_ModelViewProjectionMatrix * vec4(testPos, 1.0);
-    projPos /= projPos.w;
-    mins = min(mins, projPos.xy);
-    maxs = max(maxs, projPos.xy);
-
-    //testPos = objPos.xyz + cpj2 + cpm2;
-    testPos = inSphere.xyz + vertex.objPos.xyz + cpj2 + cpm2;
-    projPos = gl_ModelViewProjectionMatrix * vec4(testPos, 1.0);
-    projPos /= projPos.w;
-    mins = min(mins, projPos.xy);
-    maxs = max(maxs, projPos.xy);
-
-    testPos -= 2.0 * cpm2;
-    projPos = gl_ModelViewProjectionMatrix * vec4(testPos, 1.0);
-    projPos /= projPos.w;
-    mins = min(mins, projPos.xy);
-    maxs = max(maxs, projPos.xy);
-
-    vec2 window = 2.0 / viewport.zw;
-
-    //gl_Position = vec4((mins + maxs) * 0.5, 0.0, 1.0);
-    //gl_PointSize = max((maxs.x - mins.x + 0.1) * window.x, (maxs.y - mins.y + 0.1) * window.y) * 0.5;
-
     // OBB bound for ray-casting
     vec4 obbUpX1 = gl_MultiTexCoord4;
     vec4 obbSize = gl_MultiTexCoord5;
@@ -262,5 +199,5 @@ void main() {
     vertex.faceCount = of;
 
     // write something to pass vertex
-    gl_Position = vec4(0.5, 0.5, 0.0, 1.0);
+    gl_Position = vec4(0.0, 0.0, 0.0, 1.0);
 }

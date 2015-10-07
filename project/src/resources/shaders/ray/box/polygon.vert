@@ -20,10 +20,6 @@ ivec4 faces[] = {
     ivec4(0, 4, 1, 5)  // -Y
 };
 
-// camera
-uniform vec3 camIn;
-uniform vec3 camUp;
-uniform vec3 camRight;
 // viewport
 uniform vec4 viewport;
 // SAS/SES
@@ -92,65 +88,7 @@ void main() {
     vec3 camRight = normalize(cross(camIn, camUp));
     camUp = cross(camIn, camRight);*/
 
-    // TODO: fix computation of bounding box
-    // projected camera vector
-    vec3 c2 = vec3(dot(vertex.camPos.xyz, camRight), dot(vertex.camPos.xyz, camUp), dot(vertex.camPos.xyz, camIn));
-
-    vec3 cpj1 = camIn * c2.z + camRight * c2.x;
-    vec3 cpm1 = camIn * c2.x - camRight * c2.z;
-
-    vec3 cpj2 = camIn * c2.z + camUp * c2.y;
-    vec3 cpm2 = camIn * c2.y - camUp * c2.z;
-    
-    vec2 d;
-    d.x = length(cpj1);
-    d.y = length(cpj2);
-
-    vec2 dInv = vec2(1.0) / d;
-
-    vec2 p = vertex.RR * dInv;
-    vec2 q = d - p;
-    vec2 h = sqrt(p * q);
-    //h = vec2(0.0);
-    
-    p *= dInv;
-    h *= dInv;
-
-    cpj1 *= p.x;
-    cpm1 *= h.x;
-    cpj2 *= p.y;
-    cpm2 *= h.y;
-
-    vec3 testPos = vertex.objPos.xyz + cpj1 + cpm1;
-    vec4 projPos = gl_ModelViewProjectionMatrix * vec4(testPos, 1.0);
-    projPos /= projPos.w;
-    vec2 mins = projPos.xy;
-    vec2 maxs = projPos.xy;
-
-    testPos -= 2.0 * cpm1;
-    projPos = gl_ModelViewProjectionMatrix * vec4(testPos, 1.0);
-    projPos /= projPos.w;
-    mins = min(mins, projPos.xy);
-    maxs = max(maxs, projPos.xy);
-
-    testPos = vertex.objPos.xyz + cpj2 + cpm2;
-    projPos = gl_ModelViewProjectionMatrix * vec4(testPos, 1.0);
-    projPos /= projPos.w;
-    mins = min(mins, projPos.xy);
-    maxs = max(maxs, projPos.xy);
-
-    testPos -= 2.0 * cpm2;
-    projPos = gl_ModelViewProjectionMatrix * vec4(testPos, 1.0);
-    projPos /= projPos.w;
-    mins = min(mins, projPos.xy);
-    maxs = max(maxs, projPos.xy);
-
     vertex.color = gl_Color;
-
-    vec2 window = 2.0 / viewport.zw;
-
-    gl_Position = vec4((mins + maxs) * 0.5, 0.0, 1.0);
-    gl_PointSize = max((maxs.x - mins.x + 0.1) * window.x, (maxs.y - mins.y + 0.1) * window.y) * 0.5;
 
     vec4 cap = vec4(0.0);
     vec3 points[16];
