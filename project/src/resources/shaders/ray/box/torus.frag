@@ -61,6 +61,8 @@ in vec3 rotMatT2;
 in flat uint label;
 in flat float area;
 
+in vec3 faceNormal;
+
 uniform sampler3D aoVolumeTex;
 
 layout(std430) buffer ABuffer {
@@ -94,6 +96,7 @@ void storeFragment(vec4 color, float depth, float ao) {
 #define R2 radii.w
 
 void main() {
+    //storeFragment(color * faceNormal.z, 10.0, 1.0); discard; // DEBUG
     // change color if selected
     vec4 col = (selectCavity && (cavityLabel == label)) ? YELLOW : color;
     col = (label == 999) ? vec4(1.0, 0.0, 0.0, 1.0) : col;

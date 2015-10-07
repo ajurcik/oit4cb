@@ -63,6 +63,7 @@ public class Scene implements GLEventListener {
     private int polygonProgram;
     private int boxTorusProgram;
     private int boxTriangleProgram;
+    private int boxPolygonProgram;
     private int kroneTriangleProgram;
     private int kroneTorusProgram;
     private int kronePolygonProgram;
@@ -563,8 +564,10 @@ public class Scene implements GLEventListener {
                     "/resources/shaders/ray/polygon2.geom", "/resources/shaders/ray/polygon2.frag");
             boxTriangleProgram = Utils.loadProgram(gl, "/resources/shaders/ray/box/triangle.vert",
                     "/resources/shaders/ray/box/triangle.geom", "/resources/shaders/ray/box/triangle.frag");
-            boxTorusProgram = Utils.loadProgram(gl, "/resources/shaders/ray/torusBox.vert",
-                    "/resources/shaders/ray/torusBox.geom", "/resources/shaders/ray/torus.frag");
+            boxTorusProgram = Utils.loadProgram(gl, "/resources/shaders/ray/box/torus.vert",
+                    "/resources/shaders/ray/box/torus.geom", "/resources/shaders/ray/box/torus.frag");
+            boxPolygonProgram = Utils.loadProgram(gl, "/resources/shaders/ray/box/polygon.vert",
+                    "/resources/shaders/ray/box/polygon.geom", "/resources/shaders/ray/box/polygon.frag");
             resolveProgram = Utils.loadProgram(gl, "/resources/shaders/resolve.vert",
                     "/resources/shaders/resolve.frag");
             defaultProgram = Utils.loadProgram(gl, "/resources/shaders/default.vert",
@@ -579,7 +582,7 @@ public class Scene implements GLEventListener {
                     "/resources/shaders/ray/polygon2.geom", "/resources/shaders/ray/krone/polygon2.frag");
             // Load molecule
             //dynamics = new Dynamics(Utils.loadDynamicsFromResource("/resources/md/model", 1, 10));
-            dynamics = new Dynamics(Collections.singletonList(Utils.loadAtomsFromResource("/resources/1CRN_3.pdb")));
+            dynamics = new Dynamics(Collections.singletonList(Utils.loadAtomsFromResource("/resources/1VIS.pdb")));
             System.out.println("Atoms (molecule): " + dynamics.getMolecule().getAtomCount());
             System.out.println("Snapshots: " + dynamics.getSnapshotCount());
         } catch (Exception ex) {
@@ -588,8 +591,8 @@ public class Scene implements GLEventListener {
         }
         
         testTriangleProgram = boxTriangleProgram;
-        testTorusProgram = boxTorusProgram; //torusProgram;
-        testPolygonProgram = polygonProgram;
+        testTorusProgram = boxTorusProgram;
+        testPolygonProgram = boxPolygonProgram;
         
         // TODO move to MainWindow
         if (dynamicsListener != null) {
@@ -855,6 +858,10 @@ public class Scene implements GLEventListener {
         Utils.bindShaderStorageBlock(gl, boxTorusProgram, "ABuffer", FRAGMENTS_BUFFER_INDEX);
         Utils.bindShaderStorageBlock(gl, boxTorusProgram, "ABufferIndex", FRAGMENTS_INDEX_BUFFER_INDEX);
         Utils.bindUniformBlock(gl, boxTorusProgram, "MinMaxCavityArea", MINMAX_CAVITY_AREA_BUFFER_INDEX);
+        // bind box polygon ray-tracing buffers
+        Utils.bindShaderStorageBlock(gl, boxPolygonProgram, "ABuffer", FRAGMENTS_BUFFER_INDEX);
+        Utils.bindShaderStorageBlock(gl, boxPolygonProgram, "ABufferIndex", FRAGMENTS_INDEX_BUFFER_INDEX);
+        Utils.bindUniformBlock(gl, boxPolygonProgram, "MinMaxCavityArea", MINMAX_CAVITY_AREA_BUFFER_INDEX);
         // bind A-buffer buffers
         Utils.bindShaderStorageBlock(gl, defaultProgram, "ABuffer", FRAGMENTS_BUFFER_INDEX);
         Utils.bindShaderStorageBlock(gl, defaultProgram, "ABufferIndex", FRAGMENTS_INDEX_BUFFER_INDEX);
