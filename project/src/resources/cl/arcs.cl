@@ -291,6 +291,14 @@ kernel void arcs(
             } // if (arcValid[aCnt])
         } // for (uint aCnt = 0; aCnt < arcCnt; aCnt++)
 
+        // debug
+        if (tmpArcCnt > 16 || arcCnt > 32) {
+            counters->hashErrorCount = tmpArcCnt * 1000;
+        }
+        if (arcCnt > 32) {
+            counters->hashErrorCount = arcCnt * 1000;
+        }
+
         // copy new arcs to arc array
         for (uint aCnt = 0; aCnt < tmpArcCnt; aCnt++) {
             start[aCnt + arcCnt] = tmpStart[aCnt];

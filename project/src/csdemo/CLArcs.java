@@ -137,6 +137,10 @@ public class CLArcs {
         return countersBuffer.getBuffer().get(3);
     }
     
+    public int getHashErrorCount() {
+        return countersBuffer.getBuffer().get(2);
+    }
+    
     private static CLGLBuffer<?> createFromGLBuffer(CLGLContext cl, GL4 gl, int glBuffer, CLMemory.Mem ... mems) {
         int[] size = new int[1];
         gl.glBindBuffer(GL_SHADER_STORAGE_BUFFER, glBuffer);

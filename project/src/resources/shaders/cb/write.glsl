@@ -24,9 +24,11 @@ const uint KEY_VALUE_MASK = 0x7fffffff;
 
 const float TWO_PI = 6.28318530718;
 
+const uint MAX_NUM_ARCS = 16;
+
 uniform uint atomsCount;
 uniform uint maxNumNeighbors;
-uniform uint maxNumArcs;
+//uniform uint maxNumArcs;
 uniform uint maxNumTotalArcHashes;
 uniform uint maxHashIterations;
 
@@ -146,14 +148,14 @@ void main() {
             C = (C + pi) - tc;
 
             // compute clipping planes
-            vec4 arcs[17];
-            uint arcIndices[17]; // surface graph support
-            uint atoms[17];
-            vec4 planes[17];
+            vec4 arcs[MAX_NUM_ARCS + 1];
+            uint arcIndices[MAX_NUM_ARCS + 1]; // surface graph support
+            uint atoms[MAX_NUM_ARCS + 1];
+            vec4 planes[MAX_NUM_ARCS + 1];
             uint count = 0;
             uint iteration = 0;
             uvec3 value = readArcHash(index, jIdx, iteration);
-            while (value.x != INVALID_VALUE && count < 16) {
+            while (value.x != INVALID_VALUE && count < MAX_NUM_ARCS) {
                 arcs[count] = texelFetch(arcsTex, int(value.z));
                 arcIndices[count] = value.z;
                 atoms[count] = value.y;

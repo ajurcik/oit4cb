@@ -1077,6 +1077,9 @@ public class Scene implements GLEventListener {
         gl.glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT | GL_TEXTURE_FETCH_BARRIER_BIT);
         gl.glEndQuery(GL_TIME_ELAPSED);
         
+        // debugging
+        Debug.checkGridOverflow(gl, gridCountsBuffer, CELL_COUNT, MAX_CELL_ATOMS);
+        
         gl.glUseProgram(neighborsProgram);
         
         gl.glActiveTexture(GL_TEXTURE0);
@@ -1100,6 +1103,9 @@ public class Scene implements GLEventListener {
         gl.glDispatchCompute((atomCount + 63) / 64, 1, 1);
         gl.glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT | GL_TEXTURE_FETCH_BARRIER_BIT);
         gl.glEndQuery(GL_TIME_ELAPSED);
+        
+        // debugging
+        Debug.checkNeighborsOverflow(gl, neighborCountsBuffer, atomCount, MAX_NEIGHBORS);
         
         gl.glUseProgram(removeProgram);
         
@@ -1182,17 +1188,11 @@ public class Scene implements GLEventListener {
             //System.out.println("Before CLArcs");
             triangleCount = clArcs.computeArcs(gl, atomCount, MAX_NEIGHBORS, MAX_TOTAL_ARC_HASHES, MAX_HASH_ITERATIONS, probeRadius);
             //System.out.println("After CLArcs");
+            
+            // debugging
+            Debug.checkArcsOverflow(gl, clArcs, neighborCountsBuffer, atomCount, MAX_NEIGHBORS, arcCountsBuffer, 16);
         }
         gl.glEndQuery(GL_TIME_ELAPSED);
-        
-        //int threadCount = Utils.getCounter(gl, countersBuffer, 0);
-        //System.out.println("Arcs threads finished: " + threadCount);
-        //int hashCount = Utils.getCounter(gl, countersBuffer, 4);
-        //System.out.println("Arc hashes written: " + hashCount);
-        int hashErrorCount = Utils.getCounter(gl, countersBuffer, 8);
-        if (hashErrorCount > 0) {
-            System.out.println("Arc hash errors: " + hashErrorCount);
-        }
         
         if (writeResults) {
             try {
@@ -1258,7 +1258,7 @@ public class Scene implements GLEventListener {
         
         Utils.setUniform(gl, writeProgram, "atomsCount", atomCount);
         Utils.setUniform(gl, writeProgram, "maxNumNeighbors", MAX_NEIGHBORS);
-        //setUniform(gl, writeProgram, "maxNumArcs", MAX_ARCS);
+        //Utils.setUniform(gl, writeProgram, "maxNumArcs", MAX_ARCS);
         Utils.setUniform(gl, writeProgram, "maxNumTotalArcHashes", MAX_TOTAL_ARC_HASHES);
         Utils.setUniform(gl, writeProgram, "maxHashIterations", MAX_HASH_ITERATIONS);
         Utils.setUniform(gl, writeProgram, "probeRadius", probeRadius);
