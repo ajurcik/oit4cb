@@ -4,6 +4,7 @@ import com.jogamp.common.nio.Buffers;
 import static com.jogamp.opengl.GL4.*;
 import com.jogamp.opengl.GL4;
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.FloatBuffer;
@@ -24,7 +25,6 @@ public class VolumetricAO {
     
     private int aoElapsedQuery;
     
-    private boolean writeResults = false;
     private boolean writePerformanceInfo = false;
     
     private static final int VOLUME_SIZE = 8;
@@ -36,6 +36,9 @@ public class VolumetricAO {
     // buffer indices for shaders
     private static final int ATOMS_BUFFER_INDEX = 0;
     private static final int ATOMS_VOLUME_BUFFER_INDEX = 1;
+    
+    // Debugging
+    private final Debug debug = Debug.getInstance();
     
     public float getLambda() {
         return 0.5f * voxelSize;
@@ -119,15 +122,6 @@ public class VolumetricAO {
             System.out.println("Time elapsed (AO): " + aoElapsed / 1000000.0 + " ms");
         }
         
-        if (writeResults) {
-            writeResults = false;
-            try {
-                writeVolume(gl);
-            } catch (IOException ex) {
-                ex.printStackTrace(System.err);
-            }
-        }
-        
         return volumeTexture;
     }
     
@@ -142,7 +136,7 @@ public class VolumetricAO {
     }
     
     private void writeVolume(GL4 gl) throws IOException {
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter("volume.txt"))) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(new File(debug.getDebugDir(), "volume.txt")))) {
             // get volume image
             FloatBuffer volume = Buffers.newDirectFloatBuffer(VOXEL_COUNT);
             for (int i = 0; i < VOXEL_COUNT; i++) {
@@ -161,8 +155,12 @@ public class VolumetricAO {
         }
     }
     
-    public void writeResults() {
-        writeResults = true;
+    public void writeResults(GL4 gl) {
+        try {
+            writeVolume(gl);
+        } catch (IOException ex) {
+            ex.printStackTrace(System.err);
+        }
     }
     
     public void writePerformanceInfo() {

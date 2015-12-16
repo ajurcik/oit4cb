@@ -4,6 +4,7 @@ import com.jogamp.common.nio.Buffers;
 import com.jogamp.opengl.GL4;
 import static com.jogamp.opengl.GL4.*;
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.FloatBuffer;
@@ -23,7 +24,6 @@ public class Area {
     
     private int areasTex;
     
-    private boolean writeResults = false;
     private boolean writePerformanceInfo = false;
     
     // buffer indices for shaders
@@ -37,6 +37,9 @@ public class Area {
     private static final FloatBuffer MINMAX_DATA = Buffers.newDirectFloatBuffer(4);
     
     private final Result RESULT = new Result();
+    
+    // Debugging
+    private final Debug debug = Debug.getInstance();
     
     public void init(GL4 gl) {    
         // loading resources (shaders, data)
@@ -141,16 +144,6 @@ public class Area {
             System.out.println("Time elapsed (Area): " + (areaElapsed + minmaxElapsed) / 1000000.0 + " ms");
         }
         
-        if (writeResults) {
-            writeResults = false;
-            try {
-                //writeAreas(gl);
-                writeAreasTex(gl);
-            } catch (IOException ex) {
-                ex.printStackTrace(System.err);
-            }
-        }
-        
         return RESULT;
     }
     
@@ -170,7 +163,7 @@ public class Area {
     }
     
     private void writeAreas(GL4 gl) throws IOException {
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter("areas.txt"))) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(new File(debug.getDebugDir(), "areas.txt")))) {
             writer.append(String.format("Min: %f", MINMAX_DATA.get(0)));
             writer.newLine();
             writer.append(String.format("Max: %f", MINMAX_DATA.get(1)));
@@ -192,7 +185,7 @@ public class Area {
     }
     
     private void writeAreasTex(GL4 gl) throws IOException {
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter("areas.txt"))) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(new File(debug.getDebugDir(), "areas.txt")))) {
             writer.append(String.format("Min: %f", MINMAX_DATA.get(0)));
             writer.newLine();
             writer.append(String.format("Max: %f", MINMAX_DATA.get(1)));
@@ -212,8 +205,13 @@ public class Area {
         }
     }
     
-    public void writeResults() {
-        writeResults = true;
+    public void writeResults(GL4 gl) {
+        try {
+            //writeAreas(gl);
+            writeAreasTex(gl);
+        } catch (IOException ex) {
+            ex.printStackTrace(System.err);
+        }
     }
     
     public void writePerformanceInfo() {

@@ -2,18 +2,10 @@ package csdemo;
 
 import com.jogamp.common.nio.Buffers;
 import com.jogamp.opengl.util.gl2.GLUT;
-import java.io.BufferedWriter;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
 import com.jogamp.opengl.DebugGL4bc;
 import com.jogamp.opengl.GL2;
 import com.jogamp.opengl.GL4;
@@ -145,40 +137,40 @@ public class Scene implements GLEventListener {
     private int resolveElapsedQuery;
     private int miscsElapsedQuery;
     
-    private static final int GRID_SIZE = 16;
-    private static final int CELL_COUNT = GRID_SIZE * GRID_SIZE * GRID_SIZE;
-    private static final int MAX_CELL_ATOMS = 64;
+    public static final int GRID_SIZE = 16;
+    public static final int CELL_COUNT = GRID_SIZE * GRID_SIZE * GRID_SIZE;
+    public static final int MAX_CELL_ATOMS = 64;
     public static final int MAX_ATOMS = 16384;
-    private static final int MAX_PROBES = 32768; // 65536
-    private static final int MAX_NEIGHBORS = 128;
-    private static final int MAX_ARCS = 32;
-    private static final int MAX_SPHERE_ISOLATED_TORI = 8;
-    private static final int MAX_TOTAL_ARCS = 32771; // 257, 521, 1031, 2053, 4099, 8209, 16787, 32771, 65537
-    private static final int MAX_TOTAL_ARC_HASHES = 196613; // 98317, 196613
+    public static final int MAX_PROBES = 32768; // 65536
+    public static final int MAX_NEIGHBORS = 128;
+    public static final int MAX_ARCS = 32;
+    public static final int MAX_SPHERE_ISOLATED_TORI = 8;
+    public static final int MAX_TOTAL_ARCS = 32771; // 257, 521, 1031, 2053, 4099, 8209, 16787, 32771, 65537
+    public static final int MAX_TOTAL_ARC_HASHES = 196613; // 98317, 196613
     
-    private static final int SIZEOF_VEC4 = 4 * Buffers.SIZEOF_FLOAT;
-    private static final int SIZEOF_HASH = 4 * Buffers.SIZEOF_INT;
-    private static final int SIZEOF_FRAGMENT = 2 * Buffers.SIZEOF_INT + 2 * Buffers.SIZEOF_FLOAT;
-    private static final int SIZEOF_TRIANGLE = 4 * SIZEOF_VEC4;
-    private static final int SIZEOF_TORUS = 5 * SIZEOF_VEC4 + 2 * SIZEOF_VEC4;
-    private static final int SIZEOF_POLYGON = SIZEOF_VEC4 + 4 * Buffers.SIZEOF_INT;
-    private static final int SIZEOF_EDGE = 4 * Buffers.SIZEOF_INT;
+    public static final int SIZEOF_VEC4 = 4 * Buffers.SIZEOF_FLOAT;
+    public static final int SIZEOF_HASH = 4 * Buffers.SIZEOF_INT;
+    public static final int SIZEOF_FRAGMENT = 2 * Buffers.SIZEOF_INT + 2 * Buffers.SIZEOF_FLOAT;
+    public static final int SIZEOF_TRIANGLE = 4 * SIZEOF_VEC4;
+    public static final int SIZEOF_TORUS = 5 * SIZEOF_VEC4 + 2 * SIZEOF_VEC4;
+    public static final int SIZEOF_POLYGON = SIZEOF_VEC4 + 4 * Buffers.SIZEOF_INT;
+    public static final int SIZEOF_EDGE = 4 * Buffers.SIZEOF_INT;
     
     public static final int MAX_TRIANGLES = 16384;
     public static final int MAX_TORI = 32768;
     public static final int MAX_ISOLATED_TORI = 256;
     
-    private static final int MAX_ABUFFER_WIDTH = 1024;
-    private static final int MAX_ABUFFER_HEIGHT = 1024;
-    private static final int MAX_ABUFFER_PIXELS = MAX_ABUFFER_WIDTH * MAX_ABUFFER_HEIGHT;
-    private static final int MAX_FRAGMENTS = 24;
-    private static final int MAX_ABUFFER_FRAGMENTS = MAX_ABUFFER_PIXELS * MAX_FRAGMENTS;
+    public static final int MAX_ABUFFER_WIDTH = 1024;
+    public static final int MAX_ABUFFER_HEIGHT = 1024;
+    public static final int MAX_ABUFFER_PIXELS = MAX_ABUFFER_WIDTH * MAX_ABUFFER_HEIGHT;
+    public static final int MAX_FRAGMENTS = 24;
+    public static final int MAX_ABUFFER_FRAGMENTS = MAX_ABUFFER_PIXELS * MAX_FRAGMENTS;
     
     private static final int MAX_HASH_ITERATIONS = 64;
-    private static final int INVALID_INDEX = 0xffffffff;
-    private static final int INVALID_KEY = 0xffffffff;
+    public static final int INVALID_INDEX = 0xffffffff;
+    public static final int INVALID_KEY = 0xffffffff;
     
-    private static final int INVALID_LOCATION = -1;
+    public static final int INVALID_LOCATION = -1;
     
     private Point3f aabbMin;
     private float aabbSize;
@@ -304,10 +296,13 @@ public class Scene implements GLEventListener {
     private final Polygon polygon = new Polygon();
     // GPU graph
     private final GPUGraph gpuGraph = new GPUGraph();
+    private GPUGraph.Result gr = null;
     // Volumetric AO
     private final VolumetricAO volumetricAO = new VolumetricAO();
+    private int aoVolumeTex = -1;
     // Cavity area estimation
     private final Area area = new Area();
+    private Area.Result ar;
     // Array profiling
     private final GPUPerformance array = new GPUPerformance();
     private final CLPerformance clArray = new CLPerformance();
@@ -317,6 +312,9 @@ public class Scene implements GLEventListener {
     private Mesh capsule;
     private Drug acetone;
     private Box box;
+    
+    // Debugging
+    private final Debug debug = Debug.getInstance();
     
     private static final boolean PERFORMANCE_TESTS_ENABLED = false;
     
@@ -1063,9 +1061,11 @@ public class Scene implements GLEventListener {
         gl.glBindBufferBase(GL_SHADER_STORAGE_BUFFER, SMALL_CIRCLES_BUFFER_INDEX, smallCirclesBuffer);
         gl.glBindBufferBase(GL_SHADER_STORAGE_BUFFER, SMALL_CIRCLES_VISIBLE_BUFFER_INDEX, smallCirclesVisibleBuffer);
         
-        gl.glBindBuffer(GL_SHADER_STORAGE_BUFFER, gridCountsBuffer);
-        gl.glClearBufferData(GL_SHADER_STORAGE_BUFFER, GL_R32UI, GL_RED_INTEGER, GL_UNSIGNED_INT, IntBuffer.wrap(new int[] { 0 }));
-        gl.glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+        if (autoupdate || update) {
+            gl.glBindBuffer(GL_SHADER_STORAGE_BUFFER, gridCountsBuffer);
+            gl.glClearBufferData(GL_SHADER_STORAGE_BUFFER, GL_R32UI, GL_RED_INTEGER, GL_UNSIGNED_INT, IntBuffer.wrap(new int[] { 0 }));
+            gl.glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+        }
         
         gl.glUseProgram(hashProgram);
         Utils.setUniform(gl, hashProgram, "sphereCount", atomCount);
@@ -1073,8 +1073,10 @@ public class Scene implements GLEventListener {
         Utils.setUniform(gl, hashProgram, "gridSize", GRID_SIZE);
         Utils.setUniform(gl, hashProgram, "cellSize", cellSize);
         gl.glBeginQuery(GL_TIME_ELAPSED, hashElapsedQuery);
-        gl.glDispatchCompute((atomCount + 63) / 64, 1, 1);
-        gl.glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT | GL_TEXTURE_FETCH_BARRIER_BIT);
+        if (autoupdate || update) {
+            gl.glDispatchCompute((atomCount + 63) / 64, 1, 1);
+            gl.glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT | GL_TEXTURE_FETCH_BARRIER_BIT);
+        }
         gl.glEndQuery(GL_TIME_ELAPSED);
         
         // debugging
@@ -1100,8 +1102,10 @@ public class Scene implements GLEventListener {
         Utils.setUniform(gl, neighborsProgram, "maxNumNeighbors", MAX_NEIGHBORS);
         Utils.setUniform(gl, neighborsProgram, "probeRadius", probeRadius);
         gl.glBeginQuery(GL_TIME_ELAPSED, neighborsElapsedQuery);
-        gl.glDispatchCompute((atomCount + 63) / 64, 1, 1);
-        gl.glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT | GL_TEXTURE_FETCH_BARRIER_BIT);
+        if (autoupdate || update) {
+            gl.glDispatchCompute((atomCount + 63) / 64, 1, 1);
+            gl.glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT | GL_TEXTURE_FETCH_BARRIER_BIT);
+        }
         gl.glEndQuery(GL_TIME_ELAPSED);
         
         // debugging
@@ -1127,8 +1131,10 @@ public class Scene implements GLEventListener {
         Utils.setUniform(gl, removeProgram, "maxNumNeighbors", MAX_NEIGHBORS);
         Utils.setUniform(gl, removeProgram, "probeRadius", probeRadius);
         gl.glBeginQuery(GL_TIME_ELAPSED, removeElapsedQuery);
-        gl.glDispatchCompute((MAX_NEIGHBORS + 63) / 64, (atomCount + 1) / 2, 1);
-        gl.glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT | GL_TEXTURE_FETCH_BARRIER_BIT);
+        if (autoupdate || update) {
+            gl.glDispatchCompute((MAX_NEIGHBORS + 63) / 64, (atomCount + 1) / 2, 1);
+            gl.glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT | GL_TEXTURE_FETCH_BARRIER_BIT);
+        }
         gl.glEndQuery(GL_TIME_ELAPSED);
         
         gl.glUseProgram(arcsProgram);
@@ -1196,10 +1202,10 @@ public class Scene implements GLEventListener {
         
         if (writeResults) {
             try {
-                writeGrid(gl, "grid.txt");
-                writeNeighbors(gl, neighborsBuffer, neighborCountsBuffer, atomCount, "neighbors.txt");
-                writeArcs(gl);
-                writeArcHashes(gl, MAX_TOTAL_ARC_HASHES);
+                debug.writeGrid("grid.txt", gl, gridCountsBuffer, gridIndicesBuffer);
+                debug.writeNeighbors(gl, neighborsBuffer, neighborCountsBuffer, atomCount, "neighbors.txt");
+                debug.writeArcs(gl, neighborCountsBuffer, atomCount, arcCountsBuffer);
+                debug.writeArcHashes(gl, arcsBuffer, arcHashesBuffer, atomCount);
             } catch (IOException e) {
                 e.printStackTrace(System.err);
             }
@@ -1277,7 +1283,6 @@ public class Scene implements GLEventListener {
         gl.glEndQuery(GL_TIME_ELAPSED);
         
         // compute surface graph
-        GPUGraph.Result gr = null;
         if (gr == null || autoupdate || updateSurfaceGraph) {
             updateSurfaceGraph = false;
             /*Graph graph = new Graph();
@@ -1289,13 +1294,11 @@ public class Scene implements GLEventListener {
         }
         
         // compute ambient occlusion
-        int aoVolumeTex = -1;
         if (aoVolumeTex == -1 || autoupdate) {
             aoVolumeTex = volumetricAO.ambientOcclusion(gl, atomsBuffer, atomCount, aabbSize);
         }
         
         // compute cavity area
-        Area.Result ar = null;
         if (ar == null || autoupdate) {
             ar = area.computeArea(gl, trianglesArrayBuffer, triangleCount, surfaceVerticesTex, gr.getLabelCount());
         }
@@ -1395,9 +1398,11 @@ public class Scene implements GLEventListener {
         // singularity handling
         gl.glUseProgram(hashProgram);
         
-        gl.glBindBuffer(GL_SHADER_STORAGE_BUFFER, gridCountsBuffer);
-        gl.glClearBufferData(GL_SHADER_STORAGE_BUFFER, GL_R32UI, GL_RED_INTEGER, GL_UNSIGNED_INT, IntBuffer.wrap(new int[] { 0 }));
-        gl.glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+        if (autoupdate || update) {
+            gl.glBindBuffer(GL_SHADER_STORAGE_BUFFER, gridCountsBuffer);
+            gl.glClearBufferData(GL_SHADER_STORAGE_BUFFER, GL_R32UI, GL_RED_INTEGER, GL_UNSIGNED_INT, IntBuffer.wrap(new int[] { 0 }));
+            gl.glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+        }
         
         gl.glBindBufferBase(GL_SHADER_STORAGE_BUFFER, SPHERES_BUFFER_INDEX, arcsBuffer);
         gl.glBindBufferBase(GL_SHADER_STORAGE_BUFFER, GRID_COUNTS_BUFFER_INDEX, gridCountsBuffer);
@@ -1410,8 +1415,10 @@ public class Scene implements GLEventListener {
         Utils.setUniform(gl, hashProgram, "maxNumSpheres", MAX_CELL_ATOMS);
         Utils.setUniform(gl, hashProgram, "gridSize", GRID_SIZE);
         Utils.setUniform(gl, hashProgram, "cellSize", cellSize);
-        gl.glDispatchCompute((triangleCount + 63) / 64, 1, 1);
-        gl.glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT | GL_TEXTURE_FETCH_BARRIER_BIT);
+        if (autoupdate || update) {
+            gl.glDispatchCompute((triangleCount + 63) / 64, 1, 1);
+            gl.glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT | GL_TEXTURE_FETCH_BARRIER_BIT);
+        }
         
         gl.glUseProgram(singularityProgram);
         
@@ -1686,15 +1693,18 @@ public class Scene implements GLEventListener {
             writeResults = false;
             try {
                 //writeAtomsVisible(gl, atoms.size());
-                writeGrid(gl, "probe-grid.txt");
+                debug.writeGrid("probe-grid.txt", gl, gridCountsBuffer, gridIndicesBuffer);
                 //writeNeighbors(gl, probeNeighborsBuffer, probeNeighborCountsBuffer, triangleCount, "probe-neighbors.txt");
                 //writeFragments(gl, viewport[2], viewport[3]);
-                writeTriangles(gl, triangleCount);
-                writeTori(gl, torusCount);
-                writePolygons(gl, sphereCount);
-                writeSphereIsolated(gl);
+                debug.writeTriangles(gl, trianglesArrayBuffer, triangleCount);
+                debug.writeTori(gl, toriArrayBuffer, torusCount);
+                debug.writePolygons(gl, spheresArrayBuffer, sphereCount);
+                debug.writeSphereIsolated(gl, sphereIsolatedCountsBuffer, sphereIsolatedVSBuffer, atomCount);
                 //writeDebugi(gl, 2);
-                writeDebug4f(gl, 18);
+                //debug.writeDebug4f(gl, 18);
+                gpuGraph.writeResults(gl);
+                area.writeResults(gl);
+                volumetricAO.writeResults(gl);
             } catch (IOException e) {
                 e.printStackTrace(System.err);
             }
@@ -2454,11 +2464,11 @@ public class Scene implements GLEventListener {
     }
     
     public void writeResults() {
+        debug.makeDebugDir();
         writeResults = true;
-        gpuGraph.writeResults();
-        volumetricAO.writeResults();
-        area.writeResults();
-        array.writeResults();
+        if (PERFORMANCE_TESTS_ENABLED) {
+            array.writeResults();
+        }
     }
     
     public void writePerformanceInfo() {
@@ -2475,6 +2485,7 @@ public class Scene implements GLEventListener {
     
     public void update() {
         update = true;
+        updateSurfaceGraph();
     }
     
     public void updateSurfaceGraph() {
@@ -2570,329 +2581,6 @@ public class Scene implements GLEventListener {
         return (1f - t) * a + t * b;
     }
     
-    private void writeGrid(GL4 gl, String filename) throws IOException {
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(filename))) {
-            // read counts
-            gl.glBindBuffer(GL_SHADER_STORAGE_BUFFER, gridCountsBuffer);
-            ByteBuffer data = gl.glMapBuffer(GL_SHADER_STORAGE_BUFFER, GL_READ_ONLY);
-            int counts[] = new int[CELL_COUNT];
-            data.asIntBuffer().get(counts);
-            gl.glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
-            // write counts and indices
-            gl.glBindBuffer(GL_SHADER_STORAGE_BUFFER, gridIndicesBuffer);
-            IntBuffer indices = gl.glMapBuffer(GL_SHADER_STORAGE_BUFFER, GL_READ_ONLY).asIntBuffer();
-            Set<Integer> cellIndices = new TreeSet<>();
-            for (int i = 0; i < CELL_COUNT; i++) {
-                if (counts[i] > 0) {
-                    int x = i / GRID_SIZE / GRID_SIZE;
-                    int y = (i / GRID_SIZE) % GRID_SIZE;
-                    int z = i % GRID_SIZE;
-                    writer.append(String.format("[%2d,%2d,%2d] (%2d): ", x, y, z, counts[i]));
-                    cellIndices.clear();
-                    for (int j = 0; j < counts[i]; j++) {
-                        cellIndices.add(indices.get(MAX_CELL_ATOMS * i + j));
-                    }
-                    for (Integer index : cellIndices) {
-                        writer.append(String.format("%6d", index));
-                    }
-                    writer.newLine();
-                }
-            }
-            gl.glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
-        }
-    }
-    
-    private void writeNeighbors(GL4 gl, int neighborsBuffer, int neighborCountsBuffer, int sphereCount,
-            String filename) throws IOException {
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(filename))) {
-            // read counts
-            gl.glBindBuffer(GL_SHADER_STORAGE_BUFFER, neighborCountsBuffer);
-            ByteBuffer data = gl.glMapBuffer(GL_SHADER_STORAGE_BUFFER, GL_READ_ONLY);
-            int counts[] = new int[sphereCount];
-            data.asIntBuffer().get(counts);
-            gl.glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
-            // write counts and indices
-            gl.glBindBuffer(GL_SHADER_STORAGE_BUFFER, neighborsBuffer);
-            IntBuffer neighbors = gl.glMapBuffer(GL_SHADER_STORAGE_BUFFER, GL_READ_ONLY).asIntBuffer();
-            Set<Integer> neighborIndices = new LinkedHashSet<>();
-            for (int i = 0; i < sphereCount; i++) {
-                if (counts[i] > 0) {
-                    writer.append(String.format("%4d (%2d): ", i, counts[i]));
-                    neighborIndices.clear();
-                    for (int j = 0; j < counts[i]; j++) {
-                        neighborIndices.add(neighbors.get(MAX_NEIGHBORS * i + j));
-                    }
-                    for (Integer index : neighborIndices) {
-                        writer.append(String.format("%6d", index));
-                    }
-                    writer.newLine();
-                }
-            }
-            gl.glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
-        }
-    }
-    
-    private void writeArcs(GL4 gl) throws IOException {
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter("arcs.txt"))) {
-            // read counts
-            gl.glBindBuffer(GL_SHADER_STORAGE_BUFFER, neighborCountsBuffer);
-            ByteBuffer data = gl.glMapBuffer(GL_SHADER_STORAGE_BUFFER, GL_READ_ONLY);
-            int neighborCounts[] = new int[atomCount];
-            data.asIntBuffer().get(neighborCounts);
-            gl.glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
-            // write arcs
-            gl.glBindBuffer(GL_SHADER_STORAGE_BUFFER, arcCountsBuffer);
-            IntBuffer arcsCounts = gl.glMapBuffer(GL_SHADER_STORAGE_BUFFER, GL_READ_ONLY).asIntBuffer();
-            for (int i = 0; i < atomCount; i++) {
-                int totalArcs = 0;
-                List<Integer> counts = new ArrayList<>();
-                for (int j = 0; j < neighborCounts[i]; j++) {
-                    int count = arcsCounts.get(i * MAX_NEIGHBORS + j);
-                    counts.add(count);
-                    totalArcs += count;
-                }
-                writer.append(String.format("%4d (%2d): ", i, totalArcs));
-                for (int count : counts) {
-                    writer.append(String.format("%3d", count));
-                }
-                writer.newLine();
-            }
-            gl.glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
-        }
-    }
-    
-    private static class Fragment implements Comparable<Fragment> {
-        
-        private int color;
-        private float depth;
-
-        public Fragment(int color, float depth) {
-            this.color = color;
-            this.depth = depth;
-        }
-        
-        @Override
-        public int compareTo(Fragment other) {
-            return (int)Math.signum(depth - other.depth);
-        }
-        
-    }
-    
-    private void writeFragments(GL4 gl, int width, int height) throws IOException {
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter("fragments.txt"))) {
-            // write A-Buffer dimensions
-            writer.append("width: " + width + ", height: " + height);
-            writer.newLine();
-            // read fragment indices
-            gl.glBindBuffer(GL_SHADER_STORAGE_BUFFER, fragmentsIndexBuffer);
-            ByteBuffer data = gl.glMapBuffer(GL_SHADER_STORAGE_BUFFER, GL_READ_ONLY);
-            int indices[] = new int[MAX_ABUFFER_PIXELS];
-            data.asIntBuffer().get(indices);
-            gl.glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
-            // write fragments
-            gl.glBindBuffer(GL_SHADER_STORAGE_BUFFER, fragmentsBuffer);
-            int stride = SIZEOF_FRAGMENT;
-            ByteBuffer fragments = gl.glMapBuffer(GL_SHADER_STORAGE_BUFFER, GL_READ_ONLY);
-            List<Fragment> frags = new ArrayList<>();
-            for (int y = 0; y < height; y++) {
-                for (int x = 0; x < width; x++) {
-                    frags.clear();
-                    int index = indices[y * width + x];
-                    if (index == INVALID_INDEX) {
-                        continue;
-                    }
-                    while (index != INVALID_INDEX) {
-                        int color = fragments.getInt(index * stride);
-                        float depth = fragments.getFloat(index * stride + 4);
-                        frags.add(new Fragment(color, depth));
-                        index = fragments.getInt(index * stride + 8);
-                    }
-                    Collections.sort(frags);
-                    writer.append(String.format("[%4d,%4d]: ", x, y));
-                    for (Fragment f : frags) {
-                        writer.append(String.format("%08x@%f ", f.color, f.depth));
-                    }
-                    /*if (frags.size() > 0) {
-                        writer.append(String.format("%08x@%f ", frags.get(0).color, frags.get(0).depth)); // DEBUG
-                    }*/
-                    writer.newLine();
-                }
-            }
-            gl.glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
-        }
-    }
-    
-    private void writeArcHashes(GL4 gl, int size) throws IOException {
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter("hashes.txt"))) {
-            // read arcs
-            gl.glBindBuffer(GL_SHADER_STORAGE_BUFFER, arcsBuffer);
-            ByteBuffer data = gl.glMapBuffer(GL_SHADER_STORAGE_BUFFER, GL_READ_ONLY);
-            float arcs[] = new float[MAX_TOTAL_ARCS * 4];
-            data.asFloatBuffer().get(arcs);
-            gl.glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
-            // write hashes
-            gl.glBindBuffer(GL_SHADER_STORAGE_BUFFER, arcHashesBuffer);
-            int stride = SIZEOF_HASH;
-            ByteBuffer hashes = gl.glMapBuffer(GL_SHADER_STORAGE_BUFFER, GL_READ_ONLY);
-            for (int i = 0; i < size; i++) {
-                int key = hashes.getInt(i * stride);
-                if (key != INVALID_KEY) {
-                    char primary = ((key & 0xf0000000) == 0) ? 'p' : 's';
-                    int ai = (key & 0x0fffffff) / atomCount;
-                    int aj = (key & 0x0fffffff) % atomCount;
-                    int atomk = hashes.getInt(i * stride + 4);
-                    int index = hashes.getInt(i * stride + 8);
-                    writer.append(String.format("[%4d, %4d] (%c): %4d, %8d", ai, aj, primary, atomk, index));
-                    float x = arcs[4 * index];
-                    float y = arcs[4 * index + 1];
-                    float z = arcs[4 * index + 2];
-                    float k = arcs[4 * index + 3];
-                    writer.append(String.format(" --> (%f %f %f %f)", x, y, z, k));
-                } else {
-                    writer.append("(EMPTY)");
-                }
-                writer.newLine();
-            }
-            gl.glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
-        }
-    }
-    
-    private void writeAtomsVisible(GL4 gl, int count) throws IOException {
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter("atoms.txt"))) {
-            // write tori
-            gl.glBindBuffer(GL_SHADER_STORAGE_BUFFER, atomsVisibleBuffer);
-            IntBuffer atomsVisible = gl.glMapBuffer(GL_SHADER_STORAGE_BUFFER, GL_READ_ONLY).asIntBuffer();
-            for (int i = 0; i < count; i++) {
-                int visible = atomsVisible.get(i);
-                writer.append(String.format("%4d: ", i));
-                if (visible == 1) {
-                    writer.append("1");
-                }
-                writer.newLine();
-            }
-            gl.glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
-        }
-    }
-    
-    private void writeTriangles(GL4 gl, int count) throws IOException {
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter("triangles.txt"))) {
-            // write tori
-            gl.glBindBuffer(GL_SHADER_STORAGE_BUFFER, trianglesArrayBuffer);
-            ByteBuffer triangleArray = gl.glMapBuffer(GL_SHADER_STORAGE_BUFFER, GL_READ_ONLY);
-            for (int i = 0; i < count; i++) {
-                Vector4f position = getVec4(triangleArray, i * SIZEOF_TRIANGLE);
-                writer.append(String.format("%4d: ", i));
-                writer.append(String.format("position: [%f %f %f %f]", position.x, position.y, position.z, position.w));
-                writer.newLine();
-            }
-            gl.glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
-        }
-    }
-    
-    private void writeTori(GL4 gl, int count) throws IOException {
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter("tori.txt"))) {
-            // write tori
-            gl.glBindBuffer(GL_SHADER_STORAGE_BUFFER, toriArrayBuffer);
-            ByteBuffer toriArray = gl.glMapBuffer(GL_SHADER_STORAGE_BUFFER, GL_READ_ONLY);
-            for (int i = 0; i < count; i++) {
-                Vector4f position = getVec4(toriArray, i * SIZEOF_TORUS);
-                float operation = toriArray.getFloat(i * SIZEOF_TORUS + 28);
-                String op = (operation > 0f) ? "AND" : (operation < 0f) ? "OR " : "ISOLATED";
-                Vector4f plane1 = getVec4(toriArray, i * SIZEOF_TORUS + 48);
-                Vector4f plane2 = getVec4(toriArray, i * SIZEOF_TORUS + 64);
-                writer.append(String.format("%4d: ", i));
-                writer.append(String.format("center: [%f %f %f], R: %f, ", position.x, position.y, position.z, position.w));
-                writer.append(String.format("op: %s, ", op));
-                writer.append(String.format("plane1: [%f %f %f %f], ", plane1.x, plane1.y, plane1.z, plane1.w));
-                writer.append(String.format("plane2: [%f %f %f %f]", plane2.x, plane2.y, plane2.z, plane2.w));
-                writer.newLine();
-            }
-            gl.glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
-        }
-    }
-    
-    private void writePolygons(GL4 gl, int count) throws IOException {
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter("polygons.txt"))) {
-            // write tori
-            gl.glBindBuffer(GL_SHADER_STORAGE_BUFFER, spheresArrayBuffer);
-            ByteBuffer polygonsArray = gl.glMapBuffer(GL_SHADER_STORAGE_BUFFER, GL_READ_ONLY);
-            for (int i = 0; i < count; i++) {
-                int index = polygonsArray.getInt(i * SIZEOF_POLYGON + 16);
-                int label = polygonsArray.getInt(i * SIZEOF_POLYGON + 20);
-                int circleStart = polygonsArray.getInt(i * SIZEOF_POLYGON + 24);
-                int circleLength = polygonsArray.getInt(i * SIZEOF_POLYGON + 28);
-                Vector4f plane = getVec4(polygonsArray, i * SIZEOF_POLYGON + 32);
-                writer.append(String.format("%4d: ", i));
-                writer.append(String.format("index: %4d, ", index));
-                writer.append(String.format("label: %4d, ", label));
-                writer.append(String.format("circle: [%6d, %2d]", circleStart, circleLength));
-                if (plane.x * plane.x + plane.y * plane.y + plane.z * plane.z > 0f) {
-                    writer.append(String.format(", plane: [%f, %f, %f, %f]", plane.x, plane.y, plane.z, plane.w));
-                }
-                writer.newLine();
-            }
-            gl.glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
-        }
-    }
-    
-    private void writeSphereIsolated(GL4 gl) throws IOException {
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter("sphere-isolated.txt"))) {
-            // read counts
-            gl.glBindBuffer(GL_SHADER_STORAGE_BUFFER, sphereIsolatedCountsBuffer);
-            ByteBuffer data = gl.glMapBuffer(GL_SHADER_STORAGE_BUFFER, GL_READ_ONLY);
-            int counts[] = new int[dynamics.getMolecule().getAtomCount()];
-            data.asIntBuffer().get(counts);
-            gl.glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
-            // write counts and indices
-            gl.glBindBuffer(GL_SHADER_STORAGE_BUFFER, sphereIsolatedVSBuffer);
-            ByteBuffer vsData = gl.glMapBuffer(GL_SHADER_STORAGE_BUFFER, GL_READ_ONLY);
-            for (int i = 0; i < counts.length; i++) {
-                writer.append(String.format("%4d (%2d): ", i, counts[i]));
-                for (int j = 0; j < counts[i]; j++) {
-                    Vector4f vs = getVec4(vsData, (i * MAX_SPHERE_ISOLATED_TORI + j) * SIZEOF_VEC4);
-                    writer.append(String.format("vs: [%f, %f, %f, %f], ", vs.x, vs.y, vs.z, vs.w));
-                }
-                writer.newLine();
-            }
-            gl.glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
-        }
-    }
-    
-    private void writeDebugi(GL4 gl, int count) throws IOException {
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter("debug.txt"))) {
-            // write debug
-            gl.glBindBuffer(GL_SHADER_STORAGE_BUFFER, debugBuffer);
-            IntBuffer debug = gl.glMapBuffer(GL_SHADER_STORAGE_BUFFER, GL_READ_ONLY).asIntBuffer();
-            for (int i = 0; i < count; i++) {
-                writer.append(String.format("%4d: %8d", i, debug.get(i)));
-                writer.newLine();
-            }
-            gl.glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
-        }
-    }
-    
-    private void writeDebug4f(GL4 gl, int count) throws IOException {
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter("debug.txt"))) {
-            // write debug
-            gl.glBindBuffer(GL_SHADER_STORAGE_BUFFER, debugBuffer);
-            ByteBuffer debug = gl.glMapBuffer(GL_SHADER_STORAGE_BUFFER, GL_READ_ONLY);
-            for (int i = 0; i < count; i++) {
-                Vector4f v = getVec4(debug, i * 16);
-                writer.append(String.format("%4d: [%f %f %f %f]", i, v.x, v.y, v.z, v.w));
-                writer.newLine();
-            }
-            gl.glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
-        }
-    }
-    
-    private Vector4f getVec4(ByteBuffer buffer, int index) {
-        Vector4f v = new Vector4f();
-        v.x = buffer.getFloat(index);
-        v.y = buffer.getFloat(index + 4);
-        v.z = buffer.getFloat(index + 8);
-        v.w = buffer.getFloat(index + 12);
-        return v;
-    }
     /*
     private int[] neighborsCount;
     private int[] neighbors;

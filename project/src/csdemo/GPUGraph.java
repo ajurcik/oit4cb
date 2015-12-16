@@ -4,6 +4,7 @@ import com.jogamp.common.nio.Buffers;
 import static com.jogamp.opengl.GL4.*;
 import com.jogamp.opengl.GL4;
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -65,9 +66,14 @@ public class GPUGraph {
     
     private static final IntBuffer SURFACE_LABEL_DATA = Buffers.newDirectIntBuffer(MAX_LABEL_COUNT + 1);
     private static final int[] surfaceLabels = new int[MAX_LABEL_COUNT + 1];
-    
-    private boolean writeResults = false;
+
     private boolean writePerformanceInfo = false;
+    
+    // Last result
+    private Result result;
+    
+    // Debugging
+    private final Debug debug = Debug.getInstance();
     
     public void init(GL4 gl, int sphereCount) {
         // loading resources (shaders, data)
@@ -288,19 +294,20 @@ public class GPUGraph {
             System.out.println("Time elapsed (SG): " + sgElapsed / 1000000.0 + " ms");
         }
         
-        if (writeResults) {
-            writeResults = false;
-            try {
-                writeAdjacency(gl, vertexCount);
-                writeLabels(gl, vertexCount);
-                writeCircles(gl, circleCount);
-            } catch (IOException ex) {
-                ex.printStackTrace(System.err);
-            }
-        }
-        
-        return new Result(vertexCount, labelsTex, surfaceLabels, labelCount,
+        result = new Result(vertexCount, labelsTex, surfaceLabels, labelCount,
                 circleCount, circlesTex, circlesCountTex, circlesLengthTex, circlesStartTex);
+        
+        return result;
+    }
+    
+    public void writeResults(GL4 gl) {
+        try {
+            writeAdjacency(gl, result.getVertexCount());
+            writeLabels(gl, result.getVertexCount());
+            writeCircles(gl, result.getCircleCount());
+        } catch (IOException ex) {
+            ex.printStackTrace(System.err);
+        }
     }
     
     public class Result {
@@ -374,7 +381,7 @@ public class GPUGraph {
     }
     
     private void writeAdjacency(GL4 gl, int vertexCount) throws IOException {
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter("adjacency.txt"))) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(new File(debug.getDebugDir(), "adjacency.txt")))) {
             // map adjacency buffer
             gl.glBindBuffer(GL_SHADER_STORAGE_BUFFER, adjacencyBuffer);
             IntBuffer adjacency = gl.glMapBuffer(GL_SHADER_STORAGE_BUFFER, GL_READ_ONLY).asIntBuffer();
@@ -392,7 +399,7 @@ public class GPUGraph {
     }
     
     private void writeLabels(GL4 gl, int vertexCount) throws IOException {
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter("vertices.txt"))) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(new File(debug.getDebugDir(), "vertices.txt")))) {
             // map labels buffer
             gl.glBindBuffer(GL_SHADER_STORAGE_BUFFER, labelsBuffer);
             IntBuffer labels = gl.glMapBuffer(GL_SHADER_STORAGE_BUFFER, GL_READ_ONLY).asIntBuffer();
@@ -428,7 +435,7 @@ public class GPUGraph {
     }
     
     private void writeCircles(GL4 gl, int circleCount) throws IOException {
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter("circles.txt"))) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(new File(debug.getDebugDir(), "circles.txt")))) {
             // map circles start buffer
             int starts[] = new int[circleCount];
             gl.glBindBuffer(GL_SHADER_STORAGE_BUFFER, circlesStartBuffer);
@@ -462,10 +469,6 @@ public class GPUGraph {
             // unmap length buffer
             gl.glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
         }
-    }
-    
-    public void writeResults() {
-        writeResults = true;
     }
     
     public void writePerformanceInfo() {
