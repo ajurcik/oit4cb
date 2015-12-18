@@ -1488,7 +1488,7 @@ public class Scene implements GLEventListener {
         }
         
         if (renderPoint) {
-            //Utils.drawPoint(gl, point, 2f);
+            Utils.drawPoint(gl, point, 2f);
         }
         
         // calc view vectors
@@ -1700,8 +1700,7 @@ public class Scene implements GLEventListener {
                 debug.writeTori(gl, toriArrayBuffer, torusCount);
                 debug.writePolygons(gl, spheresArrayBuffer, sphereCount);
                 debug.writeSphereIsolated(gl, sphereIsolatedCountsBuffer, sphereIsolatedVSBuffer, atomCount);
-                //writeDebugi(gl, 2);
-                //debug.writeDebug4f(gl, 18);
+                debug.writeDebug4f(gl, debugBuffer, 4);
                 gpuGraph.writeResults(gl);
                 area.writeResults(gl);
                 volumetricAO.writeResults(gl);

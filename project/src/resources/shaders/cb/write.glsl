@@ -203,28 +203,27 @@ void main() {
                     }
                 }
 
-                /*if (count > 2) {
-                    debug[0] = vec4(tc, 0.0); // DEBUG
-                    debug[1] = vec4(ta, 0.0); // DEBUG
-                    debug[2] = vec4(orig, 0.0); // DEBUG
-                    //atomicAdd(hashErrorCount, 1);
-                }*/
-
                 uint offset = 0;
                 float totalAngle = 0.0;
                 for (uint t = 0; t < count; t += 2) {
-                    vec3 arc1 = arcs[offset + t].xyz;
-                    vec3 arc2 = arcs[offset + t + 1].xyz;
+                    vec3 arc1 = arcs[t].xyz;
+                    vec3 arc2 = arcs[t + 1].xyz;
                     vec3 arcVec1 = normalize(arc1 - tc);
                     vec3 arcVec2 = normalize(arc2 - tc);
                     vec4 plane1 = torusPlane(pi, pj, atoms[t], arc1);
                     planes[t] = plane1;
                     planes[t + 1] = torusPlane(pi, pj, atoms[t + 1], arc2);
+                    float vecAngle = acos(clamp(dot(arcVec1, arcVec2), -1.0, 1.0));
                     if (dot(plane1.xyz, arc2) < -plane1.w) {
-                        totalAngle += TWO_PI - acos(dot(arcVec1, arcVec2)); // OR
+                        totalAngle += TWO_PI - vecAngle; // OR
                     } else {
-                        totalAngle += acos(dot(arcVec1, arcVec2)); // AND
+                        totalAngle += vecAngle; // AND
                     }
+                    // DEBUG
+                    /*if ((index == 198 && jIdx == 200) || (index == 200 && jIdx == 198)) {
+                        float x = dot(arcVec1, arcVec2);
+                        debug[2 + t / 2] = vec4(x, acos(x), totalAngle, 0.0);
+                    }*/
                 }
                 if (totalAngle > TWO_PI) {
                     offset = 1;
@@ -234,6 +233,18 @@ void main() {
                     planes[count] = planes[0];
                     //atomicAdd(hashErrorCount, 1); // DEBUG
                 }
+
+                // DEBUG
+                /*if ((index == 198 && jIdx == 200) || (index == 200 && jIdx == 198)) {
+                    debug[0] = vec4(arcIndices[offset + 0], arcIndices[offset + 1], arcIndices[offset + 2], arcIndices[offset + 3]);
+                    debug[1].x = angle(normalize(arcs[offset + 0].xyz - tc), orig, ta);
+                    debug[1].y = angle(normalize(arcs[offset + 1].xyz - tc), orig, ta);
+                    debug[1].z = angle(normalize(arcs[offset + 2].xyz - tc), orig, ta);
+                    debug[1].w = angle(normalize(arcs[offset + 3].xyz - tc), orig, ta);
+                    //debug[1] = vec4(ta, 0.0); // DEBUG
+                    //debug[2] = vec4(orig, 0.0); // DEBUG
+                    //atomicAdd(hashErrorCount, 1);
+                }*/
                 
                 // write torus
                 for (uint t = 0; t < count; t += 2) {
