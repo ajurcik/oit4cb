@@ -101,14 +101,14 @@ In this way, we get two intersection points from which we choose the one that li
 
 \subsection{Opacity modulation}
 After the intersection points are computed, we sort them in a front-to-back manner and store them to the linked list. 
-Thus, for a given ray, we acquire a list of fragments $\{f_1,\ldots,f_n \}$, where each pair represents an entry and an exit point for the molecular surface. For simplicity, the values of $f$ represent the depths of fragments. 
+Thus, for a given ray, we acquire a list of fragments $\{f_1,\ldots,f_n \}$, where each pair represents an entry and an exit point for the molecular surface. For simplicity, the values of $f_i$ represent the depths of fragments. 
 We denote the entire distance the ray passes through the molecule as $l=|f_1-f_n|$. 
 As we step along each fragment $f_i$, we define the opacity $\alpha_i$ of even fragments, i.e., those representing the entry surface points, as follows:
 \begin{equation}
   \alpha_i = O^{\phi(x)},
 	\label{eq:alphaDistEven}
 \end{equation}	
-where $O$ represents a user defined parameter affecting the overall opacity and $\phi(x)$ suppress or amplifies the opacity and is defined as
+where $O$ represents a user-defined parameter affecting the overall opacity and $\phi(x)$ suppress or amplifies the opacity and is defined as
 \begin{equation}
   \phi(x) = K-(K-1)x,
 	\label{eq:exponent}
