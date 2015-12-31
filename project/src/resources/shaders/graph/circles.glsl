@@ -46,7 +46,7 @@ void main() {
     uint start[8];
     start[0] = 0;
     
-    uint current = circles[index][0].x;
+    uint current = circles[index][0].y;
     for (uint j = 0; j < circleLength - 1; j++) {
         uint k;
         for (k = j + 1; k < circleLength; k++) {
@@ -56,6 +56,7 @@ void main() {
                 current = v1;
                 break;
             } else if (current == v1) {
+                circles[index][k].xy = ivec2(v1, v0);
                 current = v0;
                 break;
             }

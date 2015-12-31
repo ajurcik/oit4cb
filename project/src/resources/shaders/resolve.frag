@@ -89,8 +89,8 @@ void main() {
             }
             // modulate front tunnel fragment with tunnel color
             vec4 tunnelFrontColor = unpackUnorm4x8(ordered[tunnelFront].color);
-            ordered[tunnelFront].color = packUnorm4x8(tunnelFrontColor * vec4(tunnelColor, 1.0));
-            ordered[tunnelFront].ao = -2.0;
+            //ordered[tunnelFront].color = packUnorm4x8(tunnelFrontColor * vec4(tunnelColor, 1.0));
+            //ordered[tunnelFront].ao = -2.0;
         }
     }
 

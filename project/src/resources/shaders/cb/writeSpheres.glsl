@@ -16,7 +16,6 @@ uniform usamplerBuffer circlesTex;
 uniform usamplerBuffer circlesLengthTex;
 uniform usamplerBuffer circlesStartTex;
 uniform usamplerBuffer labelsTex;
-uniform samplerBuffer polygonsPlanesTex;
 
 layout(std430) buffer Spheres {
     sphere spheres[];

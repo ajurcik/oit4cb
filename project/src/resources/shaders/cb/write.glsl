@@ -265,7 +265,7 @@ void main() {
                     }*/
                     // write torus center & torus radius R
                     tori[torusIdx].position = vec4(tc, sc.w);
-                    // write torus axis & probe radius (= torus radius r)
+                    // write torus axis & patch clipping operation
                     tori[torusIdx].axis = vec4(ta, operation);
                     // write visibility sphere
                     tori[torusIdx].visibility = vec4(C, dist);

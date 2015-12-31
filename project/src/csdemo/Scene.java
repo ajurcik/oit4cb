@@ -580,7 +580,7 @@ public class Scene implements GLEventListener {
                     "/resources/shaders/ray/polygon2.geom", "/resources/shaders/ray/krone/polygon2.frag");
             // Load molecule
             //dynamics = new Dynamics(Utils.loadDynamicsFromResource("/resources/md/model", 1, 10));
-            dynamics = new Dynamics(Collections.singletonList(Utils.loadAtomsFromResource("/resources/1CRN.pdb")));
+            dynamics = new Dynamics(Collections.singletonList(Utils.loadAtomsFromResource("/resources/1CRN_3.pdb")));
             System.out.println("Atoms (molecule): " + dynamics.getMolecule().getAtomCount());
             System.out.println("Snapshots: " + dynamics.getSnapshotCount());
         } catch (Exception ex) {
@@ -1598,7 +1598,7 @@ public class Scene implements GLEventListener {
         Utils.setUniform(gl, resolveProgram, "opacity", opacity);
         Utils.setUniform(gl, resolveProgram, "frontOpacityMaxExponent", frontOpacityMaxExponent);
         Utils.setUniform(gl, resolveProgram, "backOpacityExponent", backOpacityExponent);
-        Utils.setUniform(gl, resolveProgram, "tunnelColor", tunnelColor);
+        //Utils.setUniform(gl, resolveProgram, "tunnelColor", tunnelColor);
         
         // draw fullscreen quad
         gl.glBegin(GL_QUADS);
@@ -1786,7 +1786,7 @@ public class Scene implements GLEventListener {
         Utils.setUniform(gl, program, "cavityColor1", cavityColor1);
         Utils.setUniform(gl, program, "cavityColor2", cavityColor2);
         // tunnel coloring
-        Utils.setUniform(gl, program, "tunnelColor", tunnelColor);
+        //Utils.setUniform(gl, program, "tunnelColor", tunnelColor);
         Utils.setUniform(gl, program, "tunnelAOThreshold", tunnelAOThreshold);
         // clipping by isolated tori
         Utils.setUniform(gl, program, "maxSphereIsolatedTori", MAX_SPHERE_ISOLATED_TORI);
@@ -1870,7 +1870,7 @@ public class Scene implements GLEventListener {
         Utils.setUniform(gl, program, "cavityColoring", cavityColoring == Coloring.AREA ? 0 : 1);
         Utils.setUniform(gl, program, "cavityColor1", cavityColor1);
         Utils.setUniform(gl, program, "cavityColor2", cavityColor2);
-        Utils.setUniform(gl, program, "tunnelColor", tunnelColor);
+        //Utils.setUniform(gl, program, "tunnelColor", tunnelColor);
         Utils.setUniform(gl, program, "tunnelAOThreshold", tunnelAOThreshold);
         
         gl.glEnableClientState(GL_VERTEX_ARRAY);
@@ -1960,7 +1960,7 @@ public class Scene implements GLEventListener {
         Utils.setUniform(gl, program, "cavityColoring", cavityColoring == Coloring.AREA ? 0 : 1);
         Utils.setUniform(gl, program, "cavityColor1", cavityColor1);
         Utils.setUniform(gl, program, "cavityColor2", cavityColor2);
-        Utils.setUniform(gl, program, "tunnelColor", tunnelColor);
+        //Utils.setUniform(gl, program, "tunnelColor", tunnelColor);
         Utils.setUniform(gl, program, "tunnelAOThreshold", tunnelAOThreshold);
         
         gl.glEnableClientState(GL_VERTEX_ARRAY);

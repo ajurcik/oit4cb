@@ -1459,9 +1459,9 @@ public class MainWindow extends javax.swing.JFrame {
             }
             // choose whether to load from PDB or from GROMACS
             if (files.length == 2 && isGromacs(files[0], files[1])) {
-                scene.loadDynamicsFromGROMACS(files[0], files[1]);
+                scene.loadDynamicsFromGROMACS(files[0], files[1], 100);
             } else if (files.length == 2 && isGromacs(files[1], files[0])) {
-                scene.loadDynamicsFromGROMACS(files[1], files[0]);
+                scene.loadDynamicsFromGROMACS(files[1], files[0], 100);
             } else {
                 scene.loadDynamics(files);
             }
@@ -1476,15 +1476,14 @@ public class MainWindow extends javax.swing.JFrame {
 
     private void testGromacsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_testGromacsButtonActionPerformed
         //File home = new File(System.getProperty("user.home"));
-        File topology = new File("C:\\Users\\xjurc\\caver\\md\\LINB-ACETON.gro");
-        File trajectory = new File("C:\\Users\\xjurc\\caver\\md\\LINB-ACE-pbc.xtc");
-        GromacsStructureLoader loader = new GromacsStructureLoader();
+        File topology = new File("C:\\Users\\xjurc\\caver\\dynamics\\gromacs\\LINB-ACETON.gro");
+        File trajectory = new File("C:\\Users\\xjurc\\caver\\dynamics\\gromacs\\LINB-ACE-pbc.xtc");
         try {
             //int snapshots = loader.getNumberOfSnapshots(trajectory);
             //JOptionPane.showMessageDialog(this, "Number of snapshots: " + snapshots);
             //Dynamics data = loader.loadDynamics(topology, trajectory, 100);
             //JOptionPane.showMessageDialog(this, "Numbers of drugs: " + data.getDrugCount());
-            scene.loadDynamicsFromGROMACS(topology, trajectory, 1000);
+            scene.loadDynamicsFromGROMACS(topology, trajectory, 100);
         } catch (Exception ex) {
             ex.printStackTrace(System.err);
         }

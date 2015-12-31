@@ -367,14 +367,10 @@ public class Debug {
                 int label = polygonsArray.getInt(i * Scene.SIZEOF_POLYGON + 20);
                 int circleStart = polygonsArray.getInt(i * Scene.SIZEOF_POLYGON + 24);
                 int circleLength = polygonsArray.getInt(i * Scene.SIZEOF_POLYGON + 28);
-                Vector4f plane = getVec4(polygonsArray, i * Scene.SIZEOF_POLYGON + 32);
                 writer.append(String.format("%4d: ", i));
                 writer.append(String.format("index: %4d, ", index));
                 writer.append(String.format("label: %4d, ", label));
                 writer.append(String.format("circle: [%6d, %2d]", circleStart, circleLength));
-                if (plane.x * plane.x + plane.y * plane.y + plane.z * plane.z > 0f) {
-                    writer.append(String.format(", plane: [%f, %f, %f, %f]", plane.x, plane.y, plane.z, plane.w));
-                }
                 writer.newLine();
             }
             gl.glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);

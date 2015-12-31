@@ -283,7 +283,7 @@ void storeIntersection(vec3 intersection, vec3 ray, vec4 color, bool outer) {
     worldNormal.z = dot(rotMatT2, normal.xyz);
     float aoFactor = texture3D(aoVolumeTex, (intersection + lambda * worldNormal) / volumeSize).r;
     if (label == surfaceLabel && aoFactor > tunnelAOThreshold && !outer) {
-        color.rgb = tunnelColor;
+        //color.rgb = tunnelColor;
         aoFactor = uintBitsToFloat(-2);
     }
 
