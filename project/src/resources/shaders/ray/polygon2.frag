@@ -193,15 +193,26 @@ void main() {
         debug[3] = vec4(outside, length(line.xyz));*/
     }
 
+    // ray-vertex hit handling
+    vec4 firstPlane;
+    vec4 prevPlane;
+    bvec2 firstVertex = bvec2(false, false);
+    bvec2 prevVertex = bvec2(false, false);
+    int vertexCount = 0; // DEBUG
+
     // test first edge
-    int vertexCount = 0;
     int result = sphericalLineArcIntersection(sphere, circle, line, intPos1, outside);
-    if (/*sphericalLineArcIntersection(sphere, circle, line, intPos1, outside)*/ result == LINE) {
+    if (result == VERTEX) {
         outer = !outer; count++; // DEBUG
-    } else if ((result & VERTEX) > 0) {
-        outer = !outer; count++; vertexCount++;
+        firstPlane.xyz = circle.xyz;
+        firstPlane.w = -dot(circle.xyz, sphere.xyz + circle.xyz);
+        prevPlane = firstPlane;
+        prevVertex.x = firstVertex.x = true;
+        vertexCount++; // DEBUG
+    } else if (result == LINE) {
+        outer = !outer; count++;
     }
-    if (sphericalLineArcIntersection(sphere, circle, line, intPos2, outside) == LINE) {
+    if (sphericalLineArcIntersection(sphere, circle, line, intPos2, outside) != EMPTY) {
         inner = !inner;
     }
 
@@ -239,17 +250,52 @@ void main() {
         line.xyz = circle.w * line.xyz;
         // test edge
         result = sphericalLineArcIntersection(sphere, circle, line, intPos1, outside);
-        if (/*sphericalLineArcIntersection(sphere, circle, line, intPos1, outside)*/ result == LINE) {
+        if (result == VERTEX) {
             outer = !outer; count++; // DEBUG
-        } else if ((result & VERTEX) > 0) {
-            outer = !outer; count++; vertexCount++;
+            vec4 plane;
+            plane.xyz = circle.xyz;
+            plane.w = -dot(plane.xyz, sphere.xyz + circle.xyz);
+            if (prevVertex.x) {
+                //vec3 lineN = normalize(cross(intPos1 - sphere.xyz, outside - sphere.xyz));
+                //vec3 n = cross(prevArc, arc);
+                // project line onto plane containing arc centers
+                //vec3 lineProj = intPos1 - outside;
+                //lineProj = lineProj - dot(lineProj, n) * n;
+                //vec3 pal = cross(prevArc, lineProj);
+                //vec3 la = cross(lineProj, arc);
+                //float vertexAngleDist = dot(prevCircleN, -circleN);
+                //if (dot(prevCircleN, lineN) >= vertexAngleDist && dot(-circleN, lineN) >= vertexAngleDist) {
+                //if (sign(dot(pal, n)) == sign(dot(la, n))) {
+                vec4 pos = vec4(intPos1, 1.0);
+                if (dot(prevPlane, pos) <= 0.0 && dot(plane, pos) <= 0.0) {
+                    outer = !outer;
+                    count--;
+                    //vertexCount++; // DEBUG
+                }
+                prevVertex.x = false;
+            } else {
+                prevPlane = plane;
+                prevVertex.x = true;
+            }
+            vertexCount++; // DEBUG
+        } else if (result == LINE) {
+            outer = !outer; count++; // DEBUG
+            prevVertex.x = false;
         }
-        if (sphericalLineArcIntersection(sphere, circle, line, intPos2, outside) == LINE) {
+        if (sphericalLineArcIntersection(sphere, circle, line, intPos2, outside) != EMPTY) {
             inner = !inner;
         }
     }
-    count += (vertexCount / 2);
-    outer = (count % 2) > 0;
+    
+    // test last and first arc
+    if (firstVertex.x && prevVertex.x) {
+        vec4 pos = vec4(intPos1, 1.0);
+        if (dot(firstPlane, pos) <= 0.0 && dot(prevPlane, pos) <= 0.0) {
+            outer = !outer;
+            count--;
+            //vertexCount++; // DEBUG
+        }
+    }
 
     // clip by isolated torus plane
     if (!sas) {
@@ -279,7 +325,9 @@ void main() {
         }
     }
 
-    //outer = true;
+    /*if (vertexCount == 2) {
+        outer = true; // DEBUG
+    }*/
     if (!inner && !outer) {
         discard;
     }
@@ -288,14 +336,15 @@ void main() {
     if (outer) {
         if (label == surfaceLabel) {
             vec4 col = color;
-            if (count == 0 && vertexCount == 0) {
+            if (count == 0) {
                 col.rgb = vec3(0.2, 0.2, 0.2);
-            } else if (vertexCount == 2) {
-                col.rgb = vec3(1.0, 0.0, 1.0);
-            } else if (vertexCount > 0) {
+            //} else if (count == 1) {
+            //    col.rgb = vec3(1.0, 1.0, 0.0);
+            } else if (count == 2) {
                 col.rgb = vec3(0.0, 1.0, 0.0);
-            } else if (count % 2 == 0) {
-                col.rgb = vec3(0.0, 1.0, 1.0);
+            }
+            if (vertexCount > 0) {
+                col.rgb = vec3(1.0, 0.0, 1.0);
             }
             storeIntersection(intPos1, normal1, eye, col, 0.2, 0.8, false);
         } else {
@@ -415,6 +464,7 @@ int sphericalLineArcIntersection(vec4 sphere, vec4 circle, vec4 arc, vec3 p, vec
 
     // find intersection of line circle and arc circle
     vec4 linePlane;
+    //linePlane.xyz = cross((o - sphere.xyz) / sphere.w, (p - sphere.xyz) / sphere.w) /* (sphere.w * sphere.w)*/;
     linePlane.xyz = normalize(cross(o - sphere.xyz, p - sphere.xyz));
     linePlane.w = -dot(linePlane.xyz, sphere.xyz);
     
@@ -438,6 +488,10 @@ int sphericalLineArcIntersection(vec4 sphere, vec4 circle, vec4 arc, vec3 p, vec
     vec3 pa2 = pa1;
     pa1 += circle.w * zLen * zAxis;
     pa2 -= circle.w * zLen * zAxis;
+    vec3 va1 = (pa1 - sphere.xyz) / sphere.w;
+    vec3 va2 = (pa2 - sphere.xyz) / sphere.w;
+    float dist1 = sphere.w * abs(dot(linePlane.xyz, va1));
+    float dist2 = sphere.w * abs(dot(linePlane.xyz, va2));
 
     float d = sqrt(RR - dot(projVec, projVec));
     
@@ -447,21 +501,17 @@ int sphericalLineArcIntersection(vec4 sphere, vec4 circle, vec4 arc, vec3 p, vec
     float lineAngleDist = dot(p - sphere.xyz, line);
     float arcAngleDist = arc.w * dot(arc.xyz, arc.xyz);
     
-    int result = EMPTY;
-    float eps = 0.01;
+    const float EPS = 0.1;
+    bool vertex = false;
     vec3 intPos = projPos - d * dir;
     vec3 lineIntVec = intPos - sphere.xyz;
     if (dot(lineIntVec, line) >= lineAngleDist) {
         // test whether inersection lies within arc
         vec3 arcIntVec = intPos - circlePos;
         if (dot(arcIntVec, arc.xyz) >= arcAngleDist) {
-            float dist1 = dot(intPos - pa1, intPos - pa1);
-            float dist2 = dot(intPos - pa2, intPos - pa2);
-            if (dist1 < eps || dist2 < eps) {
-                result |= VERTEX;
-            }/* else {
-                count++;
-            }*/
+            if (dist1 < EPS || dist2 < EPS) {
+                vertex = true;
+            }
             count++;
         }
     }
@@ -472,17 +522,13 @@ int sphericalLineArcIntersection(vec4 sphere, vec4 circle, vec4 arc, vec3 p, vec
         // test whether inersection lies within arc
         vec3 arcIntVec = intPos - circlePos;
         if (dot(arcIntVec, arc.xyz) >= arcAngleDist) {
-            float dist1 = dot(intPos - pa1, intPos - pa1);
-            float dist2 = dot(intPos - pa2, intPos - pa2);
-            if (dist1 < eps || dist2 < eps) {
-                result |= VERTEX;
-            } /*else {
-                count++;
-            }*/
+            if (dist1 < EPS || dist2 < EPS) {
+                vertex = true;
+            }
             count++;
         }
     }
     
-    //return count == 1;
-    return result | ((count == 1) ? LINE : EMPTY);
+    int type = (vertex) ? VERTEX : LINE;
+    return (count == 1) ? type : EMPTY;
 }
