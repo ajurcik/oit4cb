@@ -129,9 +129,10 @@ void main() {
     for (uint i = 0; i < vertex.circleEnd - vertex.circleStart; i++) {
         minDist = min(minDist, dot(cap.xyz, points[i]) + cap.w);
     }
+    float minDistPos = max(minDist, 0.0);
 
     float sx = (vertex.radius - minDist) / 2.0;
-    float syz = sqrt(vertex.radius * vertex.radius - minDist * minDist);
+    float syz = sqrt(vertex.radius * vertex.radius - minDistPos * minDistPos);
 
     vec3 obbC = vertex.objPos.xyz + (minDist + sx) * cap.xyz;
 
