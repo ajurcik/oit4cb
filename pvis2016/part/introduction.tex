@@ -18,17 +18,17 @@ This is reached by introducing several enhancements (Fig.~\ref{fig:teaser}), suc
 
 %In this paper, we introduce a new technique (Fig.~\ref{fig:teaser}) that enables to compute and visualize the solvent excluded surface. Additionally, we propose a new way for computing molecular surface features, like cavities or tunnels. Finally, we introduce a visualization technique that allows to interactively visualize the computed cavities in the context of the molecular surface.
 
-More specifically, the main contributions of our solution are:
+But the main contributions of our solution consist of:
 \begin{itemize}
-  \item \textbf{Reviewer 4:} Accelerated and improved~\cite{kauker2013rendering} rendering pipeline for the transparent SES.
-  \item \sout{Improved representation of the solvent-excluded surface (SES) of the molecule. We compute the exact representation of individual surface primitives.}
+  \item Accelerated and improved rendering pipeline for the transparent SES (in comparison with Kauker et al.~\cite{kauker2013rendering}).
+  %\item \sout{Improved representation of the solvent-excluded surface (SES) of the molecule. We 1compute the exact representation of individual surface primitives.}
 	%Enhanced computation of solvent-excluded surface (SES) of the molecule. We propose three new kernels that account for \textcolor{red}{speedup of the existing state-of-the-art approach~\cite{krone2011parallel}}.
-  \item \sout{A novel real-time algorithm for the extraction of cavities. We present new fast cavity extraction method that is based on solvent-excluded surface (SES)}.
+  %\item \sout{A novel real-time algorithm for the extraction of cavities. We present new fast cavity extraction method that is based on solvent-excluded surface (SES)}.
   \item Improved performance of visualization of transparent molecular surfaces~\cite{kauker2013rendering}. We also enable to change the parameters of the opacity modulation, which supports better perception of inner surface features.
 	\item Extension of the existing state-of-the-art approach~\cite{krone2011parallel} to SES computation. We propose methods for computation and rendering of individual SES patches.
 \end{itemize}
 
-Currently existing methods provide a solution for each of these topics separately (i.e., computation of molecular surface, its transparency, and inner cavities).
+Currently existing methods provide a solution for each of these topics separately (i.e., computation of molecular surface and its transparency), including the computation of inner cavities.
 However, none of the algorithms combines all these topics in order to provide the domain experts with a solution for their real-time visualization and exploration.
 We fill this gap by integrating the computation and transparent visualization of both molecular surface and inner cavities.
 Moreover, our implementation of the individual parts often overcomes the performance limitations of the previous solutions.

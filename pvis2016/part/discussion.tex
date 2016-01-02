@@ -1,48 +1,27 @@
-The contribution of our proposed system will be demonstrated on a case study which corresponds to real problems the biochemists are currently facing. 
-Later, we present the detailed performance analysis.
+As our system enables to handle transparent visualization of molecular surface in real-time, it provides the users with the possibility to explore the MD simulation instantly, without any precomputation or making previews on selected time steps.
+The latter technique is often used for creating an overview of an observed process (e.g., time changes of a protein tunnel, following the ligand path, observing the trajectories of water molecules, etc.).
+The user selects a subset of the original MD simulation consisting of each $n-$th time step and the given task is performed only on this subset.
+Depending on the selected $n$ value, it can give the user a decent overview information. 
+But there is always a risk that the substantial parts of the simulation were omitted.
 
-\subsection{Case Study~--~Real-time visual exploration of MD simulation}
-The case study deals with the situation when the biochemists want to visually explore the inner processes occurring inside the molecule. 
-An example of such a process can be the penetration of a small molecule (ligand) into the active site of the protein where the ligand reacts with the protein and the product of such reaction can form the basis of new chemical matters, e.g., new drugs. 
-The current workflow generating the desired visual appearance of the animation showing such processes consists of many trial and error attempts, which makes the whole workflow very lengthy. 
-To describe this process in more detail, the biochemists start in the first time step of the whole simulation and try to manually determine the best viewpoint.
-As the view inside the molecule, where the processes usually occur, is crucial, they utilize clip planes to achieve this.
-The manual setting of the clip planes introduces other possible error to the final animation.
-The dynamic movements of the molecule can cause its rotation and the clip plane settings in the first time step might have completely wrong positions in the following steps .
-When all the visual parameters are set in the first frame (Fig.~\ref{fig:animation}), the biochemists use an offline rendering tool for generating the whole animation.
-In this phase they do not posses any control of this process so it is impossible to detect an error inside the animation and stop the generation.
-These errors, such as occlusions or wrong clip plane positions, are detected when playing the final animation.
-The only solution is to adjust the input settings and launch the whole process once again.
-For better illustration, in case of the example video (from which Figure~\ref{fig:animation} (top) is captured), it took two days to produce the solution which comprehensibly shows the whole process of ligand penetration to the protein active site.
-
-Our new system is able to overcome the following limitations of the above-described workflow:
+The real-time exploration of the transparent molecular surface and inner cavities has the following advantages:
 \begin{itemize} 
 \item The MD simulation can be observed in real time which enables the user to interactively adjust the appearance and viewpoint.
-\item The highly transparent molecular surface removes the necessity of using clip planes.
-\item The user has the full control of the animation process so we completely remove the trial and error phase of the workflow. 
+\item The highly transparent molecular surface removes the necessity of using clip planes which are often used for exploration of the inner molecular environment.
+\item The user has the full control of the animation process. 
 \end{itemize}
 
-In consequence, our system enables to reach similar results in real-time. 
-In one aspect it even overcomes the existing solution as the users can interactively manipulate with the scene on the fly~--~perform scene transformations, change the appearance of the protein and ligand, or change the probe size used for the generation of protein surface.
+%In consequence, our system enables to reach similar results in real-time. 
+%In one aspect it even overcomes the existing solution as the users can interactively manipulate with the scene on the fly~--~perform scene transformations, change the appearance of the protein and ligand, or change the probe size used for the generation of protein surface.
 
-Figure \ref{fig:animation} (bottom) shows one time step of the animation generated using the same dataset (\textit{LINB acetone} simulation consisting of 9256 time steps) as for the top part of this Figure.
+%Figure \ref{fig:animation} (bottom) shows one time step of the animation generated using the same dataset (\textit{LINB acetone} simulation consisting of 9256 time steps) as for the top part of this Figure.
 
-\begin{figure}[htb]
-  \centering
-  \includegraphics[width=2.5in]{image/animation.png}
-  \caption{Top: One time step from the animation aiming to show the penetration of the ligand to the protein active site. For better insight, different representations of the molecule and the ligand, surface transparency, clip plane, and different coloring was used. Bottom: One time step of the animation generated using our algorithm. It shows the same molecule and its dynamics. By enabling the interactive manipulation with the scene within the animation, the user can clearly see the transportation route without the necessity to use any clip plane.}
-	\label{fig:animation}
-\end{figure}
-
-When the results of the algorithm were evaluated by the domain experts, they confirmed that our solution is highly practical with respect to the described task because the time to complete this task is reduced dramatically.
-Moreover, they also appreciated the visual appearance which they considered to be more appealing than the previous solutions.
-They confirmed that our approach can be directly used for creating presentation materials, such as images to publications or animations for presentations.
-
-The domain experts were also asked to identify the weak points of our current solution.
-They agreed that when using a highly transparent molecular surface, the position of a ligand can be hard to assess when using only one viewpoint.
-In other words, the user has to manipulate with the structure in order to decide if the ligand is still located in the outer solvent or if it already penetrated to the inner part of the protein.
-However, this situation is caused due to the transparency itself and a solution has to be based on a combination with other methods.
-This opens one of the possible directions for the future extension.
+%\begin{figure}[htb]
+%  \centering
+%  \includegraphics[width=2.5in]{image/animation.png}
+%  \caption{Top: One time step from the animation aiming to show the penetration of the ligand to the protein active site. For better insight, different representations of the molecule and the ligand, surface transparency, clip plane, and different coloring was used. Bottom: One time step of the animation generated using our algorithm. It shows the same molecule and its dynamics. By enabling the interactive manipulation with the scene within the animation, the user can clearly see the transportation route without the necessity to use any clip plane.}
+%	\label{fig:animation}
+%\end{figure}
 
 \subsection{Performance Analysis}
 \label{sec:performance}
@@ -100,6 +79,7 @@ We also utilize OpenCL to accelerate a kernel which computes the positions of sp
 The GLSL implementation of this kernel performed for a molecule with {\tweakedsim}10000 atoms is about 5x slower than the OpenCL/CUDA one.
 Based on the performed tests we assume that the key reason for such performance loss is the extensive use of the global memory in the kernel which is handled differently in OpenGL and OpenCL/CUDA.
 
+\subsubsection{Discussion of Limitations}
 From the results, it can be seen that in terms of performance, the main limitation of our technique is the ray-casting of the computed surface.
 More specifically, the most demanding part is the rendering of spherical and toroidal patches that takes together 75-80\% of the whole rendering time.
 We anticipate that the performance of ray-casting these patches could be improved by using tighter bounding boxes for them when splatting.
@@ -145,3 +125,35 @@ Then, the complexity ratio can be expressed as:
 
 which yields that the original structure is more than 100 times larger for only 64 neighbors.
 Actually, our maximum neighbor count is 128 to be able to compute the surface of molecules that contains hydrogens, which is a typical case for data produced by molecular dynamics simulations.
+
+
+\subsection{Discussion}
+When the results of the algorithm were evaluated by the domain experts, they confirmed that our solution is highly practical with respect to the exploration of molecular surface and inner cavities because the time to complete this task is reduced dramatically.
+The agreed that this approach has a big potential in the field of studying protein-protein interactions where the reactions happen on the protein surfaces.
+Therefore, studying of the shape of these surfaces and their changes over time is substantial in this case.
+Moreover, they also appreciated the visual appearance which they considered to be more appealing than the previous solutions.
+They confirmed that our approach can be directly used for creating presentation materials, such as images to publications or animations for presentations.
+
+The domain experts were also asked to identify the weak points of our current solution.
+They agreed that when using a highly transparent molecular surface, it can be hard to assess the position of penetrating structures (ligands) when using only one viewpoint.
+In other words, the user has to manipulate with the structure in order to decide if the ligand is still located in the outer solvent or if it already penetrated to the inner part of the protein.
+However, this situation is caused due to the transparency itself and a solution has to be based on a combination with other methods.
+This opens one of the possible directions for the future extension.
+Another possible extension suggested by the biochemists is to enable a selection of an interesting cavity (e.g., containing the active site) and focus on its changes.
+According to the domain experts, our algorithm could be also extended to be applicable to other voids in proteins, namely tunnels.
+
+
+%\subsection{Case Study~--~Real-time visual exploration of MD simulation}
+%The case study deals with the situation when the biochemists want to visually explore the inner processes occurring inside the molecule. 
+%An example of such a process can be the penetration of a small molecule (ligand) into the active site of the protein where the ligand reacts with the protein and the product of such reaction can form the basis of new chemical matters, e.g., new drugs. 
+%The current workflow generating the desired visual appearance of the animation showing such processes consists of many trial and error attempts, which makes the whole workflow very lengthy. 
+%To describe this process in more detail, the biochemists start in the first time step of the whole simulation and try to manually determine the best viewpoint.
+%As the view inside the molecule, where the processes usually occur, is crucial, they utilize clip planes to achieve this.
+%The manual setting of the clip planes introduces other possible error to the final animation.
+%The dynamic movements of the molecule can cause its rotation and the clip plane settings in the first time step might have completely wrong positions in the following steps.
+%When all the visual parameters are set in the first frame (Fig.~\ref{fig:animation}), the biochemists use an offline rendering tool for generating the whole animation.
+%In this phase they do not posses any control of this process so it is impossible to detect an error inside the animation and stop the generation.
+%These errors, such as occlusions or wrong clip plane positions, are detected when playing the final animation.
+%The only solution is to adjust the input settings and launch the whole process once again.
+%For better illustration, in case of the example video (from which Figure~\ref{fig:animation} (top) is captured), it took two days to produce the solution which comprehensibly shows the whole process of ligand penetration to the protein active site.
+
