@@ -66,6 +66,9 @@ After averaging, the results possess correct alpha-blended colors.
 Applying the mentioned OIT approaches to molecular surfaces is straightforward because they are represented as meshes.
 For analytic surfaces, Kauker et al.~\cite{kauker2013rendering} proposed to store lists (or arrays) of all fragments produced by the basic shapes for later processing using CSG operations.
 In our technique, we try to avoid the storing and subsequent sorting of a high number of fragments by ray-casting only the fragments that belong to the molecular surface.
+For enhancing the understanding of the interior of the molecular structure, we employed the technique presented by Borland~\cite{borland2011ambient}. 
+His technique, called ambient occlusion opacity mapping, enables to determine a variable opacity at each point on the molecular surface.
+In consequence, the interior structures can be more opaque than the outer structures, i.e., molecular surface.
 
 There are also several alternatives for visualization of molecular surfaces which do not utilize transparency for conveying the same or similar information as we are aiming to show.
 Bair and House~\cite{Bair2007} presented their approach to the visualization of layered surfaces which uses grid-based surface textures.
@@ -82,10 +85,7 @@ However, these techniques, based on ambient occlusion or its combination with li
 %Grottel et al.~\cite{grottel2012object} presented their method reaching interactive frame rates for large and dynamic data sets. 
 %Recently, their approach was extended by~\cite{staib2015ambient}.
 %This method is applicable to transparent particles as well.
-%\textcolor{red}{TODO move to Visualization or remove completely: For enhancing the understanding of the interior of the molecular structure, we employed the technique presented by Borland\cite{borland2011ambient}. 
-%His technique, called ambient occlusion opacity mapping, enables to determine a variable opacity at each point on the molecular surface.
-%In consequence, the interior structures can be more opaque than the outer structures, i.e., molecular surface.}
-
+%\textcolor{red}{TODO move to Visualization or remove completely:
 
 %\begin{itemize}
 %  \item \textcolor{red}{Performance drop of SES rendering on newer hardware (GF 680 GTX) --- we can perform better. We contacted authors, they do not know exactly why, they think it is change in the internal architecture between Fermi and Kepler (AJ)}
