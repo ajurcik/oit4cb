@@ -4,14 +4,19 @@ Thus in this section we describe the existing techniques related to these topics
 
 \subsection{Extraction and Visualization of Surfaces of Molecules and Their Cavities}
 There are several types of molecular surface representation proposed in the literature~\cite{STAR2015}. 
-However, for the cavity analysis,  the solvent-excluded surface (SES) is the most commonly used representation used by the domain experts.%~\cite{todo}. 
+One of the most recently defined surfaces is the ligand-excluded surface proposed by Lindow et al.~\cite{Lindow2014} which takes into account the full geometry of the ligand interacting with the protein.
+However, for the cavity analysis, the solvent-excluded surface (SES) is the most commonly used representation used by the domain experts.%~\cite{todo}. 
 This representation allows us to directly asses whether a solvent, approximated by a sphere of a given radius, is able to reach a binding site of interest on the molecular surface. 
 
 The area of geometrical analysis of molecular structures focusing on the detection and further exploration of the void space is very vast and so we do not aim to provide the users with an exhaustive list of the existing solutions. 
 Rather we focus on the techniques which we consider to be the closest to our work.
 
 The molecular surface is one of the most significant studied features thus many solutions were published.
-Here we focus on the analytical approaches for the construction of the SES where Connolly~\cite{connolly1983analytical} presented the first solution to this problem.
+One of the most popular solutions was presented by Sanner et al.~\cite{Sanner1996} who introduced their reduced surface aprroach to the detection of molecular surfaces.
+Another breakthrough was reached by Edelsbrunner et al.~\cite{Edelsbrunner1995} who used alpha shapes for the detection and measurement of voids in proteins.
+Linearly scalable algorithm for computation of smooth molecular surfaces was then presented by Varshney et al.~\cite{Varshney1994}.
+
+Further we focus on the analytical approaches for the construction of the SES where Connolly~\cite{connolly1983analytical} presented the first solution to this problem.
 Another approach to the detection of the analytic surface was later presented by Totrov and Abagyan~\cite{totrov1996contour}.
 The algorithm is based on the sequential build up of multi-arc contours. 
 One of the advantages of this contour-buildup approach is that it is localized thus applicable on the computation of partial molecular surface.
@@ -32,6 +37,10 @@ We focus only on the analytical computation and visualization of cavities which 
 Parulek et al.~\cite{parulek2013visual} presented their approach to the computation and visual analysis of cavities in simulations of molecular dynamics.
 The computation is based on implicit function. 
 The subsequent exploration is supported by graph based visualizations.
+Another approach to the visual analysis of dynamic protein cavities and binding sites was proposed by Krone et al.~\cite{Krone2014}.
+Their system combines semi-transparent surface visualizations with sequence diagrams and relational graphs to communicate different properties of detected cavities.
+Lindow et al.~\cite{Lindow2013} presented an alternative approach to the exploration of the time-dependent changes of a cavity. 
+To avoid the animation of the traced cavity, they visualize the dynamics of the cavity as a compact representation in a single image. 
 
 \subsection{Order-Independent Transparency}
 One of the most popular techniques for rendering transparent objects is the order-independent transparency (OIT) which does not require the geometry to be sorted.
@@ -58,9 +67,11 @@ Applying the mentioned OIT approaches to molecular surfaces is straightforward b
 For analytic surfaces, Kauker et al.~\cite{kauker2013rendering} proposed to store lists (or arrays) of all fragments produced by the basic shapes for later processing using CSG operations.
 In our technique, we try to avoid the storing and subsequent sorting of a high number of fragments by ray-casting only the fragments that belong to the molecular surface.
 
-Cite: \cite{Bair2007,Lindow2014,Lindow2013,Tarini2006,Lawonn2014,Krone2014}
-
-\cite{Edelsbrunner1995,Sanner1996,Varshney1994}
+There are also several alternatives for visualization of molecular surfaces which do not utilize transparency for conveying the same or similar information as we are aiming to show.
+Bair and House~\cite{Bair2007} presented their approach to the visualization of layered surfaces which uses grid-based surface textures.
+Their experiments focused on the perception of textured surfaces and the best configuration of the textures. 
+Other illustrative techniques presented Tarini et al.~\cite{Tarini2006} and Lawonn et al.~\cite{Lawonn2014} represent alternatives to the visualization of the shape of molecular surfaces. 
+However, these techniques, based on ambient occlusion or its combination with line integral convolution, were not designed to show more layered surfaces.
 
 
 
