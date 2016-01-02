@@ -95,6 +95,7 @@ vec3 rotate(vec3 v, vec3 axis, float angle);
 int sphericalLineArcIntersection(vec4 sphere, vec4 circle, vec4 arc, vec3 p, vec3 o);
 
 void main() {
+    //storeFragment(color, 10.0, 1.0); discard; // DEBUG
     // transform fragment coordinates from window coordinates to view coordinates.
     vec4 coord = gl_FragCoord
         * vec4(viewport.z, viewport.w, 2.0, 0.0) 
@@ -258,8 +259,8 @@ void main() {
             if (prevVertex.x) {
                 vec4 pos = vec4(intPos1, 1.0);
                 if (dot(prevPlane, pos) <= 0.0 && dot(plane, pos) <= 0.0) {
-                    outer = !outer;
-                    count--;
+                    //outer = !outer;
+                    //count--;
                     //vertexCount++; // DEBUG
                 }
                 prevVertex.x = false;
@@ -276,13 +277,13 @@ void main() {
             inner = !inner;
         }
     }
-    
+
     // test last and first arc
     if (circleEnd - circleStart > 2 && firstVertex.x && prevVertex.x) {
         vec4 pos = vec4(intPos1, 1.0);
         if (dot(firstPlane, pos) <= 0.0 && dot(prevPlane, pos) <= 0.0) {
-            outer = !outer;
-            count--;
+            //outer = !outer;
+            //count--;
             //vertexCount++; // DEBUG
         }
     }
@@ -329,14 +330,14 @@ void main() {
             if (count == 0) {
                 col.rgb = vec3(0.2, 0.2, 0.2);
             //} else if (count == 1) {
-            //    col.rgb = vec3(1.0, 1.0, 0.0);
+            //    col.rgb = vec3(1.0, 0.0, 1.0);
             } else if (count == 2) {
                 col.rgb = vec3(0.0, 1.0, 0.0);
             }
             if (vertexCount > 0) {
-                col.rgb = vec3(1.0, 0.0, 1.0);
+                col.rgb = vec3(1.0, 1.0, 0.0);
             }
-            storeIntersection(intPos1, normal1, eye, col, 0.2, 0.8, false);
+            storeIntersection(intPos1, normal1, eye, col /*color*/, 0.2, 0.8, false);
         } else {
             storeIntersection(intPos1, normal1, eye, color /*vec4(1.0, 1.0, 1.0, 0.5)*/, 0.2, 0.8 /*0.4*/, bfmod);
         }
@@ -369,7 +370,7 @@ void storeIntersection(vec3 position, vec3 normal, vec3 eye, vec4 color, float K
 
     float aoFactor = texture3D(aoVolumeTex, (position + lambda * normal) / volumeSize).r;
     if (label == surfaceLabel && aoFactor > tunnelAOThreshold && !bfmod) {
-        color.rgb = tunnelColor;
+        //color.rgb = tunnelColor;
         aoFactor = uintBitsToFloat(-2);
     }
 

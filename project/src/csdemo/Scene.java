@@ -565,7 +565,7 @@ public class Scene implements GLEventListener {
             boxTorusProgram = Utils.loadProgram(gl, "/resources/shaders/ray/box/torus.vert",
                     "/resources/shaders/ray/box/torus.geom", "/resources/shaders/ray/box/torus.frag");
             boxPolygonProgram = Utils.loadProgram(gl, "/resources/shaders/ray/box/polygon.vert",
-                    "/resources/shaders/ray/box/polygon.geom", "/resources/shaders/ray/box/polygon.frag");
+                    "/resources/shaders/ray/box/polygon.geom", "/resources/shaders/ray/box/polygon2.frag");
             resolveProgram = Utils.loadProgram(gl, "/resources/shaders/resolve.vert",
                     "/resources/shaders/resolve.frag");
             defaultProgram = Utils.loadProgram(gl, "/resources/shaders/default.vert",
@@ -2514,7 +2514,7 @@ public class Scene implements GLEventListener {
         if (mode == 0) {
             testTriangleProgram = boxTriangleProgram;
             testTorusProgram = boxTorusProgram;
-            testPolygonProgram = polygonProgram;
+            testPolygonProgram = boxPolygonProgram;
         } else if (mode == 1) {
             testTriangleProgram = triangleProgram;
             testTorusProgram = torusProgram;
