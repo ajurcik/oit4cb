@@ -27,12 +27,18 @@ The real-time exploration of the transparent molecular surface and inner cavitie
 \label{sec:performance}
 
 We tested our technique on commodity hardware to show that it enables the users to solve their tasks in real-time without high hardware requirements.
-%\textcolor{red}{Test also on high-end hardware --- GTX 980?}
 The tests were performed using Intel Core i5 760 (2.80 GHz) with 4 GB of RAM and NVIDIA GeForce 680 GTX with 4 GB of VRAM as a graphics card.
 For rendering, we used the resolution of 1024 $\times$ 768 and we fitted the molecule to cover most of the rendered image.
-Regarding transparency, we limited the maximum depth complexity to 24 fragments per pixel.
-The results of our measurements for both static and dynamics molecules are presented in Table~\ref{tab:static}.
+%Regarding transparency, we limited the maximum depth complexity to 24 fragments per pixel.
+The results of our measurements for both static and dynamic\textcolor{red}{s} molecules are presented in Table~\ref{tab:static}.
 We choose the static structures from the Protein Data Bank (PDB)~\cite{sussman1998protein} so the performance of our technique could be easily compared with other existing or new approaches on the same dataset.
+
+\textcolor{green}{
+In Table~\ref{tab:speedup}, we compare overall performance of our technique to the method presented by Kauker et al.~\cite{kauker2013rendering} as it is the only existing method that enables correct transparency of the SES in real-time.
+When compared to state-of-the-art methods~\cite{lindow2010accelerated}~\cite{krone2011parallel} for SES visualization, our method performs in the surface computation part similarly to the algorithm we came from~\cite{krone2011parallel} (see Tab.~\ref{tab:static}).
+The performance of the ray-casting is not directly comparable to the methods.
+We test twice as many intersections to obtain both front and back fragments and our intersection tests (especially for spherical patches) need to be more complex than those used by techniques that do not render the surface using full transparency.
+}
 
 \setlength{\tabcolsep}{4.5pt}
 
@@ -49,34 +55,36 @@ We choose the static structures from the Protein Data Bank (PDB)~\cite{sussman19
 			%        &       & buildup  & graph   & Area & casting &       \\
 							&      & (\%) & (ms)     & (ms)    & (ms) & (ms) & (FPS) \\
     \hline
-      1OGZ &  {\tweakedsim}1000 & 36.7 &  4.1 & 0.2 & 0.2 & 15.7 & 31.0 \\
-      1VIS &  {\tweakedsim}2500 & 52.7 &  6.1 & 0.8 & 0.2 & 39.3 & 16.4 \\
-			LINB-ACE* & {\tweakedsim}4500 & 55.4 & 17.4 & 0.6 & 0.2 & 47.6 & 12.3 \\
-      4ADJ & {\tweakedsim}10000 & 41.5 & 21.1 & 4.3 & 0.4 & 97.7 &  6.9
+      1OGZ      &  {\tweakedsim}1000 & 36.7 &  4.1 & 0.2 & 0.2 & 15.7 & 31.0 \\
+      1VIS      &  {\tweakedsim}2500 & 52.7 &  6.1 & 0.8 & 0.2 & 39.3 & 16.4 \\
+			LINB-ACE* &  {\tweakedsim}4500 & 55.4 & 17.4 & 0.6 & 0.2 & 47.6 & 12.3 \\
+      4ADJ      & {\tweakedsim}10000 & 41.5 & 21.1 & 4.3 & 0.4 & 97.7 &  6.9
     \end{tabular}
   \end{center}
 \end{table}
 
-%\begin{table}[htb]
-%  \caption{Performance of our technique for a dynamic molecule.
-%	The table shows timings of key phases of our method: surface computation (CB), cavity computation (SG), area estimation and ray-casting.
-%	For ray-casting, we also include fill rate (FR).}
-%  \label{tab:static}
-%  \scriptsize
-%  \begin{center}
-%    \begin{tabular}{cccccccc}
-%      Molecule & \# Atoms & FR & CB & SG & Area & Ray-casting & Total \\
-%			%        &       & buildup  & graph   & Area & casting &       \\
-%							&      & (\%) & (ms)     & (ms)    & (ms) & (ms) & (FPS) \\
-%    \hline
-%      LINB-ACE & {\tweakedsim}4500 & 55.4 & 17.4 & 0.6 & 0.2 & 47.6 & 12.3 \\
-%    \end{tabular}
-%  \end{center}
-%\end{table}
+\begin{table}[htb]
+  \caption{Speedup of our technique in comparison to Kauker et al.~\cite{kauker2013rendering}.
+	The table shows number of depth layers (DL) and rendering speed (FPS) of our and their methods. Fill rate (FR) which affects performance of ray-casting is also included.}
+  \label{tab:speedup}
+  \scriptsize
+  \begin{center}
+    \begin{tabular}{cc|ccc|ccc|c}
+		           &          & \multicolumn{3}{c|}{Our} & \multicolumn{3}{c|}{Kauker et al.} & \\
+      Molecule & \# Atoms & FR & DL & FPS & FR & DL & FPS & Speedup \\
+			%        &       & buildup  & graph   & Area & casting &      \\
+							 &          & (\%) &  &     & (\%) &  &     &         \\
+    \hline
+      1YV8 &   {\tweakedsim}650 & 36.7 & \textcolor{red}{X} & \textcolor{red}{X} & 18.0 & 117 & 31.0 & \textcolor{red}{X} \\
+      1VIS &  {\tweakedsim}2500 & 52.7 & \textcolor{red}{X} & \textcolor{red}{X} & 48.7 & 135 & 11.2 & \textcolor{red}{X} \\
+      4ADJ & {\tweakedsim}10000 & 41.5 & \textcolor{red}{X} & \textcolor{red}{X} & 42.8 & 188 &  6.2 & \textcolor{red}{X}
+    \end{tabular}
+  \end{center}
+\end{table}
 
 Our technique was implemented mainly using OpenGL employing GLSL compute shaders as GPU kernels.
-We also utilize OpenCL to accelerate a kernel which computes the positions of spherical triangles in the original algorithm \cite{krone2011parallel}.
-The GLSL implementation of this kernel performed for a molecule with {\tweakedsim}10000 atoms is about 5x slower than the OpenCL/CUDA one.
+We also utilized \textcolor{red}{(used)} OpenCL to implement a kernel which computes the positions of spherical triangles in the original algorithm \cite{krone2011parallel}.
+The GLSL implementation of this kernel performed for a molecule with {\tweakedsim}10000 atoms about 5x slower than the OpenCL/CUDA one.
 Based on the performed tests we assume that the key reason for such performance loss is the extensive use of the global memory in the kernel which is handled differently in OpenGL and OpenCL/CUDA.
 
 \subsubsection{Discussion of Limitations}

@@ -267,7 +267,7 @@ There can be two cases:
 	\item Both spheres form two or more patches. We find a neighboring patch of the torus by employing the point in a spherical patch test (see Section~\ref{sec:spherical-patches}). Then the torus lies in the same surface component as its neighboring patch.
 \end{enumerate}
 
-The clipping of fragments in the affected spherical patches can be done using a clipping plane or a visibility sphere of a torus.
+The clipping of fragments in the affected spherical patches can be done using a clipping plane or a visibility sphere (introduced in~\cite{krone2009interactive}) of a torus.
 We use the latter approach, since the visibility spheres for tori were already computed in a previous phase of our technique.
 Here, our kernel writes a texture, similarly to Krone et al.~\cite{krone2011parallel}, which stores all visibility spheres that intersect the sphere.
 When ray-casting spherical patches, we use this texture to discard all fragments that are inside of the intersecting visibility sphere.
