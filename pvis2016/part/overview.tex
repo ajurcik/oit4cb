@@ -17,7 +17,7 @@ The second group of computations focuses on visualization of the generated primi
 This group includes the estimation of sizes of voids, ray-casting the generated surface primitives and opacity calculation; before the final stage represented by the image formation. More specifically, we perform the following steps (Fig.~\ref{fig:overview}):
 	\begin{enumerate}
 	  \item We employ the contour-buildup algorithm to construct the molecular surface. Additionally, we enhance the computation to enable i) transparent rendering of the surface and ii) extraction of cavities (Sec.~\ref{sec:ecb}).
-		\item For cavity extraction, we introduce the so-called \textit{surface graph} (Sec.~\ref{sec:graph}), which allows us to detect the isolated surface components.
+		\item For cavity extraction, we utilize the so-called \textit{surface graph} (Sec.~\ref{sec:graph}), which allows us to detect the isolated surface components.
 		\item We estimate the area of the extracted cavities to enable color coding by their size and to decrease the potential clutter by hiding small cavities.
 		\item Surface elements are visualized using ray-casting (Sec.~\ref{sec:vis}). We perform transparent surface rendering by means of the A-buffer and the opacity modulation. The modulation is based on an estimate of the molecular thickness per each surface fragment on a given ray and a set of user defined parameters.
 	\end{enumerate}

@@ -580,7 +580,7 @@ public class Scene implements GLEventListener {
                     "/resources/shaders/ray/polygon2.geom", "/resources/shaders/ray/krone/polygon2.frag");
             // Load molecule
             //dynamics = new Dynamics(Utils.loadDynamicsFromResource("/resources/md/model", 1, 10));
-            dynamics = new Dynamics(Collections.singletonList(Utils.loadAtomsFromResource("/resources/1CRN_3.pdb")));
+            dynamics = new Dynamics(Collections.singletonList(Utils.loadAtomsFromResource("/resources/1CRN_26.pdb")));
             System.out.println("Atoms (molecule): " + dynamics.getMolecule().getAtomCount());
             System.out.println("Snapshots: " + dynamics.getSnapshotCount());
         } catch (Exception ex) {
@@ -859,6 +859,7 @@ public class Scene implements GLEventListener {
         // bind box polygon ray-tracing buffers
         Utils.bindShaderStorageBlock(gl, boxPolygonProgram, "ABuffer", FRAGMENTS_BUFFER_INDEX);
         Utils.bindShaderStorageBlock(gl, boxPolygonProgram, "ABufferIndex", FRAGMENTS_INDEX_BUFFER_INDEX);
+        Utils.bindShaderStorageBlock(gl, boxPolygonProgram, "Debug", DEBUG_BUFFER_INDEX);
         Utils.bindUniformBlock(gl, boxPolygonProgram, "MinMaxCavityArea", MINMAX_CAVITY_AREA_BUFFER_INDEX);
         // bind A-buffer buffers
         Utils.bindShaderStorageBlock(gl, defaultProgram, "ABuffer", FRAGMENTS_BUFFER_INDEX);
@@ -1700,7 +1701,7 @@ public class Scene implements GLEventListener {
                 debug.writeTori(gl, toriArrayBuffer, torusCount);
                 debug.writePolygons(gl, spheresArrayBuffer, sphereCount);
                 debug.writeSphereIsolated(gl, sphereIsolatedCountsBuffer, sphereIsolatedVSBuffer, atomCount);
-                debug.writeDebug4f(gl, debugBuffer, 4);
+                debug.writeDebug4f(gl, debugBuffer, 32);
                 gpuGraph.writeResults(gl);
                 area.writeResults(gl);
                 volumetricAO.writeResults(gl);

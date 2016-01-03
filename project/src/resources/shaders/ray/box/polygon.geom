@@ -31,7 +31,7 @@ in VertexData {
     flat uint label;
     flat uint circleStart;
     flat uint circleEnd;
-    //flat vec4 plane;
+    flat uint orientation;
 } vertex[];
 
 // ray-casting
@@ -46,8 +46,7 @@ out flat uint index; // atom
 out flat uint label;
 out flat uint circleStart;
 out flat uint circleEnd;
-// isolated torus plane
-//out flat vec4 plane;
+out flat uint orientation;
 // area
 out flat float area;
 
@@ -73,6 +72,7 @@ void main() {
     label = vertex[0].label;
     circleStart = vertex[0].circleStart;
     circleEnd = vertex[0].circleEnd;
+    orientation = vertex[0].orientation;
     
     // area
     area = texelFetch(areasTex, int(label - 1), 0).r;
