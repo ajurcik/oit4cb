@@ -1,8 +1,8 @@
 Our approach touches several research areas, including computation and visualization of protein cavities and their surfaces. 
 Further we focus on the real-time visualization of surfaces and their transparency which is achieved using the order-independent transparency approach. 
-Thus in this section we describe the existing techniques related to these topics.
+%Thus in this section we describe the existing techniques related to these topics.
 
-\subsection{Extraction and Visualization of Surfaces of Molecules}
+\subsection{Extraction and Visualization of Molecular Surfaces}
 There are several types of molecular surface representation proposed in the literature~\cite{STAR2015}. 
 %One of the most recently defined surfaces is the ligand-excluded surface proposed by Lindow et al.~\cite{Lindow2014} which takes into account the full geometry of the ligand interacting with the protein.
 Regarding the cavity analysis, the solvent-excluded surface (SES) is the most commonly used representation preferred also by the domain experts.%~\cite{todo}. 
@@ -24,7 +24,7 @@ However, none of these solutions dealt with molecular dynamics.
 Krone et al.~\cite{krone2009interactive} presented their approach to the visualization of the SES using GPU ray-casting technique which allowed to achieve interactive frame rates. 
 Another approach by Lindow et al.~\cite{lindow2010accelerated} even accelerates the construction of the SES by scaling the parallel contour-buildup algorithm to more CPU cores and using boundary quadrangles as rasterization primitives.
 Moreover, Krone et al.~\cite{krone2011parallel} proposed a parallel version of the contour-buildup algorithm for GPUs that performed better for larger structures.
-In our technique, we come from their work and extend it so that the computed SES can be rendered using correct transparency.
+In our approach, we further extend it so that the computed SES can be rendered using correct transparency.
 
 Similarly, the analytical approaches are applicable to the protein inner voids. 
 We focus only on the analytical computation and visualization of cavities which can contain a potential protein binding site.
@@ -36,7 +36,11 @@ Their system combines semi-transparent surface visualizations with sequence diag
 Lindow et al.~\cite{Lindow2013} presented an alternative approach to the exploration of the time-dependent changes of a cavity. 
 To avoid the animation of the traced cavity, they visualize the dynamics of the cavity as a compact representation in a single image. 
 
-\subsection{Order-Independent Transparency}
+\subsection{Visualization of Surface Features}
+There are also several visualization techniques to enhance visibility of molecular surface features located inside the molecule. The main source of these techniques is described in the computer graphics literature. Bair and House~\cite{Bair2007} presented an approach for visualization of layered surfaces, which uses grid-based surface textures. Their experiments focus on the perception of textured surfaces and the best configuration of the textures. 
+Other illustrative techniques presented by Tarini et al.~\cite{Tarini2006} and Lawonn et al.~\cite{Lawonn2014} represent alternatives to the visualization of the shape of molecular surfaces. 
+These techniques are based on ambient occlusion or its combination with line integral convolution and were not designed to show more layered surfaces.
+
 One of the most popular techniques for rendering transparent objects is the order-independent transparency (OIT) which does not require the geometry to be sorted.
 Here the traditional approaches are Virtual Pixel Maps (know also as Depth Peeling) \cite{mammen1989transparency} or A-buffer \cite{carpenter1984abuffer}.
 Thanks to the performance of the current hardware these methods can be successfully adopted to large and dynamic scenes.
@@ -44,31 +48,29 @@ The Virtual Pixel Maps technique is based on the idea of sorting at the pixel le
 %The A-buffer uses the Fourier window which in general helps to resolve the visibility problem among an arbitrary collection of opaque, transparent, and intersecting objects.
 
 While the algorithms for rendering of correctly transparent objects in real-time have emerged already in the previous decade \cite{everitt2001interactive}, new approaches removing the limitations of these methods are still emerging.
-Bavoil et al.~\cite{bavoil2008order} introduced the peeling of two depth layers in one rendering pass, thus halving the number of rendering passes performed by the original Depth Peeling approach \cite{everitt2001interactive}.
-
-However, in our case performing more rendering passes would become a bottleneck because of our ray-tracing approach to surface rendering.
-Thus, techniques based on the A-buffer fit to our approach much better because they enable to render the scene in one pass.
-When using single pass rendering, it is necessary to store all participating or all important fragments into a data structure for later composition.
-First approach storing the participating fragments was introduced by Yang et al.~\cite{yang2010real}. Salvi et al.~\cite{salvi2011adaptive} presented the second mentioned approach which stores all important fragments.
+Bavoil et al.~\cite{bavoil2008order} introduced the peeling of two depth layers in one rendering pass, thus halving the number of rendering passes performed by the original Depth Peeling approach \cite{everitt2001interactive}. However, in our case performing more rendering passes would become a bottleneck because of our ray-tracing approach to the surface rendering.
+Thus, techniques based on the A-buffer suits our technique since they enable to render the entire scene in one pass.
+When using single pass rendering, it is necessary to store all participating or at least all important fragments into a data structure for later composition.
+The first approach storing the participating fragments was introduced by Yang et al.~\cite{yang2010real}. Salvi et al.~\cite{salvi2011adaptive} presented another approach, wherein it is required only to store the important fragments.
 %The cost of single pass rendering is the necessity of storing all participating \cite{yang2010real} or all important \cite{salvi2011adaptive} fragments into a data structure for later composition.
-Storing of fragments leads to an unbounded requirement on the memory size that was addressed by Maule et al.~\cite{maule2012memory} or Vasilakis et al.~\cite{vasilakis2015k+buffer}.
-Finally, some of the existing techniques aim to decrease both time and memory complexity.
+Storing the fragments leads to an unbounded requirement on the memory size that was addressed by Maule et al.~\cite{maule2012memory} or Vasilakis et al.~\cite{vasilakis2015k+buffer}.
+Some of the existing techniques aim to decrease both time and memory complexity.
 McGuire and Bavoil~\cite{mcguire2013weighted} employ the idea of partial coverage to reach this goal, whereas Enderton et al.~\cite{enderton2011stochastic} introduce stochastic transparency for the same purpose. 
-Here each fragment of the transparent geometry covers a random subset of pixel samples of size proportional to alpha. 
+Here each fragment of the transparent geometry covers a random subset of pixel samples of a size proportional to alpha. 
 After averaging, the results possess correct alpha-blended colors. 
 
-Applying the mentioned OIT approaches to molecular surfaces is straightforward because they are represented as meshes.
+Applying the aforementioned OIT approaches to molecular surfaces is straightforward since they are represented as meshes.
 For analytic surfaces, Kauker et al.~\cite{kauker2013rendering} proposed to store lists (or arrays) of all fragments produced by the basic shapes for later processing using CSG operations.
-In our technique, we try to avoid the storing and subsequent sorting of a high number of fragments by ray-casting only the fragments that belong to the molecular surface.
-For enhancing the understanding of the interior of the molecular structure, we employed the technique presented by Borland~\cite{borland2011ambient}. 
-His technique, called ambient occlusion opacity mapping, enables to determine a variable opacity at each point on the molecular surface.
+In our technique, we avoid storing and subsequent sorting of a high number of fragments by ray-casting only those fragments that belong to the molecular surface.
+For enhancing the understanding of the interior of the molecular structure, we took inspiration from the technique presented by Borland~\cite{borland2011ambient}. 
+The technique called ambient occlusion opacity mapping, enables to determine a variable opacity at each point on the molecular surface.
 In consequence, the interior structures can be more opaque than the outer structures, i.e., molecular surface.
 
-There are also several alternatives for visualization of molecular surfaces which do not utilize transparency for conveying the same or similar information as we are aiming to show.
-Bair and House~\cite{Bair2007} presented their approach to the visualization of layered surfaces which uses grid-based surface textures.
-Their experiments focused on the perception of textured surfaces and the best configuration of the textures. 
-Other illustrative techniques presented Tarini et al.~\cite{Tarini2006} and Lawonn et al.~\cite{Lawonn2014} represent alternatives to the visualization of the shape of molecular surfaces. 
-However, these techniques, based on ambient occlusion or its combination with line integral convolution, were not designed to show more layered surfaces.
+%There are also several alternatives for visualization of molecular surfaces which do not utilize transparency for conveying the same or similar information as we are aiming to show.
+%Bair and House~\cite{Bair2007} presented their approach to the visualization of layered surfaces which uses grid-based surface textures.
+%Their experiments focused on the perception of textured surfaces and the best configuration of the textures. 
+%Other illustrative techniques presented Tarini et al.~\cite{Tarini2006} and Lawonn et al.~\cite{Lawonn2014} represent alternatives to the visualization of the shape of molecular surfaces. 
+%However, these techniques, based on ambient occlusion or its combination with line integral convolution, were not designed to show more layered surfaces.
 
 
 
