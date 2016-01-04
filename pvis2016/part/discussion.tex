@@ -44,9 +44,9 @@ We test twice as many intersections to obtain both front and back fragments and 
 
 \begin{table}[htb]
   \caption{Performance of our technique for static and dynamic (*) structures.
-	The table shows timings of the key phases of our method: surface computation (CB), cavity computation (SG), area estimation and ray-casting (RC).
+	Table shows the timings of the key phases of our method: surface computation (CB), cavity computation (SG), area estimation, and ray-casting (RC).
 	For ray-casting, we also include fill rate (FR).
-	Performance of our technique does not vary significantly for static or dynamic data as it operates on a per-frame basis.}
+	The performance of our technique does not vary significantly for static or dynamic data as it operates on a per-frame basis.}
   \label{tab:static}
   \scriptsize
   \begin{center}
@@ -64,13 +64,13 @@ We test twice as many intersections to obtain both front and back fragments and 
 \end{table}
 
 \begin{table}[htb]
-  \caption{Speedup of our technique in comparison to Kauker et al.~\cite{kauker2013rendering}.
-	The table shows number of depth layers (DL), rendering speeds (FPS) of both methods and the relative speedup. Fill rate (FR) which significantly affects performance of ray-casting is also included.}
+  \caption{Speedup of our technique in comparison with Kauker et al.~\cite{kauker2013rendering}.
+	Table shows the number of depth layers (DL), rendering speeds (FPS) of both methods, and the relative speedup. Fill rate (FR) which significantly affects the performance of ray-casting is also included.}
   \label{tab:speedup}
   \scriptsize
   \begin{center}
     \begin{tabular}{cc|ccc|ccc|c}
-		           &          & \multicolumn{3}{c|}{Our} & \multicolumn{3}{c|}{Kauker et al.} & \\
+		           &          & \multicolumn{3}{c|}{Our approach} & \multicolumn{3}{c|}{Kauker et al.} & \\
       Molecule & \# Atoms & FR & DL & FPS & FR & DL & FPS & Speedup \\
 			%        &       & buildup  & graph   & Area & casting &      \\
 							 &          & (\%) &  &     & (\%) &  &     &         \\
