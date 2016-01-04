@@ -36,7 +36,7 @@ We choose the static structures from the Protein Data Bank (PDB)~\cite{sussman19
 
 \textcolor{green}{
 In Table~\ref{tab:speedup}, we compare an overall performance of our technique with the method presented by Kauker et al.~\cite{kauker2013rendering} as it is currently the only existing method that enables a correct transparency of the SES in real-time.
-Comparing to the state-of-the-art methods~\cite{lindow2010accelerated}~\cite{krone2011parallel} for SES visualization, our method performs in the surface computation part similarly to the algorithm presented by Krone et al.~\cite{krone2011parallel} (see Tab.~\ref{tab:static}).
+Comparing to the state-of-the-art methods~\cite{lindow2010accelerated,krone2011parallel} for SES visualization, our method performs in the surface computation part similarly to the algorithm presented by Krone et al.~\cite{krone2011parallel} (see Tab.~\ref{tab:static}).
 Nevertheless, the performance of the ray-casting cannot be directly compared to these two methods, since
 we test twice as many intersections to obtain both front and back fragments and our intersection tests (especially for spherical patches) need to be more complex than those used by techniques that do not render the surface using full transparency.
 }
@@ -84,8 +84,8 @@ we test twice as many intersections to obtain both front and back fragments and 
 \end{table}
 
 Our technique was implemented mainly using OpenGL employing GLSL compute shaders as GPU kernels.
-We also utilized \textcolor{red}{(used)} OpenCL to implement a kernel which computes the positions of spherical triangles in the original algorithm \cite{krone2011parallel}.
-The GLSL implementation of this kernel performs for a molecule with {\tweakedsim}10000 atoms about 5x slower than the OpenCL/CUDA one.
+We also used OpenCL to implement a kernel which computes the positions of spherical triangles in the original algorithm \cite{krone2011parallel}.
+The GLSL implementation of this kernel performs for a molecule with {\tweakedsim}10,000 atoms about 5x slower than the OpenCL/CUDA one.
 Based on the performed tests we assume that the key reason for this performance loss is the extensive use of the global memory in the kernel, which is handled differently in OpenGL and OpenCL/CUDA.
 
 \subsubsection{Discussion of Limitations}
@@ -99,7 +99,7 @@ In this way, the computation of ray-primitive intersection is evaluated multiple
 
 As a side effect of exploiting the hash data structure (Sec.~\ref{sec:ecb}) for storing the spherical triangles, our technique consumes less GPU memory than the original approach~\cite{krone2011parallel}.
 This is due to the fact that the original method uses a linear buffer to store the spherical triangles.
-An index into this buffer, i.e., position where a triangle is stored, is computed by means of $i$ and $j$ indices of spheres $i < j < k$ that formed the triangle.
+The index into this buffer, i.e., the position where a triangle is stored, is computed by means of $i$ and $j$ indices of spheres $i < j < k$ that formed the triangle.
 The range of $j$ is optimized in terms of limiting the maximal number of neighbors ($maxNeighbors$) that a sphere can contain, so that the range of $j$ can be remapped to $\left[0, maxNeighbors\right)$.
 There is also a limit on the total number of triangles ($maxTriangles$) that can be stored for each pair of spheres.
 Putting it all together, the memory complexity of the original data structure is:
