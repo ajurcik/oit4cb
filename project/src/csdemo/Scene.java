@@ -163,8 +163,8 @@ public class Scene implements GLEventListener {
     public static final int MAX_ABUFFER_WIDTH = 1024;
     public static final int MAX_ABUFFER_HEIGHT = 1024;
     public static final int MAX_ABUFFER_PIXELS = MAX_ABUFFER_WIDTH * MAX_ABUFFER_HEIGHT;
-    public static final int MAX_FRAGMENTS = 24;
-    public static final int MAX_ABUFFER_FRAGMENTS = MAX_ABUFFER_PIXELS * MAX_FRAGMENTS;
+    public static final int MAX_FRAGMENTS = 32;
+    public static final int MAX_ABUFFER_FRAGMENTS = MAX_ABUFFER_PIXELS * MAX_FRAGMENTS / 2;
     
     private static final int MAX_HASH_ITERATIONS = 64;
     public static final int INVALID_INDEX = 0xffffffff;
@@ -1081,7 +1081,7 @@ public class Scene implements GLEventListener {
         gl.glEndQuery(GL_TIME_ELAPSED);
         
         // debugging
-        Debug.checkGridOverflow(gl, gridCountsBuffer, CELL_COUNT, MAX_CELL_ATOMS);
+        //Debug.checkGridOverflow(gl, gridCountsBuffer, CELL_COUNT, MAX_CELL_ATOMS);
         
         gl.glUseProgram(neighborsProgram);
         
@@ -1110,7 +1110,7 @@ public class Scene implements GLEventListener {
         gl.glEndQuery(GL_TIME_ELAPSED);
         
         // debugging
-        Debug.checkNeighborsOverflow(gl, neighborCountsBuffer, atomCount, MAX_NEIGHBORS);
+        //Debug.checkNeighborsOverflow(gl, neighborCountsBuffer, atomCount, MAX_NEIGHBORS);
         
         gl.glUseProgram(removeProgram);
         
@@ -1197,7 +1197,7 @@ public class Scene implements GLEventListener {
             //System.out.println("After CLArcs");
             
             // debugging
-            Debug.checkArcsOverflow(gl, clArcs, neighborCountsBuffer, atomCount, MAX_NEIGHBORS, arcCountsBuffer, 16);
+            //Debug.checkArcsOverflow(gl, clArcs, neighborCountsBuffer, atomCount, MAX_NEIGHBORS, arcCountsBuffer, 16);
         }
         gl.glEndQuery(GL_TIME_ELAPSED);
         

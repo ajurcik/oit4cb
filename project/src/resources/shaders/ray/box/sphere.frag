@@ -147,6 +147,10 @@ void main() {
         }
     }
 
+    if (!inner && !outer) {
+        discard;
+    }
+
     // cut by all small circles planes
     uint nCnt = texelFetch(neighborsCountTex, int(index)).r;
     for (uint j = 0; j < nCnt; j++) {
