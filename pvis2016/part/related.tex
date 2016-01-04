@@ -47,7 +47,7 @@ One of the most popular techniques for rendering transparent objects is the orde
 Here the traditional approaches are Virtual Pixel Maps (know also as Depth Peeling) \cite{mammen1989transparency} or A-buffer \cite{carpenter1984abuffer}.
 Thanks to the performance of the current hardware these methods can be successfully adopted to large and dynamic scenes.
 The Virtual Pixel Maps technique is based on the idea of sorting at the pixel level and accumulating the transparency effect on a multipass basis. 
-The A-buffer uses the Fourier window which in general helps to resolve the visibility problem among an arbitrary collection of opaque, transparent, and intersecting objects.
+%The A-buffer uses the Fourier window which in general helps to resolve the visibility problem among an arbitrary collection of opaque, transparent, and intersecting objects.
 
 While the algorithms for rendering of correctly transparent objects in real-time have emerged already in the previous decade \cite{everitt2001interactive}, new approaches removing the limitations of these methods are still emerging.
 Bavoil et al.~\cite{bavoil2008order} introduced the peeling of two depth layers in one rendering pass, thus halving the number of rendering passes performed by the original Depth Peeling approach \cite{everitt2001interactive}.
