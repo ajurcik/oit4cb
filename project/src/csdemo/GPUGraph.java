@@ -350,6 +350,10 @@ public class GPUGraph {
             return surfaceLabels;
         }
         
+        public int getOuterSurfaceLabel() {
+            return surfaceLabels[0];
+        }
+        
         public int getLabelCount() {
             return labelCount;
         }
