@@ -71,6 +71,7 @@ layout(std430) buffer CountersBuffer {
     uint toriCount;
     uint isolatedToriCount;
     uint hashErrorCount;
+    uint visibleSmallCirclesCount;
 };
 
 layout(std430) buffer Debug {
@@ -162,6 +163,8 @@ void main() {
                 value = readArcHash(index, jIdx, iteration);
                 count++;
             }
+
+            atomicMax(visibleSmallCirclesCount, count);
 
             if (count < 2) {
                 /*debug[0] = index;

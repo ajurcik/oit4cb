@@ -1220,6 +1220,7 @@ public class Scene implements GLEventListener {
         Utils.clearCounter(gl, countersBuffer, 0); // toriCount
         Utils.clearCounter(gl, countersBuffer, 4); // isolatedToriCount
         Utils.clearCounter(gl, countersBuffer, 8); // hashErrorCount
+        Utils.clearCounter(gl, countersBuffer, 12); // TEST visibleSmallCirclesCount
         
         gl.glActiveTexture(GL_TEXTURE0);
         gl.glBindTexture(GL_TEXTURE_BUFFER, atomsTex);
@@ -1278,6 +1279,10 @@ public class Scene implements GLEventListener {
             int readHashErrorCount = Utils.getCounter(gl, countersBuffer, 8);
             if (readHashErrorCount > 0) {
                 System.err.println("Warning: Read hash errors: " + readHashErrorCount);
+            }
+            if (writePerformanceInfo) {
+                int maxTorusTriangleCount = Utils.getCounter(gl, countersBuffer, 12);
+                System.out.println("Max torus triangle count: " + maxTorusTriangleCount);
             }
         }
         

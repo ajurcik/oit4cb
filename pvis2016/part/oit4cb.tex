@@ -6,17 +6,17 @@ First we present the algorithms for the computation of molecular surfaces and ca
 \subsection{Surface computation}
 \label{sec:ecb}
 Our surface computation algorithm is based on the existing research that utilizes the GPU capabilities~\cite{krone2011parallel}.
-In the former study, the SES is represented as three different sets of surface primitives -- spheres, tori, and spherical triangles depicted in red, blue, and green in Figure~\ref{fig:cb-oit}.
+\textcolor{green}{In the former study, the SES is represented using three different sets of shapes -- spheres, toroidal saddles, and spherical triangles depicted in red, blue, and green in Fig.~\ref{fig:cb-oit} (left).}
 %, that are ray-casted to obtain opaque surface visualization. 
 %While ray-casting spheres and tori, some sections of the final image will be later occluded by the spherical triangles.
-However, rendering these primitives opaquely produces pixels that are not visible in the final image due to their occlusion by other surface pixels (Fig.~\ref{fig:cb-oit}).
-\footnote{AJ: However, rendering these patches? produces unnecessary pixels below the surface of the molecule. When rendering the surface transparently, these interior pixels are unwanted.}
-In our case, we aim for transparent surface visualization.
-Therefore we extend the existing algorithm such that it employs
-\footnote{AJ: computes}
-the following primitives:
-i) \textit{spherical triangles}, as were already described by Krone et al.~\cite{krone2011parallel} and Lindow et al.~\cite{lindow2010accelerated}, ii)
-\textit{toroidal patches}, delimited by two spherical triangles, and iii) \textit{spherical patches}, enclosed by edges of two or more toroidal patches.
+%However, rendering these primitives opaquely produces pixels that are not visible in the final image due to their occlusion by other surface pixels (Fig.~\ref{fig:cb-oit}).
+\textcolor{green}{However, rendering these shapes produces unnecessary pixels below the surface of the molecule.
+In our case, we aim for transparent surface visualization which causes these interior pixels to be unwanted.}
+Therefore we extend the existing algorithm such that it \textcolor{green}{computes}
+the SES patches:
+i) \textit{spherical triangles}, as were already described by Krone et al.~\cite{krone2011parallel} and Lindow et al.~\cite{lindow2010accelerated},
+ii) \textit{toroidal patches}, delimited by two spherical triangles, and
+iii) \textit{spherical patches}, enclosed by edges of two or more toroidal patches.
 %\textcolor{red}{JP: This needs to be explained: Therefore, to visualize contour surface representation using transparency}, we extended the algorithm so that it computes a SES represented with:
 %\begin{itemize}
 	%\item Spherical triangles.
@@ -42,7 +42,7 @@ i) \textit{spherical triangles}, as were already described by Krone et al.~\cite
 \caption{Comparison between the original method~\cite{krone2011parallel} rendered with transparency (left) and our extended method (right).
 %The transparent SES of three atoms produced by the original parallel CB algorithm (a), and our extended algorithm (b). 
 The original method renders parts of spheres (red) and tori (blue) that lie below the surface.
-Our method produces only primitives that are part of the surface.
+Our method produces only patches that are part of the surface.
 %More, our algorithm is also able to handle patches on a sphere that form different surfaces, i.e., the outer and one or more inner.
 }
 \label{fig:cb-oit}
@@ -88,9 +88,10 @@ To be able to compute the toroidal patches, we employ a hash data structure that
 %In order to get all neighboring triangles for a torus, 
 We hash the triangles by three keys; i.e., one for each torus which is connected to a triangle.
 For this purpose, we implemented a simple hash table, which is based on linear addressing scheme~\cite{alcantara2011efficient}.
-We compute toroidal patches on a torus by retrieving all its neighboring triangles and sorting them relatively by their angular position around the torus axis. 
-We employ the bubble sort algorithm for this sorting.
-\footnote{AJ: as we know that there \textit{x} triangles for a torus in average}
+We compute toroidal patches on a torus by retrieving all its neighboring triangles and sorting them relatively by their angular position around the torus axis.
+\textcolor{green}{
+Since the number of neighboring triangles of a torus is low -- for the molecule with {\tweakedsim}10000 atoms we had maximum of 8, we employ the bubble sort algorithm for this sorting.
+}
 When sorted, the pairs of neighboring triangles define the toroidal patches and corresponding edges.
 Additionally, we check whether the first two triangles form a visible patch.
 If not, then the first triangle forms a visible patch with the last one and we rotate the sorted list of triangles by one item.
@@ -181,7 +182,7 @@ In fact, the surface graph is an analogy to the graph of contours that define th
 
 Finally, the surface contains also tori that are not delimited by any triangles.
 We call these tori \textit{isolated} since they do not have any neighboring triangles (Fig.~\ref{fig:isolated-hole}).
-The isolated tori are excluded from the surface graph and are handled later in the computation (see Section~\ref{sec:isolated}).
+The isolated tori are excluded from the surface graph and are handled later in the computation (see Sec.~\ref{sec:isolated}).
 
 %\subsubsection{Extraction of surfaces}
 
@@ -225,7 +226,7 @@ In the second step, all connected components of $G$ are found and labeled using 
 %Our implementation of the BFS algorithm is suboptimal, because its time complexity is $O(d \cdot n)$ where d is the length of the longest shortest path among all vertices in a component.
 %In the worst case, d can be n.
 We opt for a simple, quadratic-work implementation~\cite{merrill2012scalable}, because of the ability to have the BFS implemented in a single kernel.
-Our decision is supported by the performance measurements (see Section~\ref{sec:performance}) where the computation of surface components takes {\tweakedsim}5 ms for a molecule with {\tweakedsim}10.000 atoms while the computation of SES and its ray-casting together takes {\tweakedsim}119 ms.
+Our decision is supported by the performance measurements (see Sec.~\ref{sec:performance}) where the computation of surface components takes {\tweakedsim}5 ms for a molecule with {\tweakedsim}10.000 atoms while the computation of SES and its ray-casting together takes {\tweakedsim}41 ms.
 
 In the last step, the cycles representing the spherical patches are extracted.
 To do this, we assign the edges in $E$ by their neighboring spheres into buckets.
@@ -270,7 +271,7 @@ There can be two cases:
 	\item Both spheres form two or more patches. We find a neighboring patch of the torus by employing the point in a spherical patch test (see Section~\ref{sec:spherical-patches}). Then the torus lies in the same surface component as its neighboring patch.
 \end{enumerate}
 
-The clipping of fragments in the affected spherical patches can be done using a clipping plane or a visibility sphere (introduced in~\cite{krone2009interactive}) of a torus.
+The clipping of fragments in the affected spherical patches can be done using a clipping plane or \textit{visibility sphere} (\textcolor{green}{introduced in~\cite{krone2009interactive}}) of a torus.
 We use the latter approach, since the visibility spheres for tori were already computed in a previous phase of our technique.
 Here, our kernel writes a texture, similarly to Krone et al.~\cite{krone2011parallel}, which stores all visibility spheres that intersect the sphere.
 When ray-casting spherical patches, we use this texture to discard all fragments that are inside of the intersecting visibility sphere.
