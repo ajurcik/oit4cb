@@ -2,24 +2,18 @@ Our approach touches several research areas, including computation and visualiza
 Further we focus on the real-time visualization of surfaces and their transparency which is achieved using the order-independent transparency approach. 
 Thus in this section we describe the existing techniques related to these topics.
 
-\subsection{Extraction and Visualization of Surfaces of Molecules and Their Cavities}
+\subsection{Extraction and Visualization of Surfaces of Molecules}
 There are several types of molecular surface representation proposed in the literature~\cite{STAR2015}. 
-One of the most recently defined surfaces is the ligand-excluded surface proposed by Lindow et al.~\cite{Lindow2014} which takes into account the full geometry of the ligand interacting with the protein.
-However, for the cavity analysis, the solvent-excluded surface (SES) is the most commonly used representation used by the domain experts.%~\cite{todo}. 
-This representation allows us to directly asses whether a solvent, approximated by a sphere of a given radius, is able to reach a binding site of interest on the molecular surface. 
+%One of the most recently defined surfaces is the ligand-excluded surface proposed by Lindow et al.~\cite{Lindow2014} which takes into account the full geometry of the ligand interacting with the protein.
+Regarding the cavity analysis, the solvent-excluded surface (SES) is the most commonly used representation preferred also by the domain experts.%~\cite{todo}. 
+This representation allows us to directly asses whether a solvent, approximated by a sphere of a given radius, is able to reach a binding site of interest on the molecular surface. The area of geometrical analysis of molecular structures focusing on the detection and further exploration of the void space is very vast and, therefore, we relate only to the techniques that we consider to be relevant and close to our work. 
 
-The area of geometrical analysis of molecular structures focusing on the detection and further exploration of the void space is very vast and so we do not aim to provide the users with an exhaustive list of the existing solutions. 
-Rather we focus on the techniques which we consider to be the closest to our work.
-
-The molecular surface is one of the most significant studied features thus many solutions were published.
-One of the most popular solutions was presented by Sanner et al.~\cite{Sanner1996} who introduced their reduced surface aprroach to the detection of molecular surfaces.
-Another breakthrough was reached by Edelsbrunner et al.~\cite{Edelsbrunner1995} who used alpha shapes for the detection and measurement of voids in proteins.
+%The molecular surface represents one of the most significant studied features thus many solutions were published.
+In 1983, Connolly proposed an analytical approach for construction of the SES representation~\cite{connolly1983analytical}.
+In 1996, Sanner et al.~\cite{Sanner1996} introduced the reduced surface algorithm to construct SES. In the same year, Totrov and Abagyan~\cite{totrov1996contour} introduced the contour-buildup algorithm to create SES representation. The algorithm is based on the sequential buildup of multi-arc contours. 
+One of the advantages of this approach is that it is spatially localized thus it is also applicable to partial molecular surfaces.
+In 1995, Edelsbrunner et al.~\cite{Edelsbrunner1995} proposed to exploit alpha shapes to detect and measure the voids in proteins.
 Linearly scalable algorithm for computation of smooth molecular surfaces was then presented by Varshney et al.~\cite{Varshney1994}.
-
-Further we focus on the analytical approaches for the construction of the SES where Connolly~\cite{connolly1983analytical} presented the first solution to this problem.
-Another approach to the detection of the analytic surface was later presented by Totrov and Abagyan~\cite{totrov1996contour}.
-The algorithm is based on the sequential build up of multi-arc contours. 
-One of the advantages of this contour-buildup approach is that it is localized thus applicable on the computation of partial molecular surface.
 
 One of the significant improvements of the SES computation was published by Parulek and Viola~\cite{parulek2012implicit}.
 Their approach does not require any precomputation. 
