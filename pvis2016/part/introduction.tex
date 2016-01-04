@@ -12,22 +12,13 @@ These sites represent different molecular surface features known as cavities, po
 There is a legacy of tools and approaches that enable to extract these features.
 Two major challenges in regards to the surface feature analysis are their fast extraction and their visualization in the most informative manner. 
 
-In our approach we are focusing mainly on cavities that represent the protein inner void space, directly inaccessible from the molecular surface. 
+In our approach we are focusing on cavities that represent the protein inner void space, directly inaccessible from the molecular surface. 
 We face the mentioned challenges by introducing a novel approach to real-time visualization and exploration of protein molecular dynamics when the user can interactively manipulate with the structure and thus explore the protein, its inner cavities, and its behavior efficiently. 
 This is reached by introducing several enhancements (Fig.~\ref{fig:teaser}), such as real-time computation and rendering of transparent molecular surface and real-time detection and rendering of inner cavities.
 
 %In this paper, we introduce a new technique (Fig.~\ref{fig:teaser}) that enables to compute and visualize the solvent excluded surface. Additionally, we propose a new way for computing molecular surface features, like cavities or tunnels. Finally, we introduce a visualization technique that allows to interactively visualize the computed cavities in the context of the molecular surface.
-
-But the main contributions of our solution consist of:
-\begin{itemize}
-  \item Accelerated and improved rendering pipeline for the transparent solvent-excluded surface (SES) of the molecule (in comparison with Kauker et al.~\cite{kauker2013rendering}).
-  %\item \sout{Improved representation of the solvent-excluded surface (SES) of the molecule. We 1compute the exact representation of individual surface primitives.}
-	%Enhanced computation of solvent-excluded surface (SES) of the molecule. We propose three new kernels that account for \textcolor{red}{speedup of the existing state-of-the-art approach~\cite{krone2011parallel}}.
-  %\item \sout{A novel real-time algorithm for the extraction of cavities. We present new fast cavity extraction method that is based on solvent-excluded surface (SES)}.
-  \item Improved performance of visualization of transparent molecular surfaces~\cite{kauker2013rendering}. We also enable to change the parameters of the opacity modulation, which supports better perception of inner surface features.
-	\item Extension of the existing state-of-the-art approach~\cite{krone2011parallel} to SES computation. We propose methods for computation and rendering of individual SES patches.
-\end{itemize}
-
+The main contribution of our solution consists of the introduction of the accelerated rendering pipeline improving the performance of visualization of transparent solvent-excluded surface (SES) of the molecule (in comparison with Kauker et al.~\cite{kauker2013rendering}). To support better perception of inner surface features (cavities), we enable to change the parameters of the opacity modulation. Moreover, we extended the existing state-of-the-art approach~\cite{krone2011parallel} to SES computation by proposing methods for computation and rendering of individual SES patches.
+ 
 Currently existing methods provide a solution for each of these topics separately (i.e., computation of molecular surface and its transparency), including the computation of inner cavities.
 However, none of the algorithms combines all these topics in order to provide the domain experts with a solution for their real-time visualization and exploration.
 We fill this gap by integrating the computation and transparent visualization of both molecular surface and inner cavities.
