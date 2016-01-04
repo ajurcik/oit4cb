@@ -4,7 +4,7 @@ To enable our transparent visualization, we require an ordered list of fragments
 
 \subsection{Ray-casting}
 \label{sec:spherical-patches}
-To form fragments of each surface patch we employ a ray-casting technique. To provide a high performance, the ray-patch intersection is computed analytically.
+To form fragments of each surface patch we employ a ray-casting technique. To provide a high performance, the ray-patch intersection is computed analytically using a method described by Herbison-Evans~\cite{herbisonevans1995solving}.
 In 2013, Kauker et al.~\cite{kauker2013rendering} proposed to ray-cast a toroidal patch using a saddle part of a torus and two clipping planes defined by its delimiting triangles (Fig.~\ref{fig:torus}).
 \begin{figure}[htp]
   \centering
@@ -19,7 +19,7 @@ In 2013, Kauker et al.~\cite{kauker2013rendering} proposed to ray-cast a toroida
     \includegraphics[width=1.3in]{image/torus-planes.png}
     %\caption{Clipping by planes defined by spherical triangles.}
   \end{subfigure}
-	\caption{Ray-tracing a toroidal patch. Left: The saddle part of the torus (blue) is cut by the \textit{visibility sphere} (yellow).
+	\caption{Ray-tracing a toroidal patch. Left: The saddle part of the torus (blue) is cut by the visibility sphere (yellow).
 Right: The patch (blue) is cut from the whole toroidal ring by clipping planes (yellow) defined by spherical triangles (green).}
 	\label{fig:torus}
 \end{figure}
@@ -41,47 +41,25 @@ The \textit{AND} operation leaves only fragments that appear on the positive sid
 %\end{figure}
 %This allows us, to ray-cast toroidal patches directly instead of tori.
 
+\textcolor{green}{
+Ray-casting the sphere is a trivial task; nevertheless, there can one or more spherical patches that belong to the same surface atom sphere while these patches may form different surfaces.
+To avoid obvious rendering issues, i.e., distinct coloring, transparency, or visibility, we perform ray-casting of each patch separately.
+%This allows us to visually distinguish between different surface components.
+Regarding the separation of patches, we experimented with applying an odd-even rule for polygons~\cite{shimrat1962algorithm} and with computing a convex polyhedrons bounds.
+We decided for the bounding volume solution because regarding the point-in-polygon (PIP) test there were non-trivial special cases, e.g., a ray going through a polygon's vertex or a very short edge, that had to be handled.
+The special cases then resulted in pixel artifacts in the final image.
+Moreover, the implementation of the PIP test was performance demanding due to many texture memory accesses.
+On the other hand, the computation of a patch's bounding volume is based on the fact, that the spherical patch is bounded by planes defined by its bounding arcs.
+This way, we have a polyhedron $B_{poly}$ which bounds all the patches belonging to an atom sphere.
+For each patch, we add another plane $p_{add}$ which cuts $B_{poly}$ in order to keep only the volume containing that patch.
+As $p_{add}$, we choose an appropriate plane among planes in $P_{bb}$ that contain faces of the bounding box used for splatting the patch (see Sec. \textcolor{red}{TBD}).
+In fact, by splatting, we clip $B_{poly}$ by all the six planes in $P_{bb}$.
+}
 
-Ray-casting the sphere is a trivial task; nevertheless, in our case the surface sphere of molecules might be formed by an arbitrary number of spherical patches lying in different surface components. To avoid obvious rendering issues, i.e., distinct coloring, transparency, or visibility, we perform ray-casting of each spherical patch separately.
-This allows us to visually distinguish between different surface components.
-
-Since the boundaries of a spherical patch are formed by small circle arcs, we apply an odd-even rule for polygons~\cite{shimrat1962algorithm} to test whether a point lies inside the patch. 
-First we compute the intersection points, $P_{front}$ and $P_{back}$, of a given ray with the patch sphere.
-Here we describe the point-patch test for point $P_{front}=P$ only, since the same test is applied to $P_{back}$.
-Before we apply the odd-even rule, we choose a point $T$ lying outside the patch.
-Then, we test line $TP$, the shortest path on a sphere, for an intersection with each of the arcs delimiting the patch.
-The intersection of a line $TP$ with the small circle arc, given by points $AB$, is computed in two steps (Fig.~\ref{fig:outer-point} left):
-\begin{enumerate}
-  \item Intersections of the circles containing the line $TP$ and the arc $AB$, which can intersect in up to two points.
-  \item Intersection points are tested whether they belong to both the segment $TP$ and the arc $AB$.
-\end{enumerate}
-Finally, if the sum of all intersections, i.e., for all the sides, is odd then the point lies inside the patch.
-
-\begin{figure}[htp]
-  \centering
-  \begin{subfigure}[c]{0.52\columnwidth}
-    \centering
-    \includegraphics[height=1.9in]{image/patch.png}
-    %\caption{%Point in spherical patch test.
-		%The intersection $I_1$ lies on an intersection line between two planes containing arcs $OP$ and $AB$.}
-		%\label{fig:spherical-patch}
-  \end{subfigure}%
-  \quad
-  \begin{subfigure}[c]{0.44\columnwidth}
-    \centering
-    \includegraphics[height=1.6in]{image/outer.png}
-    %\caption{%A torus formed by carbon ($C_C$) and hydrogen ($C_H$) atoms.
-		%The center of the torus ($C_{t}$) lies outside the atom centers, while the center of its visibility sphere $C_{vs}$ lies between $C_C$ and $C_H$.}
-  \end{subfigure}
-\caption{Left: A point against the spherical patch test. The intersection $I_1$ lies on an intersection line between two planes containing arcs $OP$ and $AB$. Right: A torus formed by carbon ($C_C$) and hydrogen ($C_H$) atoms. The center of the torus ($C_{t}$) lies outside the atom centers, while the center of its visibility sphere $C_{vs}$ lies between $C_C$ and $C_H$.}
-\label{fig:outer-point}
-\end{figure}
-
-Since we deal with spherical patches and not the planar ones, the situation is bit more complex and we cannot choose point $T$ arbitrarily. 
-%Otherwise, we would count intersections of patch's sides with a great circle containing $P$.
-%Then, the intersection count would be the same regardless of $P$ being inside or outside the patch, making the rule inapplicable.
-Instead, we compute $T$ by intersecting a patch sphere by an axis of one of its delimiting tori.
-In this way, we get two intersection points from which we choose the one that lies in the direction of the torus visibility sphere (Fig.~\ref{fig:outer-point} right).
+\textcolor{green}{
+In the resulting image, there can still occur pixel artifacts caused by numerical issues when ray-casting tori.
+These numerical issues arise when computing an intersection of a ray with a torus.
+}
 
 %\subsection{Ambient Occlusion Opacity Modulation}
 %Borland~\cite{borland2011ambient} proposed to utilize ambient occlusion (AO) values to alter the opacity. Motivated by his approach, we exploit the ambient occlusion values as well. Since, we would like to maintain fast rendering performance, we need to remedy the issue of having an object space technique to evaluate the AO values. In the former work of Borland, the performance was considered a less important factor, which allows him to exploit the full object space AO evaluation. Here, we opted for the most recent approach, proposed by Grottel et al.~\cite{grottel2012object}, which renders ambient occlusion values to a $3D$ grid containing an estimate of the volume area of atoms located inside a voxel. Although this approach only reflects the volume of atoms and not the volume area of the molecular surface, we find it as a good trade off between the visual precision and the performance measure. Note, in addition, these values are not employed directly, but rather as opacity modulators instead, which defines the opacity as follows:
