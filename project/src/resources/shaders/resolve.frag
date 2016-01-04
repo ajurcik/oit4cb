@@ -53,7 +53,7 @@ void main() {
     atomicAdd(pixelCount, 1);
 
     // read (nearest) fragments
-    frag ordered[24];
+    frag ordered[32];
     int count = 0;
     while (index != INVALID_INDEX && count < maxNumFragments) {
         ordered[count].color = fragments[index].color;
