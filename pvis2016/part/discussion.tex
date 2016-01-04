@@ -1,15 +1,16 @@
-As our system enables to handle transparent visualization of molecular surface in real-time, it provides the users with the possibility to explore the MD simulation instantly, without any precomputation or making previews on selected time steps.
-The latter technique is often used for creating an overview of an observed process (e.g., time changes of a protein tunnel, following the ligand path, observing the trajectories of water molecules, etc.).
-The user selects a subset of the original MD simulation consisting of each $n-$th time step and the given task is performed only on this subset.
-Depending on the selected $n$ value, it can give the user a decent overview information. 
-But there is always a risk that the substantial parts of the simulation were omitted.
-
-The real-time exploration of the transparent molecular surface and inner cavities has the following advantages:
-\begin{itemize} 
-\item The MD simulation can be observed in real time which enables the user to interactively adjust the appearance and viewpoint.
-\item The highly transparent molecular surface removes the necessity of using clip planes which are often used for exploration of the inner molecular environment.
-\item The user has the full control of the animation process. 
-\end{itemize}
+Here we present the performance analysis of our algorithm, which includes discussion of the limitations of our technique and also discussion of the improved memory complexity we implemented. Further, we introduce an informal evaluation and feedback we obtained from the domain experts. 
+%As our system enables to handle transparent visualization of molecular surface in real-time, it provides the users with the possibility to explore the MD simulation instantly, without any precomputation or making previews on selected time steps.
+%The latter technique is often used for creating an overview of an observed process (e.g., time changes of a protein tunnel, following the ligand path, observing the trajectories of water molecules, etc.).
+%The user selects a subset of the original MD simulation consisting of each $n-$th time step and the given task is performed only on this subset.
+%Depending on the selected $n$ value, it can give the user a decent overview information. 
+%But there is always a risk that the substantial parts of the simulation were omitted.
+%
+%The real-time exploration of the transparent molecular surface and inner cavities has the following advantages:
+%\begin{itemize} 
+%\item The MD simulation can be observed in real time which enables the user to interactively adjust the appearance and viewpoint.
+%\item The highly transparent molecular surface removes the necessity of using clip planes which are often used for exploration of the inner molecular environment.
+%\item The user has the full control of the animation process. 
+%\end{itemize}
 
 %In consequence, our system enables to reach similar results in real-time. 
 %In one aspect it even overcomes the existing solution as the users can interactively manipulate with the scene on the fly~--~perform scene transformations, change the appearance of the protein and ligand, or change the probe size used for the generation of protein surface.
@@ -28,16 +29,16 @@ The real-time exploration of the transparent molecular surface and inner cavitie
 
 We tested our technique on commodity hardware to show that it enables the users to solve their tasks in real-time without high hardware requirements.
 The tests were performed using Intel Core i5 760 (2.80 GHz) with 4 GB of RAM and NVIDIA GeForce 680 GTX with 4 GB of VRAM as a graphics card.
-For rendering, we used the resolution of 1024 $\times$ 768 and we fitted the molecule to cover most of the rendered image.
+For rendering, we used the resolution of 1024 $\times$ 768 while fitting the molecule to cover the most of the rendered image.
 %Regarding transparency, we limited the maximum depth complexity to 24 fragments per pixel.
 The results of our measurements for both static and dynamic molecules are presented in Table~\ref{tab:static}.
 We choose the static structures from the Protein Data Bank (PDB)~\cite{sussman1998protein} so the performance of our technique could be easily compared with other existing or new approaches on the same dataset.
 
 \textcolor{green}{
-In Table~\ref{tab:speedup}, we compare overall performance of our technique to the method presented by Kauker et al.~\cite{kauker2013rendering} as it is the only existing method that enables correct transparency of the SES in real-time.
-When compared to state-of-the-art methods~\cite{lindow2010accelerated}~\cite{krone2011parallel} for SES visualization, our method performs in the surface computation part similarly to the algorithm we came from~\cite{krone2011parallel} (see Tab.~\ref{tab:static}).
-The performance of the ray-casting is not directly comparable to the methods.
-We test twice as many intersections to obtain both front and back fragments and our intersection tests (especially for spherical patches) need to be more complex than those used by techniques that do not render the surface using full transparency.
+In Table~\ref{tab:speedup}, we compare an overall performance of our technique with the method presented by Kauker et al.~\cite{kauker2013rendering} as it is currently the only existing method that enables a correct transparency of the SES in real-time.
+Comparing to the state-of-the-art methods~\cite{lindow2010accelerated}~\cite{krone2011parallel} for SES visualization, our method performs in the surface computation part similarly to the algorithm presented by Krone et al.~\cite{krone2011parallel} (see Tab.~\ref{tab:static}).
+Nevertheless, the performance of the ray-casting cannot be directly compared to these two methods, since
+we test twice as many intersections to obtain both front and back fragments and our intersection tests (especially for spherical patches) need to be more complex than those used by techniques that do not render the surface using full transparency.
 }
 
 \setlength{\tabcolsep}{4.5pt}
@@ -84,22 +85,22 @@ We test twice as many intersections to obtain both front and back fragments and 
 
 Our technique was implemented mainly using OpenGL employing GLSL compute shaders as GPU kernels.
 We also utilized \textcolor{red}{(used)} OpenCL to implement a kernel which computes the positions of spherical triangles in the original algorithm \cite{krone2011parallel}.
-The GLSL implementation of this kernel performed for a molecule with {\tweakedsim}10000 atoms about 5x slower than the OpenCL/CUDA one.
-Based on the performed tests we assume that the key reason for such performance loss is the extensive use of the global memory in the kernel which is handled differently in OpenGL and OpenCL/CUDA.
+The GLSL implementation of this kernel performs for a molecule with {\tweakedsim}10000 atoms about 5x slower than the OpenCL/CUDA one.
+Based on the performed tests we assume that the key reason for this performance loss is the extensive use of the global memory in the kernel, which is handled differently in OpenGL and OpenCL/CUDA.
 
 \subsubsection{Discussion of Limitations}
-From the results, it can be seen that in terms of performance, the main limitation of our technique is the ray-casting of the computed surface.
-More specifically, the most demanding part is the rendering of spherical and toroidal patches that takes together 75-80\% of the whole rendering time.
-We anticipate that the performance of ray-casting these patches could be improved by using tighter bounding boxes for them when splatting.
+Based on the acquired performances, it is obvious that the main performance limitation is represented by the ray-casting of the computed surface.
+More specifically, the most demanding part is the rendering of spherical and toroidal patches that takes together $75-80\%$ of the entire rendering time.
+We anticipate that the performance of ray-casting these patches could improve when applying tighter bounding boxes during splatting.
 In fact, we employ bounding squares for both spheres containing spherical patches and visibility spheres containing visible parts of tori.
 In this way, the computation of ray-primitive intersection is evaluated multiple times for spheres and tori that form more than one surface patch.
 
 \subsubsection{Improved Memory Complexity}
 
-As a side effect of exploiting the hash data structure (Sec.~\ref{sec:ecb}) for storing spherical triangles, our technique consumes less GPU memory than the original approach we used as a basis.
+As a side effect of exploiting the hash data structure (Sec.~\ref{sec:ecb}) for storing the spherical triangles, our technique consumes less GPU memory than the original approach~\cite{krone2011parallel}.
 This is due to the fact that the original method uses a linear buffer to store the spherical triangles.
-An index into this buffer, i.e., position where a triangle is stored, is computed based on the $i$ and $j$ indices of spheres $i < j < k$ that formed the triangle.
-The range of $j$ is optimized in terms of limiting the maximal number of neighbors ($maxNeighbors$) that a sphere can have, so that the range of $j$ can be remapped to $\left[0, maxNeighbors\right)$.
+An index into this buffer, i.e., position where a triangle is stored, is computed by means of $i$ and $j$ indices of spheres $i < j < k$ that formed the triangle.
+The range of $j$ is optimized in terms of limiting the maximal number of neighbors ($maxNeighbors$) that a sphere can contain, so that the range of $j$ can be remapped to $\left[0, maxNeighbors\right)$.
 There is also a limit on the total number of triangles ($maxTriangles$) that can be stored for each pair of spheres.
 Putting it all together, the memory complexity of the original data structure is:
 
@@ -110,7 +111,7 @@ Putting it all together, the memory complexity of the original data structure is
 where $|A|$ is the number of atoms of the molecule and the typical settings for the other two constants are $maxNeighbors = 64$, $maxTriangles = 64$.
 We adopted this settings from the MegaMol visualization framework~\cite{grottel2015megamol}.
 
-On the other hand, we store the computed triangles linearly in an array and for each triangle, we additionally store three hash records. 
+On the other hand, we store the computed triangles linearly in an array and for each triangle we additionally store three hash records. 
 The memory complexity of our hash structure is therefore:
 
 \begin{equation}
@@ -135,19 +136,18 @@ which yields that the original structure is more than 100 times larger for only 
 Actually, our maximum neighbor count is 128 to be able to compute the surface of molecules that contains hydrogens, which is a typical case for data produced by molecular dynamics simulations.
 
 
-\subsection{Discussion}
-When the results of the algorithm were evaluated by the domain experts, they confirmed that our solution is highly practical with respect to the exploration of molecular surface and inner cavities because the time to complete this task is reduced dramatically.
-The agreed that this approach has a big potential in the field of studying protein-protein interactions where the reactions happen on the protein surfaces.
-Therefore, studying of the shape of these surfaces and their changes over time is substantial in this case.
-Moreover, they also appreciated the visual appearance which they considered to be more appealing than the previous solutions.
+\subsection{User feedback}
+The resulting visualization technique was evaluated by three domain experts working in the field of protein engineering. They regarded the solution as highly practical with respect to the exploration capabilities of molecular surfaces and their inner cavities, mainly due to the time spent on the given task, which in our case was reduced dramatically.
+They also agreed that this approach has a big potential for studying protein-protein interactions where the reactions take place on the protein surfaces.
+Therefore, studying shapes of these surfaces and their change over time is considered to be very important.
+Moreover, they appreciated the visual appearance that was found more appealing than the existing solutions.
 They confirmed that our approach can be directly used for creating presentation materials, such as images to publications or animations for presentations.
 
 The domain experts were also asked to identify the weak points of our current solution.
-They agreed that when using a highly transparent molecular surface, it can be hard to assess the position of penetrating structures (ligands) when using only one viewpoint.
-In other words, the user has to manipulate with the structure in order to decide if the ligand is still located in the outer solvent or if it already penetrated to the inner part of the protein.
-However, this situation is caused due to the transparency itself and a solution has to be based on a combination with other methods.
-This opens one of the possible directions for the future extension.
-Another possible extension suggested by the biochemists is to enable a selection of an interesting cavity (e.g., containing the active site) and focus on its changes.
+They pointed out that using a highly transparent molecular surface complicates the assessment of the position of penetrating structures (ligands) when using only one viewpoint.
+In other words, the user needs to adjust the scene camera in order to decide whether the ligand is in the outer solvent or whether it has already penetrated the protein surface.
+Nevertheless, this ambiguity is caused by the transparency in general and solution could be achieved by its combination with other techniques, which opens possible directions for the future extension.
+Another potential extension suggested by the biochemists is to enable a selection of an interesting cavity (e.g., containing the active site) and focus on its changes.
 As the volume and area of the detected cavities are important parameters for the biochemists, they also proposed to replace the current approximated values by exact ones.
 According to the domain experts, our algorithm could be also extended to be applicable to other voids in proteins, namely tunnels.
 
