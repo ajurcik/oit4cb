@@ -80,7 +80,7 @@ void main() {
         }
     }
 
-    for (int tunnelBack = 2; tunnelBack < count; tunnelBack++) {
+    /*for (int tunnelBack = 2; tunnelBack < count; tunnelBack++) {
         if (floatBitsToUint(ordered[tunnelBack].ao) == -2) {
             // find front fragment of the tunnel, there can be ligand (bad impl!)
             int tunnelFront = tunnelBack - 1;
@@ -92,7 +92,7 @@ void main() {
             //ordered[tunnelFront].color = packUnorm4x8(tunnelFrontColor * vec4(tunnelColor, 1.0));
             //ordered[tunnelFront].ao = -2.0;
         }
-    }
+    }*/
 
     // modulate alpha of outer surface
     float maxDepth = ordered[count - 1].depth - ordered[0].depth;

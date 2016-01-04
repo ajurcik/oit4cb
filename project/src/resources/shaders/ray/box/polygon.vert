@@ -20,6 +20,9 @@ ivec4 faces[] = {
     ivec4(0, 4, 1, 5)  // -Y
 };
 
+const uint CW = 0;
+const uint CCW = 1;
+
 // viewport
 uniform vec4 viewport;
 // SAS/SES
@@ -49,6 +52,7 @@ out VertexData {
     flat uint label;
     flat uint circleStart;
     flat uint circleEnd;
+    flat uint orientation;
 } vertex;
 
 void main() {
@@ -124,6 +128,15 @@ void main() {
     
     cap.xyz = normalize(cap.xyz);
     cap.w = -dot(cap.xyz, vertex.objPos.xyz);
+
+    // compute orientation
+    vertex.orientation = CCW;
+    if (vertex.circleEnd - vertex.circleStart >= 2) {
+        vec3 dir = cross(vertex.objPos.xyz - points[0], vertex.objPos.xyz - points[1]);
+        if (dot(dir, cap.xyz) < 0.0) {
+            vertex.orientation = CW;
+        }
+    }
 
     float minDist = vertex.radius;
     for (uint i = 0; i < vertex.circleEnd - vertex.circleStart; i++) {

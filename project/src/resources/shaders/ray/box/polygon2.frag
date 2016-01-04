@@ -11,9 +11,15 @@ struct fragment {
 };
 
 const int EMPTY = 0;
-const int VERTEX = 1;
 const int LINE = 2;
 const int PLANE = 3;
+
+const int EDGE = 1;
+const int V0 = 2;
+const int V1 = 3;
+
+const uint CW = 0;
+const uint CCW = 1;
 
 // viewport
 uniform vec4 viewport;
@@ -56,8 +62,9 @@ in flat uint index;
 in flat uint label;
 in flat uint circleStart;
 in flat uint circleEnd;
+in flat uint orientation;
+// area
 in flat float area;
-//in flat vec4 plane;
 
 uniform usamplerBuffer circlesTex;
 uniform samplerBuffer edgesCircleTex;
@@ -92,7 +99,7 @@ float squaredLength(vec3 v);
 void storeIntersection(vec3 position, vec3 normal, vec3 eye, vec4 color, float Ka, float Kd, bool bfmod);
 int planePlaneIntersection(vec4 plane1, vec4 plane2, out vec3 p1, out vec3 p2);
 vec3 rotate(vec3 v, vec3 axis, float angle);
-int sphericalLineArcIntersection(vec4 sphere, vec4 circle, vec4 arc, vec3 p, vec3 o);
+int sphericalLineArcIntersection(vec4 sphere, vec4 circle, vec4 arc, vec3 p, vec3 o, inout int di);
 
 void main() {
     //storeFragment(color, 10.0, 1.0); discard; // DEBUG
@@ -195,25 +202,34 @@ void main() {
     }
 
     // ray-vertex hit handling
+    int prev = (orientation == CCW) ? V0 : V1;
     vec4 firstPlane;
     vec4 prevPlane;
     bvec2 firstVertex = bvec2(false, false);
     bvec2 prevVertex = bvec2(false, false);
     int vertexCount = 0; // DEBUG
 
+    // DEBUG
+    int di = 0;
+    int ndi = -1;
+    if (index == 25) {
+        debug[29] = vec4(orientation, prev, 0.0, 0.0);
+    }
+    
     // test first edge
-    int result = sphericalLineArcIntersection(sphere, circle, line, intPos1, outside);
-    if (result == VERTEX) {
+    int result = sphericalLineArcIntersection(sphere, circle, line, intPos1, outside, di);
+    if (result > EDGE) {
         outer = !outer; count++; // DEBUG
         firstPlane.xyz = circle.xyz;
         firstPlane.w = -dot(circle.xyz, sphere.xyz + circle.xyz);
         prevPlane = firstPlane;
-        prevVertex.x = firstVertex.x = true;
-        vertexCount++; // DEBUG
-    } else if (result == LINE) {
+        firstVertex.x = result == prev;
+        prevVertex.x = !firstVertex.x;
+        //vertexCount++; // DEBUG
+    } else if (result == EDGE) {
         outer = !outer; count++;
     }
-    if (sphericalLineArcIntersection(sphere, circle, line, intPos2, outside) != EMPTY) {
+    if (sphericalLineArcIntersection(sphere, circle, line, intPos2, outside, ndi) != EMPTY) {
         inner = !inner;
     }
 
@@ -250,30 +266,36 @@ void main() {
         line = texelFetch(edgesLineTex, int(edgeIdx));
         line.xyz = circle.w * line.xyz;
         // test edge
-        result = sphericalLineArcIntersection(sphere, circle, line, intPos1, outside);
-        if (result == VERTEX) {
+        result = sphericalLineArcIntersection(sphere, circle, line, intPos1, outside, di);
+        if (result > EDGE) {
             outer = !outer; count++; // DEBUG
             vec4 plane;
             plane.xyz = circle.xyz;
             plane.w = -dot(plane.xyz, sphere.xyz + circle.xyz);
-            if (prevVertex.x) {
+            if (prevVertex.x && result == prev) {
                 vec4 pos = vec4(intPos1, 1.0);
                 if (dot(prevPlane, pos) <= 0.0 && dot(plane, pos) <= 0.0) {
-                    //outer = !outer;
-                    //count--;
-                    //vertexCount++; // DEBUG
+                    outer = !outer;
+                    count++;
+                    vertexCount++; // DEBUG
+                    if (index == 25) {
+                        debug[30] = vec4(2.0 * (i - circleStart - 1) + (prev == V0 ? 1 : 0));
+                        debug[31] = vec4(2.0 * (i - circleStart) + (prev == V0 ? 0 : 1));
+                    }
                 }
                 prevVertex.x = false;
-            } else {
+            } else if (result != prev) {
                 prevPlane = plane;
                 prevVertex.x = true;
+            } else {
+                prevVertex.x = false;
             }
-            vertexCount++; // DEBUG
-        } else if (result == LINE) {
+            //vertexCount++; // DEBUG
+        } else if (result == EDGE) {
             outer = !outer; count++; // DEBUG
             prevVertex.x = false;
         }
-        if (sphericalLineArcIntersection(sphere, circle, line, intPos2, outside) != EMPTY) {
+        if (sphericalLineArcIntersection(sphere, circle, line, intPos2, outside, ndi) != EMPTY) {
             inner = !inner;
         }
     }
@@ -282,9 +304,13 @@ void main() {
     if (circleEnd - circleStart > 2 && firstVertex.x && prevVertex.x) {
         vec4 pos = vec4(intPos1, 1.0);
         if (dot(firstPlane, pos) <= 0.0 && dot(prevPlane, pos) <= 0.0) {
-            //outer = !outer;
-            //count--;
-            //vertexCount++; // DEBUG
+            outer = !outer;
+            count++;
+            vertexCount++; // DEBUG
+            if (index == 25) {
+                debug[30] = vec4(prev == V0 ? 1.0 : 0.0);
+                debug[31] = vec4(2.0 * (circleEnd - 1) + (prev == V0 ? 0 : 1));
+            }
         }
     }
 
@@ -316,9 +342,9 @@ void main() {
         }
     }
 
-    /*if (vertexCount == 1) {
+    //if (vertexCount > 1) {
         outer = true; // DEBUG
-    }*/
+    //}
     if (!inner && !outer) {
         discard;
     }
@@ -329,14 +355,26 @@ void main() {
             vec4 col = color;
             if (count == 0) {
                 col.rgb = vec3(0.2, 0.2, 0.2);
-            //} else if (count == 1) {
-            //    col.rgb = vec3(1.0, 0.0, 1.0);
+            } /*else if (count == 1) {
+                col.rgb = vec3(1.0, 0.0, 1.0);
             } else if (count == 2) {
                 col.rgb = vec3(0.0, 1.0, 0.0);
+            }*/
+            else {
+                if (count % 2 > 0) {
+                    col.rgb = vec3(0.4 + 0.6 * (count - 1) / 8.0, 0.2, 0.2);
+                } else {
+                    col.rgb = vec3(0.2, 0.4 + 0.6 * count / 8.0, 0.2);
+                }
             }
-            if (vertexCount > 0) {
+            if (vertexCount == 1) {
                 col.rgb = vec3(1.0, 1.0, 0.0);
+            } else if (vertexCount == 2) {
+                col.rgb = vec3(0.0, 1.0, 1.0);
             }
+            /*if (orientation == CCW) {
+                col.rgb = vec3(0.5, 0.0, 1.0);
+            }*/
             storeIntersection(intPos1, normal1, eye, col /*color*/, 0.2, 0.8, false);
         } else {
             storeIntersection(intPos1, normal1, eye, color /*vec4(1.0, 1.0, 1.0, 0.5)*/, 0.2, 0.8 /*0.4*/, bfmod);
@@ -443,12 +481,30 @@ vec3 rotate(vec3 v, vec3 axis, float angle) {
     return v * c + cross(axis, v) * s + axis * dot(axis, v) * (1.0 - c);
 }
 
-int sphericalLineArcIntersection(vec4 sphere, vec4 circle, vec4 arc, vec3 p, vec3 o) {
+int sphericalLineArcIntersection(vec4 sphere, vec4 circle, vec4 arc, vec3 p, vec3 o, inout int di) {
     // test p and o lie on opposite sides of circle plane
     vec3 circlePos = sphere.xyz + circle.xyz;
     vec4 circlePlane;
     circlePlane.xyz = normalize(circle.xyz);
     circlePlane.w = -dot(circlePlane.xyz, circlePos);
+
+    // compute arc end points
+    vec3 zAxis = cross(circlePlane.xyz, arc.xyz / circle.w);
+    float zLen = sqrt(1.0 - arc.w * arc.w);
+    vec3 pa1 = sphere.xyz + circle.xyz;
+    pa1 += /*circle.w **/ arc.w * arc.xyz;
+    vec3 pa2 = pa1;
+    pa1 += circle.w * zLen * zAxis;
+    pa2 -= circle.w * zLen * zAxis;
+    vec3 va1 = (pa1 - sphere.xyz) / sphere.w;
+    vec3 va2 = (pa2 - sphere.xyz) / sphere.w;
+    //float dist1 = sphere.w * abs(dot(linePlane.xyz, va1));
+    //float dist2 = sphere.w * abs(dot(linePlane.xyz, va2));
+    if (di >= 0 && index == 25) {
+        debug[di++] = vec4(pa1, 0.0);
+        debug[di++] = vec4(pa2, 0.0);
+    }
+
     if (dot(circlePlane, vec4(p, 1.0)) > 0 && dot(circlePlane, vec4(o, 1.0)) > 0) {
         return EMPTY /*false*/;
     }
@@ -470,19 +526,6 @@ int sphericalLineArcIntersection(vec4 sphere, vec4 circle, vec4 arc, vec3 p, vec
     if (dot(projVec, projVec) > RR) {
         return EMPTY /*false*/;
     }
-    
-    // compute arc end points
-    vec3 zAxis = cross(circlePlane.xyz, arc.xyz / circle.w);
-    float zLen = sqrt(1.0 - arc.w * arc.w);
-    vec3 pa1 = sphere.xyz + circle.xyz;
-    pa1 += /*circle.w **/ arc.w * arc.xyz;
-    vec3 pa2 = pa1;
-    pa1 += circle.w * zLen * zAxis;
-    pa2 -= circle.w * zLen * zAxis;
-    vec3 va1 = (pa1 - sphere.xyz) / sphere.w;
-    vec3 va2 = (pa2 - sphere.xyz) / sphere.w;
-    //float dist1 = sphere.w * abs(dot(linePlane.xyz, va1));
-    //float dist2 = sphere.w * abs(dot(linePlane.xyz, va2));
 
     float d = sqrt(RR - dot(projVec, projVec));
     
@@ -492,8 +535,8 @@ int sphericalLineArcIntersection(vec4 sphere, vec4 circle, vec4 arc, vec3 p, vec
     float lineAngleDist = dot(p - sphere.xyz, line);
     float arcAngleDist = arc.w * dot(arc.xyz, arc.xyz);
     
-    const float EPS = 0.999;
-    bool vertex = false;
+    const float EPS = 0.9999;
+    int result = EDGE;
     vec3 intPos = projPos - d * dir;
     vec3 lineIntVec = intPos - sphere.xyz;
     if (dot(lineIntVec, line) >= lineAngleDist) {
@@ -504,7 +547,7 @@ int sphericalLineArcIntersection(vec4 sphere, vec4 circle, vec4 arc, vec3 p, vec
             float dist1 = dot(lineIntVec / sphere.w, va1);
             float dist2 = dot(lineIntVec / sphere.w, va2);
             if (dist1 > EPS || dist2 > EPS) {
-                vertex = true;
+                result = V0;
             }
             count++;
         }
@@ -520,12 +563,11 @@ int sphericalLineArcIntersection(vec4 sphere, vec4 circle, vec4 arc, vec3 p, vec
             float dist1 = dot(lineIntVec / sphere.w, va1);
             float dist2 = dot(lineIntVec / sphere.w, va2);
             if (dist1 > EPS || dist2 > EPS) {
-                vertex = true;
+                result = V1;
             }
             count++;
         }
     }
     
-    int type = vertex ? VERTEX : LINE;
-    return (count == 1) ? type : EMPTY;
+    return (count == 1) ? result : EMPTY;
 }

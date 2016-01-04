@@ -565,7 +565,7 @@ public class Scene implements GLEventListener {
             boxTorusProgram = Utils.loadProgram(gl, "/resources/shaders/ray/box/torus.vert",
                     "/resources/shaders/ray/box/torus.geom", "/resources/shaders/ray/box/torus.frag");
             boxPolygonProgram = Utils.loadProgram(gl, "/resources/shaders/ray/box/polygon.vert",
-                    "/resources/shaders/ray/box/polygon.geom", "/resources/shaders/ray/box/polygon2.frag");
+                    "/resources/shaders/ray/box/polygon.geom", "/resources/shaders/ray/box/sphere.frag");
             resolveProgram = Utils.loadProgram(gl, "/resources/shaders/resolve.vert",
                     "/resources/shaders/resolve.frag");
             defaultProgram = Utils.loadProgram(gl, "/resources/shaders/default.vert",
@@ -580,7 +580,7 @@ public class Scene implements GLEventListener {
                     "/resources/shaders/ray/polygon2.geom", "/resources/shaders/ray/krone/polygon2.frag");
             // Load molecule
             //dynamics = new Dynamics(Utils.loadDynamicsFromResource("/resources/md/model", 1, 10));
-            dynamics = new Dynamics(Collections.singletonList(Utils.loadAtomsFromResource("/resources/1CRN_3.pdb")));
+            dynamics = new Dynamics(Collections.singletonList(Utils.loadAtomsFromResource("/resources/1CRN_26.pdb")));
             System.out.println("Atoms (molecule): " + dynamics.getMolecule().getAtomCount());
             System.out.println("Snapshots: " + dynamics.getSnapshotCount());
         } catch (Exception ex) {
@@ -859,6 +859,7 @@ public class Scene implements GLEventListener {
         // bind box polygon ray-tracing buffers
         Utils.bindShaderStorageBlock(gl, boxPolygonProgram, "ABuffer", FRAGMENTS_BUFFER_INDEX);
         Utils.bindShaderStorageBlock(gl, boxPolygonProgram, "ABufferIndex", FRAGMENTS_INDEX_BUFFER_INDEX);
+        Utils.bindShaderStorageBlock(gl, boxPolygonProgram, "Debug", DEBUG_BUFFER_INDEX);
         Utils.bindUniformBlock(gl, boxPolygonProgram, "MinMaxCavityArea", MINMAX_CAVITY_AREA_BUFFER_INDEX);
         // bind A-buffer buffers
         Utils.bindShaderStorageBlock(gl, defaultProgram, "ABuffer", FRAGMENTS_BUFFER_INDEX);
@@ -1428,10 +1429,16 @@ public class Scene implements GLEventListener {
         gl.glBindTexture(GL_TEXTURE_BUFFER, gridCountsTex);
         gl.glActiveTexture(GL_TEXTURE2);
         gl.glBindTexture(GL_TEXTURE_BUFFER, gridIndicesTex);
+        gl.glActiveTexture(GL_TEXTURE3);
+        gl.glBindTexture(GL_TEXTURE_BUFFER, surfaceVerticesTex);
+        gl.glActiveTexture(GL_TEXTURE4);
+        gl.glBindTexture(GL_TEXTURE_1D, ar.getAreasTexture());
         
         Utils.setSampler(gl, singularityProgram, "probesTex", 0);
         Utils.setSampler(gl, singularityProgram, "gridCountsTex", 1);
         Utils.setSampler(gl, singularityProgram, "gridIndicesTex", 2);
+        Utils.setSampler(gl, singularityProgram, "labelsTex", 3);
+        Utils.setSampler(gl, singularityProgram, "areasTex", 4);
         
         Utils.setUniform(gl, singularityProgram, "gridSize", GRID_SIZE);
         Utils.setUniform(gl, singularityProgram, "cellSize", cellSize);
@@ -1439,6 +1446,8 @@ public class Scene implements GLEventListener {
         Utils.setUniform(gl, singularityProgram, "maxNumSpheres", MAX_CELL_ATOMS);
         Utils.setUniform(gl, singularityProgram, "maxNumNeighbors", MAX_NEIGHBORS);
         Utils.setUniform(gl, singularityProgram, "probeRadius", probeRadius);
+        Utils.setUniform(gl, singularityProgram, "surfaceLabel", gr.getOuterSurfaceLabel());
+        Utils.setUniform(gl, singularityProgram, "areaThreshold", threshold);
         
         if (autoupdate || update) {
             update = false;
@@ -1700,7 +1709,7 @@ public class Scene implements GLEventListener {
                 debug.writeTori(gl, toriArrayBuffer, torusCount);
                 debug.writePolygons(gl, spheresArrayBuffer, sphereCount);
                 debug.writeSphereIsolated(gl, sphereIsolatedCountsBuffer, sphereIsolatedVSBuffer, atomCount);
-                debug.writeDebug4f(gl, debugBuffer, 4);
+                debug.writeDebug4f(gl, debugBuffer, 32);
                 gpuGraph.writeResults(gl);
                 area.writeResults(gl);
                 volumetricAO.writeResults(gl);
@@ -1731,6 +1740,10 @@ public class Scene implements GLEventListener {
         //gl.glBindTexture(GL_TEXTURE_BUFFER, gr.getCirclesStartTex());
         //gl.glActiveTexture(GL_TEXTURE2);
         //gl.glBindTexture(GL_TEXTURE_BUFFER, gr.getCirclesLengthTex());
+        gl.glActiveTexture(GL_TEXTURE1);
+        gl.glBindTexture(GL_TEXTURE_BUFFER, neighborCountsTex);
+        gl.glActiveTexture(GL_TEXTURE2);
+        gl.glBindTexture(GL_TEXTURE_BUFFER, smallCirclesTex);
         gl.glActiveTexture(GL_TEXTURE3);
         gl.glBindTexture(GL_TEXTURE_BUFFER, surfaceEdgesCircleTex);
         gl.glActiveTexture(GL_TEXTURE4);
@@ -1747,6 +1760,8 @@ public class Scene implements GLEventListener {
         Utils.setSampler(gl, program, "circlesTex", 0);
         //Utils.setSampler(gl, program, "circlesStartTex", 1);
         //Utils.setSampler(gl, program, "circlesLengthTex", 2);
+        Utils.setSampler(gl, program, "neighborsCountTex", 1);
+        Utils.setSampler(gl, program, "smallCirclesTex", 2);
         Utils.setSampler(gl, program, "edgesCircleTex", 3);
         Utils.setSampler(gl, program, "edgesLineTex", 4);
         Utils.setSampler(gl, program, "areasTex", 5);
@@ -1764,13 +1779,13 @@ public class Scene implements GLEventListener {
         Utils.setUniform(gl, program, "viewport", 0f, 0f, 2f / viewport[2], 2f / viewport[3]);
         Utils.setUniform(gl, program, "window", viewport[2], viewport[3]);
         // other properties
-        //Utils.setUniform(gl, program, "maxNumNeighbors", MAX_NEIGHBORS);
+        Utils.setUniform(gl, program, "maxNumNeighbors", MAX_NEIGHBORS);
         Utils.setUniform(gl, program, "probeRadius", probeRadius);
         Utils.setUniform(gl, program, "sas", surfaceType == Surface.SAS ? 1 : 0); // SAS/SES
         // cavity clipping
         Utils.setUniform(gl, program, "clipCavities", clipCavities);
         Utils.setUniform(gl, program, "clipSurface", clipSurface);
-        Utils.setUniform(gl, program, "surfaceLabel", gr.getSurfaceLabels()[0]);
+        Utils.setUniform(gl, program, "surfaceLabel", gr.getOuterSurfaceLabel());
         Utils.setUniform(gl, program, "threshold", threshold);
         // ambient occlusion & lighting
         Utils.setUniform(gl, program, "lambda", volumetricAO.getLambda());
@@ -1799,8 +1814,6 @@ public class Scene implements GLEventListener {
         gl.glVertexPointer(4, GL_FLOAT, 32, 0);
         gl.glClientActiveTexture(GL_TEXTURE0);
         gl.glTexCoordPointer(4, GL_INT, 32, 16);
-        //gl.glClientActiveTexture(GL_TEXTURE1);
-        //gl.glTexCoordPointer(4, GL_FLOAT, 48, 32);
         
         if (renderSpheres) {
             gl.glDrawArrays(GL_POINTS, 0, count);
@@ -1855,7 +1868,7 @@ public class Scene implements GLEventListener {
         Utils.setUniform(gl, program, "window", viewport[2], viewport[3]);
         Utils.setUniform(gl, program, "maxNumNeighbors", MAX_NEIGHBORS);
         Utils.setUniform(gl, program, "probeRadius", probeRadius);
-        Utils.setUniform(gl, program, "surfaceLabel", gr.getSurfaceLabels()[0]);
+        Utils.setUniform(gl, program, "surfaceLabel", gr.getOuterSurfaceLabel());
         Utils.setUniform(gl, program, "clipSurface", clipSurface);
         Utils.setUniform(gl, program, "clipCavities", clipCavities);
         Utils.setUniform(gl, program, "lambda", volumetricAO.getLambda());
@@ -1943,7 +1956,7 @@ public class Scene implements GLEventListener {
         Utils.setUniform(gl, program, "viewport", 0f, 0f, 2f / viewport[2], 2f / viewport[3]);
         Utils.setUniform(gl, program, "window", viewport[2], viewport[3]);
         Utils.setUniform(gl, program, "probeRadius", probeRadius);
-        Utils.setUniform(gl, program, "surfaceLabel", gr.getSurfaceLabels()[0]);
+        Utils.setUniform(gl, program, "surfaceLabel", gr.getOuterSurfaceLabel());
         Utils.setUniform(gl, program, "clipSurface", clipSurface);
         Utils.setUniform(gl, program, "clipCavities", clipCavities);
         Utils.setUniform(gl, program, "selectCavity", renderSelectedCavity);

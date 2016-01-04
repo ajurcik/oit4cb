@@ -9,9 +9,14 @@ uniform uint maxNumNeighbors;
 
 uniform float probeRadius;
 
+uniform uint surfaceLabel;
+uniform float areaThreshold;
+
 uniform samplerBuffer probesTex;
 uniform usamplerBuffer gridCountsTex;
 uniform usamplerBuffer gridIndicesTex;
+uniform usamplerBuffer labelsTex;
+uniform sampler1D areasTex;
 
 /*layout(std430) buffer Neighbors {
     uint neighbors[];
@@ -27,7 +32,7 @@ layout(std430) buffer NeighborProbes {
 
 layout(local_size_x = 64) in;
 
-uint findNeighborsInCell(uint neighborIndex, uvec3 gridPos, uint index, vec3 pos);
+uint findNeighborsInCell(uint neighborIndex, uvec3 gridPos, uint index, uint label, vec3 pos);
 
 void main() {
     uint index = gl_GlobalInvocationID.x;
@@ -37,6 +42,8 @@ void main() {
 
     vec3 pos = texelFetch(probesTex, int(index)).rgb;
     ivec3 gridPos = ivec3(floor(pos.xyz / cellSize));
+
+    uint label = texelFetch(labelsTex, int(index)).r;
 
     float range = 2.0 * probeRadius;
     // compute number of grid cells
@@ -54,7 +61,7 @@ void main() {
         for (uint y = start.y; y <= end.y; y++) {
             for (uint x = start.x; x <= end.x; x++) {
                 neighborPos = uvec3(x, y, z);
-                count += findNeighborsInCell(count, neighborPos, index, pos);
+                count += findNeighborsInCell(count, neighborPos, index, label, pos);
             }
         }
     }
@@ -63,7 +70,7 @@ void main() {
     neighborCounts[index] = count;
 }
 
-uint findNeighborsInCell(uint neighborIndex, uvec3 gridPos, uint index, vec3 pos) {
+uint findNeighborsInCell(uint neighborIndex, uvec3 gridPos, uint index, uint label, vec3 pos) {
     uint hash = gridSize * gridSize * gridPos.x + gridSize * gridPos.y + gridPos.z;
     uint spheresInCell = texelFetch(gridCountsTex, int(hash)).r;
     uint count = 0;
@@ -79,6 +86,16 @@ uint findNeighborsInCell(uint neighborIndex, uvec3 gridPos, uint index, vec3 pos
             float dist = length(relPos);
             float neighborDist = 2.0 * probeRadius;
             if (dist < neighborDist) {
+                // check label (cavities should not clip surface)
+                uint label2 = texelFetch(labelsTex, int(index2)).r;
+                if (label == surfaceLabel && label2 != surfaceLabel) {
+                    continue;
+                }
+                // check area (hidden cavities should not clip other cavities)
+                float area = texelFetch(areasTex, int(label2) - 1, 0).r;
+                if (area < areaThreshold) {
+                    continue;
+                }
                 // check number of neighbors
                 if ((neighborIndex + count) >= maxNumNeighbors) {
                     return count;
