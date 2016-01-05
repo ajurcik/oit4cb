@@ -161,7 +161,7 @@ More specifically, one component represents the outer molecular surface and each
 %For the contour representation of the surface, 
 Such independent components can be easily detected by applying connected component (CC) analysis to a structure which we call the \textit{surface graph}.
 %\footnote{\textcolor{red}{JP: Introduce here "terminus techniques"; i.e., SES is composed of three types of patches etc.}}
-We define the surface graph using triangles representing vertices and toroidal patches representing edges 
+We define the surface graph using the triangles representing vertices and the toroidal patches representing edges 
 %since each toroidal patch is delimited by two triangles\
 (Fig.~\ref{fig:graph}).
 In this graph, all the vertices are of degree three.
@@ -200,9 +200,9 @@ For each step, we introduce a GPU kernel implemented as a GLSL compute shader.
 %First, we modified the output of the original GPU parallel CB to obtain the input which is needed for the analysis and rendering of transparent toroidal patches.
 
 First, we build the adjacency list of $G$ from the set of edges $E$.
-\textcolor{green}{We store the adjacency list of $G$ as a $|V| \times 3$ matrix since each vertex has three neighbors.}
+We store the adjacency list of $G$ as a $|V| \times 3$ matrix, since each vertex has three neighbors.
 %To build $G$, we utilize the hash table of triangles.
-In fact, $E$ is prepared earlier in the surface computation phase, when we compute toroidal patches for ray-casting.
+In fact, $E$ is prepared earlier in the surface computation phase, when we compute the toroidal patches for ray-casting.
 To compute these patches, we determine their delimiting triangles, thus knowing incident vertices of edges of $G$.
 %\textcolor{red}{In the hash table, each triangle is hashed using all three pairs of spheres -- $(i, j)$, $(i, k)$ and $(j, k)$ that produced it.
 %To retrieve a triangle for a torus, we query the hash table with a pair of its neighboring spheres as a key.}
@@ -217,14 +217,14 @@ For each non-isolated toroidal patch an edge $e$ is added to $E$ by writing its 
 %Consequently, we save GPU memory because the original arcs structure was sparse (see Appendix ?).
 %Now, we store n arcs together with $3 n$ keys in a hash table which data/free ratio is 2. \textcolor{red}{TODO: More precision.}}
 The first kernel then transforms the buffer of edges $E$ into a matrix representing the adjacency list of $G$.
-\textcolor{green}{The matrix has one row for each vertex $v \in V$ which stores neighbors of $v$ as indices into the buffer of vertices $V$.}
+The matrix has one row for each vertex $v \in V$ which stores neighbors of $v$ as indices into the buffer of vertices $V$.
 %The matrix contains one row for each vertex, i.e., triangle, and three columns for its three neighbors, i.e., toroidal patches.%, because each triangle has exactly (at most?) three neighboring toroidal patches in the surface.
 
 In the second step, all connected components of $G$ are found and labeled using the breadth-first search (BFS) algorithm.
 %Our implementation of the BFS algorithm is suboptimal, because its time complexity is $O(d \cdot n)$ where d is the length of the longest shortest path among all vertices in a component.
 %In the worst case, d can be n.
 We opt for a simple, quadratic-work implementation~\cite{merrill2012scalable}, because of the ability to have the BFS implemented in a single kernel.
-Our decision is supported by the performance measurements (see Sec.~\ref{sec:performance}) where the computation of surface components takes {\tweakedsim}5 ms for a molecule with {\tweakedsim}10.000 atoms while the computation of SES and its ray-casting together takes {\tweakedsim}41 ms.
+Our decision is supported by the performance measurements (see Sec.~\ref{sec:performance}) where the computation of surface components takes {\tweakedsim}5 ms for a molecule with {\tweakedsim}10,000 atoms while the computation of SES and its ray-casting together takes {\tweakedsim}41 ms.
 
 In the last step, the cycles representing the spherical patches are extracted.
 To do this, we assign the edges in $E$ by their neighboring spheres into buckets.
@@ -236,7 +236,7 @@ A spherical patch is labeled by the label of any of its delimiting edges.
 
 We handle the isolated tori in two steps.
 First, a label for a torus is retrieved. 
-Note that an isolated torus is not part of the surface graph.
+Note that an isolated torus is not a part of the surface graph.
 Second, for each isolated torus, we clip fragments in its neighboring spherical patches that are overlaid by the torus. 
 Otherwise, these fragments would create a false surface layer between a torus and a spherical patch (Fig.~\ref{fig:isolated-hole}).
 
@@ -255,7 +255,7 @@ Otherwise, these fragments would create a false surface layer between a torus an
     %\caption{A hole in a spherical patch.}
   \end{subfigure}
 \caption{Example of an isolated torus between two spheres.
-	Left: Isolated tori (yellow) do not have neighboring triangles, therefore the surface component to which they belong cannot be determined directly from the surface graph. Right: An isolated torus cuts circular holes into its neighboring spherical patches.}
+	Left: isolated tori (yellow) do not have any neighboring triangles. Therefore, the surface component to which they belong cannot be determined directly from the surface graph. Right: an isolated torus cuts circular holes in its neighboring spherical patches.}
 \label{fig:isolated-hole}
 \end{figure}
 
@@ -269,22 +269,19 @@ There can be two cases:
 	\item Both spheres form two or more patches. We find a neighboring patch of the torus by employing the point in a spherical patch test (see Sec.~\ref{sec:spherical-patches}). Then the torus lies in the same surface component as its neighboring patch.
 \end{enumerate}
 
-The clipping of fragments in the affected spherical patches can be done using a clipping plane or \textit{visibility sphere} (\textcolor{green}{introduced in~\cite{krone2009interactive}}) of a torus.
+The clipping of fragments in the affected spherical patches can be reached using a clipping plane or a \textit{visibility sphere} (introduced in~\cite{krone2009interactive}) of a torus.
 We use the latter approach, since the visibility spheres for tori were already computed in a previous phase of our technique.
 Here, our kernel writes a texture, similarly to Krone et al.~\cite{krone2011parallel}, which stores all visibility spheres that intersect the sphere.
 When ray-casting spherical patches, we use this texture to discard all fragments that are inside of the intersecting visibility sphere.
 
 \subsubsection{Special case -- Intersecting surfaces}
 \label{sec:intersecting}
-
-\textcolor{green}{
-The SES surface, i.e., a part of it that is formed by spherical triangles, can intersect itself.
-This self-intersection was solved by Krone et. al~\cite{krone2009interactive}.
-In our case, we compute one or more SES surfaces that can mutually intersect themselves in the same way.
+The SES surface, more specifically its part that is formed by spherical triangles, can intersect itself.
+These self-intersections were solved by Krone et. al~\cite{krone2009interactive}.
+In our case, we compute one or more SES surfaces that can mutually intersect in the same way.
 We handle two different cases of such surface-surface intersections:
 \begin{itemize}
-	\item The outer surface is intersected by a cavity. We clip only the surface of the cavity to prevent the outer surface of containing holes.
+	\item The outer surface is intersected by a cavity. We clip only the surface of the cavity to prevent the outer surface from containing holes.
 	\item A cavity is intersected by another cavity that will not be visible. We do not clip the visible cavity, otherwise we would create a hole in its surface.
 \end{itemize}
-We implemented handling of these two cases by extending the self-intersections handling algorithm described in~\cite{krone2011parallel}.
-}
+We implemented the handling of these two cases by extending the self-intersections handling algorithm described in~\cite{krone2011parallel}.
