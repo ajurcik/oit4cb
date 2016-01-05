@@ -1,15 +1,16 @@
 \label{sec:vis}
 
-To enable our transparent visualization, we require an ordered list of fragments for each screen pixel. This list of fragments is also commonly referred as an A-buffer. We implemented the A-buffer using per-pixel linked lists~\cite{yang2010real}. In our case, the A-buffer fragments represent three types of surface patches analytically computed for a given ray.
+To enable the transparent visualization, we require an ordered list of fragments for each screen pixel. 
+This list of fragments is also commonly referred as an A-buffer. 
+We implemented the A-buffer using per-pixel linked lists~\cite{yang2010real}. 
+In our case, the A-buffer fragments represent three types of surface patches analytically computed for a given ray.
 
 \subsection{Ray-casting}
 \label{sec:spherical-patches}
 To form fragments of each surface patch we employ a ray-casting technique.
-\textcolor{green}{
-To provide high performance, the ray-patch intersection is computed analytically.
-For each patch, we compute a tight oriented bounding box (OBB) which we project onto the image as a splat (Fig~\ref{fig:obb}).
-This way, we lower the number of intersections tests that will be performed.
-}
+To reach high performance, the ray-patch intersection is computed analytically.
+For each patch, we compute a tight oriented bounding box (OBB) which we project onto the image as a splat (Fig.~\ref{fig:obb}).
+This way, we lower the number of intersection tests that will be performed.
 
 \begin{figure}[htp]
   \centering
@@ -28,26 +29,22 @@ This way, we lower the number of intersections tests that will be performed.
 	\label{fig:obb}
 \end{figure}
 
-\textcolor{green}{
-The ray-casting is implemented as GLSL shaders.
+The ray-casting is implemented using GLSL shaders.
 The triangles for the OBB faces are generated on the GPU using a geometry shader.
-The OBB is computed from a unit cube for which we compute position, rotation and scale according to a patch that will by bound by it.
-For a spherical triangle, a cutting plane that contains triangle's vertices is computed.
-Then, the OBB's position, rotation and scale are computed such that the OBB bounds the smaller part of the sphere when cut by the plane.
+The OBB is computed from a unit cube for which we compute position, rotation, and scale according to a patch that will by bounded by it.
+For a spherical triangle, a cutting plane that contains the triangle's vertices is computed.
+Then, the OBB's position, rotation, and scale are computed such that the OBB bounds the smaller part of the sphere when cut by the plane.
 Here, we assume that the spherical triangle always fits into a hemisphere.
-OBBs for spherical patches are computed in a similar way.
+The OBBs for spherical patches are computed in a similar way.
 The difference is in the calculation of the cutting plane.
 The plane's normal is computed using midpoints of arcs that bound a patch.
-The end points of these arcs are used to position the cutting plane such that the half-space defined by it contains all the arc end points.
-}
+The end points of these arcs are used to position the cutting plane so the half-space defined by it contains all the arc end points.
 
-\textcolor{green}{
-For toroidal patches the orientation of their OBBs is computed first.
+For the toroidal patches the orientation of their OBBs is computed first.
 We compute a vector defined by the centers of the spheres that contain bounding triangles of a toroidal patch.
-We use this vector together with the axis of a torus as a second vector to compute a third one -- perpendicular to both previous vectors.
-These three vectors define axes of an OBB.
-Finally, extrema points of a patch w.r.t. its OBB orientation are found and OBB's position and scale are computed based on these points.
-}
+We use this vector together with the axis of a torus as a second vector to compute a third one -- perpendicular to the two vectors.
+These three vectors define the axes of an OBB.
+Finally, the extreme points of a patch w.r.t. its OBB orientation are found and the OBB's position and scale are computed based on these points.
 
 In 2013, Kauker et al.~\cite{kauker2013rendering} proposed to ray-cast a toroidal patch using a saddle part of a torus and two clipping planes defined by its delimiting triangles (Fig.~\ref{fig:torus}).
 \begin{figure}[htp]
@@ -63,8 +60,8 @@ In 2013, Kauker et al.~\cite{kauker2013rendering} proposed to ray-cast a toroida
     \includegraphics[width=1.3in]{image/torus-planes.png}
     %\caption{Clipping by planes defined by spherical triangles.}
   \end{subfigure}
-	\caption{Ray-tracing a toroidal patch. Left: The saddle part of the torus (blue) is cut by the visibility sphere (yellow).
-Right: The patch (blue) is cut from the whole toroidal ring by clipping planes (yellow) defined by spherical triangles (green).}
+	\caption{Ray-tracing a toroidal patch. Left: the saddle part of the torus (blue) is cut by the visibility sphere (yellow).
+Right: the patch (blue) is cut from the whole toroidal ring by clipping planes (yellow) defined by the spherical triangles (green).}
 	\label{fig:torus}
 \end{figure}
 
@@ -73,7 +70,7 @@ Additionally, we set normals of these clipping planes so that they are facing to
 We use these two operations to clip the patches whose angular length around the torus axis is either at most $\pi$ (\textit{AND}) or greater (\textit{OR}).
 The \textit{AND} and \textit{OR} operations are defined as their name suggests.
 The \textit{AND} operation leaves only fragments that appear on the positive sides of both clipping planes, while the \textit{OR} operation leaves fragments that appear on the positive side of the first or the second clipping plane.
-\textcolor{green}{The ray-torus intersection is computed as described by Herbison-Evans~\cite{herbisonevans1995solving}.}
+The ray-torus intersection is computed as described by Herbison-Evans~\cite{herbisonevans1995solving}.
 
 %and, moreover, we modify the data structure being used in the original algorithm to store and retrieve all spherical triangles incident to a torus (Fig.~\ref{fig:hashing}). In order to get all neighboring triangles for a torus, we hash the triangles by three keys; i.e., one for each torus which is connected to a triangle.
 %For this purpose, we implemented a simple hash table, which is based on linear addressing scheme \cite{alcantara2011efficient}.
@@ -86,25 +83,22 @@ The \textit{AND} operation leaves only fragments that appear on the positive sid
 %\end{figure}
 %This allows us, to ray-cast toroidal patches directly instead of tori.
 
-\textcolor{green}{
-Ray-casting the sphere is a trivial task; nevertheless, there can one or more spherical patches that belong to the same surface atom sphere while these patches may form different surfaces.
-To avoid obvious rendering issues, i.e., distinct coloring, transparency, or visibility, we perform ray-casting of each patch separately.
+Ray-casting the sphere is a trivial task. 
+However, there can be one or more spherical patches that belong to the same surface atom sphere but they may form different surfaces.
+To avoid obvious rendering issues, i.e., distinct coloring, transparency, or visibility, we perform the ray-casting of each patch separately.
 %This allows us to visually distinguish between different surface components.
-Regarding the separation of patches, we experimented with applying an odd-even rule for polygons~\cite{shimrat1962algorithm} and with computing a convex polyhedrons bounds.
-We decided for the bounding volume solution because regarding the point-in-polygon (PIP) test there were non-trivial special cases, e.g., a ray going through a polygon's vertex or a very short edge, that had to be handled.
-The special cases then resulted in pixel artifacts in the final image.
+Regarding the separation of patches, we experimented with applying an odd-even rule for polygons~\cite{shimrat1962algorithm} and with computing a convex polyhedron bounds.
+We decided for the bounding volume solution because regarding the point-in-polygon (PIP) test there were non-trivial special cases, e.g., a ray going through a polygon's vertex or a very short edge.
+These special cases then resulted in pixel artifacts in the final image.
 Moreover, the implementation of the PIP test was performance demanding due to many texture memory accesses.
 On the other hand, the computation of a patch's bounding volume is based on the fact, that the spherical patch is bounded by planes defined by its bounding arcs.
 This way, we have a polyhedron $B_{poly}$ which bounds all the patches belonging to an atom sphere.
 For each patch, we add another plane $p_{add}$ which cuts $B_{poly}$ in order to keep only the volume containing that patch.
-As $p_{add}$, we choose an appropriate plane among planes in $P_{bb}$ that contain faces of the bounding box used for \textcolor{red}{splatting} the patch.
-In fact, by \textcolor{red}{splatting}, we clip $B_{poly}$ by all the six planes in $P_{bb}$.
-}
+$p_{add}$ is selected as an appropriate plane among planes of the OBB that was used for splatting the patch.
+In fact, by splatting, we clip $B_{poly}$ by all the six planes of the OBB.
 
-\textcolor{green}{
-In the resulting image, there can still occur pixel artifacts caused by numerical issues when ray-casting tori.
+In the resulting image, there can still occur pixel artifacts caused by numerical issues when ray-casting the tori.
 These numerical issues arise when computing an intersection of a ray with a torus.
-}
 
 %\subsection{Ambient Occlusion Opacity Modulation}
 %Borland~\cite{borland2011ambient} proposed to utilize ambient occlusion (AO) values to alter the opacity. Motivated by his approach, we exploit the ambient occlusion values as well. Since, we would like to maintain fast rendering performance, we need to remedy the issue of having an object space technique to evaluate the AO values. In the former work of Borland, the performance was considered a less important factor, which allows him to exploit the full object space AO evaluation. Here, we opted for the most recent approach, proposed by Grottel et al.~\cite{grottel2012object}, which renders ambient occlusion values to a $3D$ grid containing an estimate of the volume area of atoms located inside a voxel. Although this approach only reflects the volume of atoms and not the volume area of the molecular surface, we find it as a good trade off between the visual precision and the performance measure. Note, in addition, these values are not employed directly, but rather as opacity modulators instead, which defines the opacity as follows:
@@ -160,4 +154,4 @@ Additionally, we neglect areas of spherical and toroidal patches since their inf
 %Therefore, the cavity area we compute is \textcolor{red}{underestimated -- maybe an equation?}.
 Naturally, this observation does not hold for the molecular surface.
 %\textcolor{red}{What about coloring?}
-\textcolor{green}{We also do not handle the case when the triangles intersect each other thus clipping themselves.}
+We also do not handle the case when the triangles intersect each other thus they are clipping themselves.
