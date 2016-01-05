@@ -34,12 +34,11 @@ For rendering, we used the resolution of 1024 $\times$ 768 while fitting the mol
 The results of our measurements for both static and dynamic molecules are presented in Table~\ref{tab:static}.
 We choose the static structures from the Protein Data Bank (PDB)~\cite{sussman1998protein} so the performance of our technique could be easily compared with other existing or new approaches on the same dataset.
 
-\textcolor{green}{
 In Table~\ref{tab:speedup}, we compare an overall performance of our technique with the method presented by Kauker et al.~\cite{kauker2013rendering} as it is currently the only existing method that enables a correct transparency of the SES in real-time.
-Comparing to the state-of-the-art methods~\cite{lindow2010accelerated,krone2011parallel} for SES visualization, our method performs in the surface computation part similarly to the algorithm presented by Krone et al.~\cite{krone2011parallel} (see Tab.~\ref{tab:static}).
+Comparing to the state-of-the-art methods~\cite{lindow2010accelerated,krone2011parallel} for SES visualization, our method performs in the surface computation part similarly to the algorithm presented by Krone et al.~\cite{krone2011parallel} (see Table~\ref{tab:static}).
 Nevertheless, the performance of the ray-casting cannot be directly compared to these two methods, since
 we test twice as many intersections to obtain both front and back fragments and our intersection tests (especially for spherical patches) need to be more complex than those used by techniques that do not render the surface using full transparency.
-}
+
 
 \setlength{\tabcolsep}{4.5pt}
 
@@ -89,11 +88,11 @@ The GLSL implementation of this kernel performs for a molecule with {\tweakedsim
 Based on the performed tests we assume that the key reason for this performance loss is the extensive use of the global memory in the kernel, which is handled differently in OpenGL and OpenCL/CUDA.
 
 \subsubsection{Discussion of Limitations}
-The main limitations of our method are its applicability to large data and, the precision of the surface area calculation.
-When applied to the molecules consisting of more than 10000 of atoms, the performance of the method limits the interactivity.
-We anticipate that the performance can be improved by applying the transparent SES only to the interesting parts of the molecule, while using another visualization method for the rest of it.
-We expect the proper area calculation, e.g., by applying the method presented by Connolly~\cite{connolly1983analytical}, to be done as a future work.
-The single-pixel artifacts (Sec.~\ref{sec:spherical-patches}) in the final image also limit the method in terms of creating images for publications.
+The main limitations of our method are currently the applicability to large data and the precision of the surface area calculation.
+When applying it to molecules consisting of more than $10,000$ of atoms, the performance of the method influences the interactivity.
+We anticipate that the performance can be improved by applying the transparent SES only to some interesting parts of the molecule, while using another visualization method for the rest of it.
+The second limitation can be overcome, e.g., by applying the method presented by Connolly~\cite{connolly1983analytical}, to be done as a future work.
+The method also evinces single-pixel artifacts (Sec.~\ref{sec:spherical-patches}) in the final image which can cause problems when creating high-quality images.
 %Based on the acquired performances, it is obvious that the main performance limitation is represented by the ray-casting of the computed surface.
 %More specifically, the most demanding part is the rendering of spherical and toroidal patches that takes together $75-80\%$ of the entire rendering time.
 %We anticipate that the performance of ray-casting these patches could improve when applying tighter bounding boxes during splatting.
