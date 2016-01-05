@@ -103,9 +103,9 @@ This allows us to ray-cast the toroidal patches separately instead of the whole 
 
 
 
-As described, a spherical patch is bounded by toroidal patches (Fig~\ref{fig:graph}). 
-We extend the surface computation algorithm by adding three new GPU kernels that compute the sets of toroidal patches forming the spherical patches (see Sec.~\ref{sec:graph}).
-When rendering the surface, each such a set is used to ray-cast a spherical patch (see Sec.~\ref{sec:spherical-patches}).
+As already described, a spherical patch is bounded by toroidal patches (Fig.~\ref{fig:graph}). 
+We extended the surface computation algorithm by adding three new GPU kernels that compute the sets of toroidal patches forming the spherical patches (see Sec.~\ref{sec:graph}).
+When rendering the surface, each set is used to ray-cast a spherical patch (see Sec.~\ref{sec:spherical-patches}).
 
 %\begin{figure}[htb]
 %  \centering
@@ -142,24 +142,17 @@ The computed surface contains patches of both the outer molecular surface and th
 Kauker et al. \cite{kauker2013rendering} aimed at visualizing the outer surface solely.
 %\footnote{\textcolor{red}{AJ: Maybe, this could be part of related work}}
 Therefore, they call the inner parts of the surface as inner remains as they represent the source of occlusion.
-However, in our case we focus \textcolor{green}{also} on the visualization of inner cavities.
+However, in our case the inner cavities are important as well.
 %because of their significant role in the reactivity of the molecule.
 %We think that for SES, the user might want to visualize cavities within the molecule and hence it is useful to let him decide on what to visualize.
-Additionally, it is advantageous for the user to have the option to visualize both molecular surface and inner cavities and interactively alter between both of them; i.e., the cavities can be shown or hidden on demand.
+Additionally, it is advantageous for the user to have the option to visualize both molecular surface and inner cavities and interactively alter between both of them, i.e., the cavities can be shown or hidden on demand.
 %Contrary, for SAS, the cavities are visualized much smaller than in the case of SES and therefore visualizing them does not help assessing their shape or volume.
 %The difference \textcolor{red}{stems from} the definitions of the surfaces.
 %In the case of SAS, we therefore propose to clip the inner surfaces to enhance the visualization.
 
 %The user might also want to hide cavities inside a SES to lower possible occlusion of other structures such as tunnels or cartoons.
 
-\begin{figure}[htb]
-  \centering
-  \includegraphics[width=3.3in]{image/graph.png}
-  \caption{The surface graph.
-	Triangles form vertices and toroidal patches form edges between them.
-	Spherical patches are represented as cycles in the graph.}
-	\label{fig:graph}
-\end{figure}
+
 
 Hiding the cavities is straightforward, since their surface is completely separated from the molecular surface.
 %\textcolor{red}{\cite{borland2011ambient}}.
@@ -168,13 +161,20 @@ More specifically, one component represents the outer molecular surface and each
 %For the contour representation of the surface, 
 Such independent components can be easily detected by applying connected component (CC) analysis to a structure which we call the \textit{surface graph}.
 %\footnote{\textcolor{red}{JP: Introduce here "terminus techniques"; i.e., SES is composed of three types of patches etc.}}
-We define the surface graph using the triangles representing vertices and toroidal patches representing edges 
+We define the surface graph using triangles representing vertices and toroidal patches representing edges 
 %since each toroidal patch is delimited by two triangles\
 (Fig.~\ref{fig:graph}).
-\textcolor{green}{
-Then, all the vertices in the graph are of degree three.
-In fact, the surface graph is an analogy to the graph of SAS \textcolor{red}{citation needed?} (solvent-accessible surface) contours.
-}
+In this graph, all the vertices are of degree three.
+In fact, the surface graph is an analogy to the graph of SAS (solvent-accessible surface) contours~\cite{totrov1996contour}.
+
+\begin{figure}[bht]
+  \centering
+  \includegraphics[width=3.3in]{image/graph.png}
+  \caption{Illustration of the surface graph construction.
+	Triangles form vertices and toroidal patches form edges between them.
+	Spherical patches are represented as cycles in the graph.}
+	\label{fig:graph}
+\end{figure}
 %\footnote{\textcolor{red}{I don't understand the following sentence. What is former graph representation? The whole sentence should be rewritten.}}
 %Moreover, using the former graph representation makes also the implementation of used graph algorithms and graph data structures on the GPU easier.
 
