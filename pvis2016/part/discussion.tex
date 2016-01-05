@@ -89,11 +89,16 @@ The GLSL implementation of this kernel performs for a molecule with {\tweakedsim
 Based on the performed tests we assume that the key reason for this performance loss is the extensive use of the global memory in the kernel, which is handled differently in OpenGL and OpenCL/CUDA.
 
 \subsubsection{Discussion of Limitations}
-Based on the acquired performances, it is obvious that the main performance limitation is represented by the ray-casting of the computed surface.
-More specifically, the most demanding part is the rendering of spherical and toroidal patches that takes together $75-80\%$ of the entire rendering time.
-We anticipate that the performance of ray-casting these patches could improve when applying tighter bounding boxes during splatting.
-In fact, we employ bounding squares for both spheres containing spherical patches and visibility spheres containing visible parts of tori.
-In this way, the computation of ray-primitive intersection is evaluated multiple times for spheres and tori that form more than one surface patch.
+The main limitations of our method are its applicability to large data and, the precision of the surface area calculation.
+When applied to the molecules consisting of more than 10000 of atoms, the performance of the method limits the interactivity.
+We anticipate that the performance can be improved by applying the transparent SES only to the interesting parts of the molecule, while using another visualization method for the rest of it.
+We expect the proper area calculation, e.g., by applying the method presented by Connolly~\cite{connolly1983analytical}, to be done as a future work.
+The single-pixel artifacts (Sec.~\ref{sec:spherical-patches}) in the final image also limit the method in terms of creating images for publications.
+%Based on the acquired performances, it is obvious that the main performance limitation is represented by the ray-casting of the computed surface.
+%More specifically, the most demanding part is the rendering of spherical and toroidal patches that takes together $75-80\%$ of the entire rendering time.
+%We anticipate that the performance of ray-casting these patches could improve when applying tighter bounding boxes during splatting.
+%In fact, we employ bounding squares for both spheres containing spherical patches and visibility spheres containing visible parts of tori.
+%In this way, the computation of ray-primitive intersection is evaluated multiple times for spheres and tori that form more than one surface patch.
 
 \subsubsection{Improved Memory Complexity}
 
