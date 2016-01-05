@@ -1,19 +1,17 @@
 In this section we describe our approach to the extraction of molecular surface and surfaces of inner cavities which we denote as surface features.
 First we present the algorithms for the computation of molecular surfaces and cavities and then we show how we deal with special cases occurring within the surface construction.
-\footnote{AJ: Maybe, this intro is unnecessary.}
 
 %Extended CB Algorithm
 \subsection{Surface computation}
 \label{sec:ecb}
-Our surface computation algorithm is based on the existing research that utilizes the GPU capabilities~\cite{krone2011parallel}.
-\textcolor{green}{In the former study, the SES is represented using three different sets of shapes -- spheres, toroidal saddles, and spherical triangles depicted in red, blue, and green in Fig.~\ref{fig:cb-oit} (left).}
+Our surface computation algorithm is based on the existing approach that utilizes the GPU capabilities~\cite{krone2011parallel}.
+In the former study, the SES is represented using three different sets of shapes -- spheres, toroidal saddles, and spherical triangles depicted by red, blue, and green colors in Fig.~\ref{fig:cb-oit} (left).
 %, that are ray-casted to obtain opaque surface visualization. 
 %While ray-casting spheres and tori, some sections of the final image will be later occluded by the spherical triangles.
 %However, rendering these primitives opaquely produces pixels that are not visible in the final image due to their occlusion by other surface pixels (Fig.~\ref{fig:cb-oit}).
-\textcolor{green}{However, rendering these shapes produces unnecessary pixels below the surface of the molecule.
-In our case, we aim for transparent surface visualization which causes these interior pixels to be unwanted.}
-Therefore we extend the existing algorithm such that it \textcolor{green}{computes}
-the SES patches:
+However, rendering these shapes produces unnecessary pixels located below the surface of the molecule.
+As we aim for transparent surface visualization, these interior pixels are becoming unwanted.
+Therefore, we extended the existing algorithm that it computes the following SES patches:
 i) \textit{spherical triangles}, as were already described by Krone et al.~\cite{krone2011parallel} and Lindow et al.~\cite{lindow2010accelerated},
 ii) \textit{toroidal patches}, delimited by two spherical triangles, and
 iii) \textit{spherical patches}, enclosed by edges of two or more toroidal patches.
@@ -41,15 +39,15 @@ iii) \textit{spherical patches}, enclosed by edges of two or more toroidal patch
 	
 \caption{Comparison between the original method~\cite{krone2011parallel} rendered with transparency (left) and our extended method (right).
 %The transparent SES of three atoms produced by the original parallel CB algorithm (a), and our extended algorithm (b). 
-The original method renders parts of spheres (red) and tori (blue) that lie below the surface.
+The original method renders also parts of spheres (red) and tori (blue) that lie below the surface.
 Our method produces only patches that are part of the surface.
 %More, our algorithm is also able to handle patches on a sphere that form different surfaces, i.e., the outer and one or more inner.
 }
 \label{fig:cb-oit}
 \end{figure}
 
-In comparison with the previous solution our main contribution here lies in the computation of toroidal and spherical patches.
-Using them we avoid the situation when the previous algorithm renders the parts of tori and spheres which do not form the final surface (Fig.~\ref{fig:cb-oit}).
+In comparison with the previous solution, our main contribution here lies in the computation of toroidal and spherical patches.
+By using them we avoid the situation when the previous algorithm renders the parts of tori and spheres which do not form the final surface (Fig.~\ref{fig:cb-oit}).
 
 
 %Regarding tori, Kauker et al.~\cite{kauker2013rendering} proposed to ray-cast a toroidal patch using a torus and two clipping planes defined by its delimiting triangles.
@@ -86,24 +84,24 @@ Using them we avoid the situation when the previous algorithm renders the parts 
 
 To be able to compute the toroidal patches, we employ a hash data structure that enables us to store and retrieve all spherical triangles incident to a torus (Fig.~\ref{fig:hashing41}). 
 %In order to get all neighboring triangles for a torus, 
-We hash the triangles by three keys; i.e., one for each torus which is connected to a triangle.
+We hash the triangles by three keys, i.e., one for each torus which is connected to a triangle.
 For this purpose, we implemented a simple hash table, which is based on linear addressing scheme~\cite{alcantara2011efficient}.
 We compute toroidal patches on a torus by retrieving all its neighboring triangles and sorting them relatively by their angular position around the torus axis.
-\textcolor{green}{
-Since the number of neighboring triangles of a torus is low -- for the molecule with {\tweakedsim}10000 atoms we had maximum of 8, we employ the bubble sort algorithm for this sorting.
-}
-When sorted, the pairs of neighboring triangles define the toroidal patches and corresponding edges.
+Since the number of neighboring triangles of a torus is low (for molecules with {\tweakedsim}10,000 atoms we obtained maximally 8 of them) we employ the bubble sort algorithm for their sorting.
+After sorting, the pairs of neighboring triangles define the toroidal patches and the corresponding edges.
 Additionally, we check whether the first two triangles form a visible patch.
 If not, then the first triangle forms a visible patch with the last one and we rotate the sorted list of triangles by one item.
 
-\begin{figure}[htb]
+This allows us to ray-cast the toroidal patches separately instead of the whole tori.
+
+\begin{figure}[bht]
   \centering
   \includegraphics[width=3.3in]{image/hashing.png}
-  \caption{Illustration of the data structure for storing spherical triangles. Triangles $t_1$ and $t_2$ are stored linearly in an array and their incident torus $\tau$ is connected to them using a hash table.}
+  \caption{Illustration of the data structure for storing spherical triangles. Triangles $t_1$ and $t_2$ are stored linearly in an array and their incident torus $\tau$ is connected to them via a hash table.}
 	\label{fig:hashing41}
 \end{figure}
 
-This allows us to ray-cast the toroidal patches separately instead as the whole tori.
+
 
 As described, a spherical patch is bounded by toroidal patches (Fig~\ref{fig:graph}). 
 We extend the surface computation algorithm by adding three new GPU kernels that compute the sets of toroidal patches forming the spherical patches (see Sec.~\ref{sec:graph}).
