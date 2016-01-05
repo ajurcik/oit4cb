@@ -116,7 +116,7 @@ These numerical issues arise when computing an intersection of a ray with a toru
 	%\label{fig:ray_fragments}
 %\end{figure}
 
-\subsection{Opacity modulation}\label{sec:opacity}
+\subsection{Opacity Modulation}\label{sec:opacity}
 After the intersection points are computed, we sort them in a front-to-back manner and store them to the linked list. 
 Thus, for a given ray, we acquire a list of fragments $\{f_1,\ldots,f_n \}$, where each pair represents an entry and an exit point for the molecular surface. For simplicity, the values of $f_i$ represent the depths of fragments. 
 We denote the entire distance the ray passes through the molecule as $l=|f_1-f_n|$. 
@@ -139,7 +139,7 @@ Figure~\ref{fig:Oparam} showcases four different combinations of parameters $K$ 
 	\label{fig:Oparam}
 \end{figure*}
 
-\subsection{Cavity area estimation}\label{sec:area}
+\subsection{Cavity Area Estimation}\label{sec:area}
 We enhance the visualization of cavities by coloring their surface by their approximate areas.
 To estimate the area, we sum the areas of all triangles that form the cavity surface.
 The area of a spherical triangle is calculated as follows:

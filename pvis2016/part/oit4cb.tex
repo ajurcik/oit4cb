@@ -2,7 +2,7 @@
 In this section we present the algorithms for the computation of molecular surfaces and cavities and then we show how we deal with special cases occurring within the surface construction.
 
 %Extended CB Algorithm
-\subsection{Surface computation}
+\subsection{Surface Computation}
 \label{sec:ecb}
 Our surface computation algorithm is based on the existing approach that utilizes the GPU capabilities~\cite{krone2011parallel}.
 In the former study, the SES is represented using three different sets of shapes -- spheres, toroidal saddles, and spherical triangles depicted by red, blue, and green colors in Fig.~\ref{fig:cb-oit} (left).
@@ -117,7 +117,7 @@ When rendering the surface, each set is used to ray-cast a spherical patch (see 
 %\end{figure}
 
 %Surface graph
-\subsection{Cavity computation}
+\subsection{Cavity Computation}
 \label{sec:graph}
    
 %\begin{itemize}
@@ -231,7 +231,7 @@ To do this, we assign the edges in $E$ by their neighboring spheres into buckets
 We then order the edges in buckets by their adjacency, so that they represent one or more cycles in $G$.
 A spherical patch is labeled by the label of any of its delimiting edges.
 
-\subsubsection{Special case -- Isolated torus}
+\subsubsection{Special Case -- Isolated Torus}
 \label{sec:isolated}
 
 We handle the isolated tori in two steps.
@@ -274,7 +274,7 @@ We use the latter approach, since the visibility spheres for tori were already c
 Here, our kernel writes a texture, similarly to Krone et al.~\cite{krone2011parallel}, which stores all visibility spheres that intersect the sphere.
 When ray-casting spherical patches, we use this texture to discard all fragments that are inside of the intersecting visibility sphere.
 
-\subsubsection{Special case -- Intersecting surfaces}
+\subsubsection{Special Case -- Intersecting Surfaces}
 \label{sec:intersecting}
 The SES surface, more specifically its part that is formed by spherical triangles, can intersect itself.
 These self-intersections were solved by Krone et. al~\cite{krone2009interactive}.
