@@ -7,9 +7,26 @@ To enable our transparent visualization, we require an ordered list of fragments
 To form fragments of each surface patch we employ a ray-casting technique.
 \textcolor{green}{
 To provide high performance, the ray-patch intersection is computed analytically.
-For each patch, we compute a tight oriented bounding box (OBB) which we project onto the image as a splat.
+For each patch, we compute a tight oriented bounding box (OBB) which we project onto the image as a splat (Fig~\ref{fig:obb}).
 This way, we lower the number of intersections tests that will be performed.
 }
+
+\begin{figure}[htp]
+  \centering
+  \begin{subfigure}[t]{0.48\columnwidth}
+    \centering
+    \includegraphics[width=1.5in]{image/obb-triangles.png}
+  \end{subfigure}%
+  \quad
+  \begin{subfigure}[t]{0.48\columnwidth}
+    \centering
+    \includegraphics[width=1.5in]{image/obb-tori.png}
+  \end{subfigure}
+	\caption{Generation of bounding boxes for the SES patches.
+	Left: OBBs for spherical triangles.
+  Right: OBBs for toroidal patches.}
+	\label{fig:obb}
+\end{figure}
 
 \textcolor{green}{
 The ray-casting is implemented as GLSL shaders.
