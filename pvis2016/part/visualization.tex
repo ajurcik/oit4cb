@@ -4,7 +4,34 @@ To enable our transparent visualization, we require an ordered list of fragments
 
 \subsection{Ray-casting}
 \label{sec:spherical-patches}
-To form fragments of each surface patch we employ a ray-casting technique. To provide a high performance, the ray-patch intersection is computed analytically using a method described by Herbison-Evans~\cite{herbisonevans1995solving}.
+To form fragments of each surface patch we employ a ray-casting technique.
+\textcolor{green}{
+To provide high performance, the ray-patch intersection is computed analytically.
+For each patch, we compute a tight oriented bounding box (OBB) which we project onto the image as a splat.
+This way, we lower the number of intersections tests that will be performed.
+}
+
+\textcolor{green}{
+The ray-casting is implemented as GLSL shaders.
+The triangles for the OBB faces are generated on the GPU using a geometry shader.
+The OBB is computed from a unit cube for which we compute position, rotation and scale according to a patch that will by bound by it.
+For a spherical triangle, a cutting plane that contains triangle's vertices is computed.
+Then, the OBB's position, rotation and scale are computed such that the OBB bounds the smaller part of the sphere when cut by the plane.
+Here, we assume that the spherical triangle always fits into a hemisphere.
+OBBs for spherical patches are computed in a similar way.
+The difference is in the calculation of the cutting plane.
+The plane's normal is computed using midpoints of arcs that bound a patch.
+The end points of these arcs are used to position the cutting plane such that the half-space defined by it contains all the arc end points.
+}
+
+\textcolor{green}{
+For toroidal patches the orientation of their OBBs is computed first.
+We compute a vector defined by the centers of the spheres that contain bounding triangles of a toroidal patch.
+We use this vector together with the axis of a torus as a second vector to compute a third one -- perpendicular to both previous vectors.
+These three vectors define axes of an OBB.
+Finally, extrema points of a patch w.r.t. its OBB orientation are found and OBB's position and scale are computed based on these points.
+}
+
 In 2013, Kauker et al.~\cite{kauker2013rendering} proposed to ray-cast a toroidal patch using a saddle part of a torus and two clipping planes defined by its delimiting triangles (Fig.~\ref{fig:torus}).
 \begin{figure}[htp]
   \centering
@@ -29,6 +56,7 @@ Additionally, we set normals of these clipping planes so that they are facing to
 We use these two operations to clip the patches whose angular length around the torus axis is either at most $\pi$ (\textit{AND}) or greater (\textit{OR}).
 The \textit{AND} and \textit{OR} operations are defined as their name suggests.
 The \textit{AND} operation leaves only fragments that appear on the positive sides of both clipping planes, while the \textit{OR} operation leaves fragments that appear on the positive side of the first or the second clipping plane.
+\textcolor{green}{The ray-torus intersection is computed as described by Herbison-Evans~\cite{herbisonevans1995solving}.}
 
 %and, moreover, we modify the data structure being used in the original algorithm to store and retrieve all spherical triangles incident to a torus (Fig.~\ref{fig:hashing}). In order to get all neighboring triangles for a torus, we hash the triangles by three keys; i.e., one for each torus which is connected to a triangle.
 %For this purpose, we implemented a simple hash table, which is based on linear addressing scheme \cite{alcantara2011efficient}.
@@ -52,8 +80,8 @@ Moreover, the implementation of the PIP test was performance demanding due to ma
 On the other hand, the computation of a patch's bounding volume is based on the fact, that the spherical patch is bounded by planes defined by its bounding arcs.
 This way, we have a polyhedron $B_{poly}$ which bounds all the patches belonging to an atom sphere.
 For each patch, we add another plane $p_{add}$ which cuts $B_{poly}$ in order to keep only the volume containing that patch.
-As $p_{add}$, we choose an appropriate plane among planes in $P_{bb}$ that contain faces of the bounding box used for splatting the patch (see Sec. \textcolor{red}{TBD}).
-In fact, by splatting, we clip $B_{poly}$ by all the six planes in $P_{bb}$.
+As $p_{add}$, we choose an appropriate plane among planes in $P_{bb}$ that contain faces of the bounding box used for \textcolor{red}{splatting} the patch.
+In fact, by \textcolor{red}{splatting}, we clip $B_{poly}$ by all the six planes in $P_{bb}$.
 }
 
 \textcolor{green}{
@@ -115,3 +143,4 @@ Additionally, we neglect areas of spherical and toroidal patches since their inf
 %Therefore, the cavity area we compute is \textcolor{red}{underestimated -- maybe an equation?}.
 Naturally, this observation does not hold for the molecular surface.
 %\textcolor{red}{What about coloring?}
+\textcolor{green}{We also do not handle the case when the triangles intersect each other thus clipping themselves.}
