@@ -94,7 +94,7 @@ uint findNeighborsInCell(uint neighborIndex, uvec3 gridPos, uint index, vec4 pos
                 // set small circle
                 vec4 smallCircle;
                 smallCircle.xyz = vec;
-                smallCircle.w = sqrt(((pos.w + probeRadius) * (pos.w + probeRadius)) - dot(vec, vec));
+                smallCircle.w = sign(r) * sqrt(((pos.w + probeRadius) * (pos.w + probeRadius)) - dot(vec, vec));
                 smallCircles[index * maxNumNeighbors + neighborIndex + count] = smallCircle;
                 // increment the neighbor counter
                 count++;

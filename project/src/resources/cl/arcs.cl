@@ -69,10 +69,11 @@ kernel void arcs(
     float4 scj = smallCircles[atomIdx * params->maxNumNeighbors + jIdx];
     //float4 scj = read_imagef(smallCircles, sampler, (int2)(atomIdx * maxNumNeighbors + jIdx)); // PROFILE
     // do nothing if small circle j has radius -1 (removed)
-    if (scj.w < 0.0f) {
+    if (scj.w < -10.0f) {
         //arcCount[atomIdx * maxNumNeighbors + jIdx] = 0; // DEBUG
         return;
     }
+    scj.w = fabs(scj.w);
     //atomicCounterIncrement(threadCount); // DEBUG
     // vj = the small circle center
     float3 vj = scj.xyz;
@@ -123,9 +124,10 @@ kernel void arcs(
         float4 sck = smallCircles[atomIdx * params->maxNumNeighbors + kCnt];
         //float4 sck = read_imagef(smallCircles, sampler, (int2)(atomIdx * maxNumNeighbors + kCnt)); // PROFILE
         // do nothing if small circle k has radius -1 (removed)
-        if (sck.w < 0.0f) {
+        if (sck.w < -10.0f) {
             continue;
         }
+        sck.w = fabs(sck.w);
         // vk = the small circle center
         float3 vk = sck.xyz;
         // pk = center of atom k

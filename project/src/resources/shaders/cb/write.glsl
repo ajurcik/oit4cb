@@ -135,6 +135,7 @@ void main() {
         uint visible = texelFetch(smallCircleVisibleTex, int(index * maxNumNeighbors + j)).r;
         if (index < jIdx && visible > 0) {
             vec4 sc = texelFetch(smallCirclesTex, int(index * maxNumNeighbors + j));
+            sc.w = abs(sc.w);
             // torus axis
             vec3 ta = normalize(sc.xyz);
             // torus center

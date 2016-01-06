@@ -115,6 +115,6 @@ void main() {
     }
     // all k were tested, see if j is cut off
     if (!addJ) {
-        smallCircles[atomIdx * maxNumNeighbors + jIdx].w = -1.0;
+        smallCircles[atomIdx * maxNumNeighbors + jIdx].w = -11.0;
     }
 }

@@ -1410,7 +1410,7 @@ public class MainWindow extends javax.swing.JFrame {
     }//GEN-LAST:event_aoCheckBoxActionPerformed
 
     private void renderPointCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_renderPointCheckBoxActionPerformed
-        String comps[] = pointText.getText().replace(',', '.').split(" ");
+        String comps[] = pointText.getText().replace(',', '.').split("\\s+");
         Vector3f point = new Vector3f(Float.parseFloat(comps[0]), Float.parseFloat(comps[1]),
                 Float.parseFloat(comps[2]));
         scene.setPoint(point);

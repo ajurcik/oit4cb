@@ -74,8 +74,7 @@ layout(std430) buffer ABufferIndex {
 };
 
 layout(std430) buffer Debug {
-    uint frags;
-    uint passed;
+    vec4 debug[];
 };
 
 void storeFragment(vec4 color, float depth, float ao) {
@@ -91,6 +90,7 @@ float squaredLength(vec3 v);
 void storeIntersection(vec3 position, vec3 normal, vec3 eye, vec4 color, float Ka, float Kd, bool bfmod);
 
 void main() {
+    //storeFragment(color, 10.0, 1.0); discard; // DEBUG
     // transform fragment coordinates from window coordinates to view coordinates.
     vec4 coord = gl_FragCoord
         * vec4(viewport.z, viewport.w, 2.0, 0.0) 
@@ -155,15 +155,29 @@ void main() {
     uint nCnt = texelFetch(neighborsCountTex, int(index)).r;
     for (uint j = 0; j < nCnt; j++) {
         vec4 circle = texelFetch(smallCirclesTex, int(index * maxNumNeighbors + j));
+        if (circle.w < -10.0) {
+            // circle was removed
+            continue;
+        }
         float t = length(circle.xyz);
         vec3 n = circle.xyz / t;
         vec3 p;
         if (sas) {
             p = circle.xyz; // SAS
-        } else {
+        } else { 
             p = t / (radius + probeRadius) * radius * n; // SES
         }
-        float d = -dot(objPos.xyz + p, n);
+        float d = -dot(n, objPos.xyz + p);
+        if (circle.w < 0.0) {
+            // circle center does not lie between atom centers
+            n = -n;
+            d = -d;
+        }
+        // DEBUG
+        /*if (index == 14) {
+            debug[2 * j] = circle;
+            debug[2 * j + 1] = vec4(n, d);
+        }*/
         if (dot(n, intPos1) + d > 0.0) {
             outer = false;
             if (!inner) {
@@ -177,8 +191,6 @@ void main() {
             }
         }
     }
-
-    //if (index == 203) atomicAdd(frags, 1); // DEBUG
     
     if (!inner && !outer) {
         discard;
