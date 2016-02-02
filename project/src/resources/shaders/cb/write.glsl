@@ -187,6 +187,11 @@ void main() {
                 // write invalid edge
                 edges[torusIdx].x = INVALID_VALUE;
                 edges[torusIdx].y = INVALID_VALUE;
+                // OOB for ray-casting
+                vec3 tmp = ((ta.x > 0.9) || (ta.x < -0.9)) ? vec3(0.0, 0.0, 1.0) : vec3(1.0, 0.0, 0.0); // normal on ta
+                vec3 up = normalize(cross(ta, tmp));
+                tori[torusIdx].obbUp = vec4(up, probeRadius);
+                tori[torusIdx].obbSize = vec4(probeRadius, sc.w, -sc.w, sc.w);
             } else {
                 vec3 orig = normalize(arcs[0].xyz - tc);
                 for (uint a = 0; a < count - 1; a++) {
@@ -283,7 +288,7 @@ void main() {
                     edges[torusIdx].w = jIdx;
                     // write circle
                     //edgesCircle[torusIdx] = vec4(tc, sc.w);
-                    edgesCircle[torusIdx] = vec4(C + tc, dist);
+                    edgesCircle[torusIdx] = vec4(C + tc, dist); // tc + C = visiblity sphere center
                     // write line
                     vec3 center = operation * normalize(arc1.xyz + arc2.xyz - 2 * tc);
                     edgesLine[torusIdx].xyz = center;

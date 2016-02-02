@@ -580,7 +580,7 @@ public class Scene implements GLEventListener {
                     "/resources/shaders/ray/polygon2.geom", "/resources/shaders/ray/krone/polygon2.frag");
             // Load molecule
             //dynamics = new Dynamics(Utils.loadDynamicsFromResource("/resources/md/model", 1, 10));
-            dynamics = new Dynamics(Collections.singletonList(Utils.loadAtomsFromResource("/resources/1CRN_26.pdb")));
+            dynamics = new Dynamics(Collections.singletonList(Utils.loadAtomsFromResource("/resources/1VIS.pdb")));
             System.out.println("Atoms (molecule): " + dynamics.getMolecule().getAtomCount());
             System.out.println("Snapshots: " + dynamics.getSnapshotCount());
         } catch (Exception ex) {
@@ -1081,7 +1081,7 @@ public class Scene implements GLEventListener {
         gl.glEndQuery(GL_TIME_ELAPSED);
         
         // debugging
-        //Debug.checkGridOverflow(gl, gridCountsBuffer, CELL_COUNT, MAX_CELL_ATOMS);
+        Debug.checkGridOverflow(gl, gridCountsBuffer, CELL_COUNT, MAX_CELL_ATOMS);
         
         gl.glUseProgram(neighborsProgram);
         
@@ -1110,7 +1110,7 @@ public class Scene implements GLEventListener {
         gl.glEndQuery(GL_TIME_ELAPSED);
         
         // debugging
-        //Debug.checkNeighborsOverflow(gl, neighborCountsBuffer, atomCount, MAX_NEIGHBORS);
+        Debug.checkNeighborsOverflow(gl, neighborCountsBuffer, atomCount, MAX_NEIGHBORS);
         
         gl.glUseProgram(removeProgram);
         
@@ -1197,7 +1197,7 @@ public class Scene implements GLEventListener {
             //System.out.println("After CLArcs");
             
             // debugging
-            //Debug.checkArcsOverflow(gl, clArcs, neighborCountsBuffer, atomCount, MAX_NEIGHBORS, arcCountsBuffer, 16);
+            Debug.checkArcsOverflow(gl, clArcs, neighborCountsBuffer, atomCount, MAX_NEIGHBORS, arcCountsBuffer, 16);
         }
         gl.glEndQuery(GL_TIME_ELAPSED);
         
@@ -1483,10 +1483,10 @@ public class Scene implements GLEventListener {
         
         gl.glTranslatef(-4f, -4f, -4f);
         //Utils.drawAxes(gl, 2f);        
-        gl.glTranslatef(aabbSize / 2f - 4f, aabbSize / 2f - 4f, aabbSize / 2f - 4f);
-        //Utils.drawAxes(gl, 2f);
+        gl.glTranslatef(aabbSize / 2f - 4f + 8f, aabbSize / 2f - 4f, aabbSize / 2f - 4f + 20f);
+        //Utils.drawAxes(gl, 10f);
         //gl.glRotatef((System.currentTimeMillis() % 5760) / 16f, 0f, 1f, 0f);
-        gl.glTranslatef(-aabbSize / 2f + 4f, -aabbSize / 2f + 4f, -aabbSize / 2f + 4f);
+        gl.glTranslatef(-aabbSize / 2f + 4f - 8f, -aabbSize / 2f + 4f, -aabbSize / 2f + 4f - 20f);
         //Utils.drawAABB(gl, aabbMin, aabbSize);
         gl.glTranslatef(+4f, +4f, +4f);
         
@@ -2322,7 +2322,7 @@ public class Scene implements GLEventListener {
     
     public void loadDynamicsFromGROMACS(File topology, File trajectory) {
         try {
-            dynamics = new GromacsStructureLoader().loadDynamics(topology, trajectory);
+            dynamics = new GromacsStructureLoader().loadDynamics(topology, trajectory, 0, -1);
             atomCount = dynamics.getMolecule().getAtomCount();
             System.out.println("Atoms: " + atomCount);
             System.out.println("Snapshots: " + dynamics.getSnapshotCount());
@@ -2338,8 +2338,12 @@ public class Scene implements GLEventListener {
     }
     
     public void loadDynamicsFromGROMACS(File topology, File trajectory, int limit) {
+        loadDynamicsFromGROMACS(topology, trajectory, 0, limit);
+    }
+    
+    public void loadDynamicsFromGROMACS(File topology, File trajectory, int start, int end) {
         try {
-            dynamics = new GromacsStructureLoader().loadDynamics(topology, trajectory, limit);
+            dynamics = new GromacsStructureLoader().loadDynamics(topology, trajectory, start, end);
             atomCount = dynamics.getMolecule().getAtomCount();
             System.out.println("Atoms: " + atomCount);
             System.out.println("Snapshots: " + dynamics.getSnapshotCount());

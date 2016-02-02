@@ -90,7 +90,10 @@ float squaredLength(vec3 v);
 void storeIntersection(vec3 position, vec3 normal, vec3 eye, vec4 color, float Ka, float Kd, bool bfmod);
 
 void main() {
-    //storeFragment(color, 10.0, 1.0); discard; // DEBUG
+    //if (index != 2) {
+        //discard;
+        //storeFragment(color, 10.0, 1.0); discard; // DEBUG
+    //}
     // transform fragment coordinates from window coordinates to view coordinates.
     vec4 coord = gl_FragCoord
         * vec4(viewport.z, viewport.w, 2.0, 0.0) 
@@ -110,6 +113,7 @@ void main() {
     float radicand = RR - d2s;                         // square of difference of projected length and lambda
 
     if (radicand < 0.0) {
+        //storeFragment(vec4(1.0, 1.0, 0.0, 0.5), 10.0, 1.0); discard; // DEBUG
         discard;
     }
 
@@ -148,6 +152,7 @@ void main() {
     }
 
     if (!inner && !outer) {
+        //storeFragment(vec4(1.0, 1.0, 0.0, 0.5), 10.0, 1.0); discard; // DEBUG
         discard;
     }
 
@@ -193,6 +198,7 @@ void main() {
     }
     
     if (!inner && !outer) {
+        //storeFragment(vec4(1.0, 1.0, 0.0, 0.5), 10.0, 1.0); discard; // DEBUG
         discard;
     }
 

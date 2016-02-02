@@ -74,6 +74,10 @@ layout(std430) buffer ABufferIndex {
     uint fragIndices[];
 };
 
+layout(std430) buffer Debug {
+    vec4 debug[];
+};
+
 float squaredLength(vec3 v);
 void storeIntersection(vec3 position, vec3 normal, vec3 eye, vec4 color, float Ka, float Kd, bool bfmod, uint label, float area);
 
@@ -183,13 +187,13 @@ void main() {
     uint nCnt = texelFetch(neighborCountsTex, int(index)).r;
     for (uint j = 0; j < nCnt; j++) {
         vec3 probe = texelFetch(neighborProbesTex, int(index * maxNumNeighbors + j)).rgb;
-        if (squaredLength(objPos.xyz - probe) > 0.1 && squaredLength(intPos1 - probe) < RR) {
+        if (squaredLength(objPos.xyz - probe) > 0.001 && squaredLength(intPos1 - probe) < RR) {
             outer = false;
             if (!inner) {
                 break;
             }
         }
-        if (squaredLength(objPos.xyz - probe) > 0.1 && squaredLength(intPos2 - probe) < RR) {
+        if (squaredLength(objPos.xyz - probe) > 0.001 && squaredLength(intPos2 - probe) < RR) {
             inner = false;
             if (!outer) {
                 break;

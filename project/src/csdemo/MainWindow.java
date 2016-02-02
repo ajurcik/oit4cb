@@ -1483,7 +1483,7 @@ public class MainWindow extends javax.swing.JFrame {
             //JOptionPane.showMessageDialog(this, "Number of snapshots: " + snapshots);
             //Dynamics data = loader.loadDynamics(topology, trajectory, 100);
             //JOptionPane.showMessageDialog(this, "Numbers of drugs: " + data.getDrugCount());
-            scene.loadDynamicsFromGROMACS(topology, trajectory, 100);
+            scene.loadDynamicsFromGROMACS(topology, trajectory, 150, 250);
         } catch (Exception ex) {
             ex.printStackTrace(System.err);
         }
@@ -1723,9 +1723,9 @@ public class MainWindow extends javax.swing.JFrame {
     // End of variables declaration//GEN-END:variables
 
     public void keyPressed(KeyEvent e) {
-        float step = 0.2f;
+        float step = 0.5f;
         if (e.isShiftDown()) {
-            step *= 0.1f;
+            step *= 0.5f;
         }
         
         switch (e.getKeyCode()) {

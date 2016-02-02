@@ -95,7 +95,7 @@ void main() {
     vertex.color = gl_Color;
 
     vec4 cap = vec4(0.0);
-    vec3 points[16];
+    vec3 points[32];
     for (uint c = vertex.circleStart; c < vertex.circleEnd; c++) {
         uint edgeIdx = texelFetch(circlesTex, int(c)).z;
         // compute small circle
@@ -118,28 +118,33 @@ void main() {
         // compute line end point
         vec4 line = texelFetch(edgesLineTex, int(edgeIdx));
         vec3 zAxis = cross(relPos / dist, line.xyz);
-        vec3 p = vertex.objPos.xyz + circle.xyz;
+        vec3 pc = vertex.objPos.xyz + circle.xyz;
+        vec3 p = pc;
+        pc += circle.w * line.xyz;
         p += circle.w * line.w * line.xyz;
         p += circle.w * sqrt(1.0 - line.w * line.w) * zAxis;
-        points[c - vertex.circleStart] = p;
+        points[2 * (c - vertex.circleStart)] = p;
+        points[2 * (c - vertex.circleStart) + 1] = pc;
         // compute cap axis
-        cap.xyz += line.xyz;
+        //cap.xyz += p - vertex.objPos.xyz /*line.xyz*/;
+        cap.xyz += pc - vertex.objPos.xyz;
+        //cap.xyz += line.xyz;
     }
     
     cap.xyz = normalize(cap.xyz);
     cap.w = -dot(cap.xyz, vertex.objPos.xyz);
 
     // compute orientation
-    vertex.orientation = CCW;
+    /*vertex.orientation = CCW;
     if (vertex.circleEnd - vertex.circleStart >= 2) {
         vec3 dir = cross(vertex.objPos.xyz - points[0], vertex.objPos.xyz - points[1]);
         if (dot(dir, cap.xyz) < 0.0) {
             vertex.orientation = CW;
         }
-    }
+    }*/
 
     float minDist = vertex.radius;
-    for (uint i = 0; i < vertex.circleEnd - vertex.circleStart; i++) {
+    for (uint i = 0; i < 2 * (vertex.circleEnd - vertex.circleStart); i++) {
         minDist = min(minDist, dot(cap.xyz, points[i]) + cap.w);
     }
     float minDistPos = max(minDist, 0.0);

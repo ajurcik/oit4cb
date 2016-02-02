@@ -10,9 +10,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
@@ -191,19 +194,22 @@ public class GromacsStructureLoader {
         }
     }
 
-    public void parseTrajectoryFile(final File trajectoryFile, final Dynamics structure, final int snapshotLimit) throws Exception {
-        parseTrajectoryFile(trajectoryFile, structure, snapshotLimit, null);
+    public void parseTrajectoryFile(File trajectoryFile, Dynamics structure, int start, int end) throws Exception {
+        parseTrajectoryFile(trajectoryFile, structure, start, end, null);
     }
 
-    public void parseTrajectoryFile(final File trajectoryFile, final Dynamics structure, final int snapshotLimit, File targetDirectory) throws Exception {
+    public void parseTrajectoryFile(File trajectoryFile, Dynamics structure, int start, int end, File targetDirectory) throws Exception {
         DataInputStream dis;
 
+        // xjurc: PacificVIS video
+        Set<Integer> skip = new HashSet<>();
+        skip.addAll(Arrays.asList(new Integer[] { 6, /* 11, 12, */ 31, 32, 38, 46, 47, 50, 56, 72, 84, 88, /* 90, */ 91 /* ,97 */ }));
         try {
             dis = new DataInputStream(new BufferedInputStream(determineInputStream(trajectoryFile)));
 
 
-            int counter = structure.getSnapshotCount();
-            while (counter < snapshotLimit || snapshotLimit == -1) {
+            int counter = 0;
+            while (counter < end || end == -1) {
                 if (Thread.interrupted()) {
                     return;
                 }
@@ -229,7 +235,12 @@ public class GromacsStructureLoader {
                         }
                     }
 
-                    xtc3dfcoords(trajectoryFile, dis, structure, counter, targetDirectory);
+                    if (counter >= start && !skip.contains(counter + 3 - start)) {
+                        xtc3dfcoords(trajectoryFile, dis, structure, counter, targetDirectory);
+                    } else {
+                        xtc3dfcoords(trajectoryFile, dis, null, counter, targetDirectory);
+                        System.out.println("Skipping frame: " + (counter + 2));
+                    }
                 } catch (IOException ex) {
                     Logger.getLogger(GromacsStructureLoader.class.getName()).log(Level.SEVERE, null, ex);
                     break;
@@ -300,15 +311,15 @@ public class GromacsStructureLoader {
         return numberOfSnapshots;
     }
 
-    public Dynamics loadDynamics(File topology, File trajectory) throws Exception {
-        return loadDynamics(topology, trajectory, -1);
+//    public Dynamics loadDynamics(File topology, File trajectory) throws Exception {
+//        return loadDynamics(topology, trajectory, 0, -1);
+//    }
+    
+    public Dynamics loadDynamics(File topology, File trajectory, int start, int end) throws Exception {
+        return loadStructureSync(topology, new File[] { trajectory }, start, end);
     }
     
-    public Dynamics loadDynamics(File topology, File trajectory, int limit) throws Exception {
-        return loadStructureSync(topology, new File[] { trajectory }, limit);
-    }
-    
-    public Dynamics loadStructureSync(final File topologyFile, final File[] trajectoryFiles, final int snapshotLimit) throws Exception {
+    public Dynamics loadStructureSync(File topologyFile, File[] trajectoryFiles, int start, int end) throws Exception {
         final Dynamics structures;
 
         try {
@@ -321,7 +332,7 @@ public class GromacsStructureLoader {
 
             if (trajectoryFiles != null) {
                 for (File accFile : trajectoryFiles) {
-                    parseTrajectoryFile(accFile, conStructures, snapshotLimit);
+                    parseTrajectoryFile(accFile, conStructures, start, end);
                 }
             }
 
