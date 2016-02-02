@@ -93,8 +93,8 @@ These special cases then resulted in pixel artifacts in the final image.
 Moreover, the implementation of the PIP test was performance demanding due to many texture memory accesses.
 On the other hand, the computation of a patch's bounding volume is based on the fact, that the spherical patch is bounded by planes defined by its bounding arcs.
 This way, we have a polyhedron $B_{poly}$ which bounds all the patches belonging to an atom sphere.
-For each patch, we add another plane $p_{add}$ which cuts $B_{poly}$ in order to keep only the volume containing that patch.
-$p_{add}$ is selected as an appropriate plane among planes of the OBB that was used for splatting the patch.
+For each patch, we add another plane \textcolor{blue}{$p_{cut}$} which cuts $B_{poly}$ in order to keep only the volume containing that patch.
+\textcolor{blue}{$p_{cut}$} is selected as an appropriate plane among planes of the OBB that was used for splatting the patch.
 In fact, by splatting, we clip $B_{poly}$ by all the six planes of the OBB.
 
 In the resulting image, there can still occur pixel artifacts caused by numerical issues when ray-casting the tori.
