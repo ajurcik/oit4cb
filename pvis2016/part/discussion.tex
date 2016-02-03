@@ -65,7 +65,10 @@ we test twice as many intersections to obtain both front and back fragments and 
 
 \begin{table}[htb]
   \caption{Speedup of our technique in comparison with Kauker et al.~\cite{kauker2013rendering}.
-	Table shows the number of depth layers (DL), rendering speeds (FPS) of both methods, and the relative speedup. Fill rate (FR) which significantly affects the performance of ray-casting is also included.}
+	Table shows the number of depth layers (DL), rendering speeds (FPS) of both methods, and the relative speedup.
+	Fill rate (FR) which significantly affects the performance of ray-casting is also included.
+	\textcolor{blue}{Our technique was set to render only the outer surface.}
+	}
   \label{tab:speedup}
   \scriptsize
   \begin{center}
@@ -75,9 +78,11 @@ we test twice as many intersections to obtain both front and back fragments and 
 			%        &       & buildup  & graph   & Area & casting &      \\
 							 &          & (\%) &  &     & (\%) &  &     &         \\
     \hline
-      1YV8 &   {\tweakedsim}650 & 38.6 & 12 & 40.1 & 18.0 & 117 & 31.0 & 1.29 \\
+      %1YV8 &   {\tweakedsim}650 & 38.6 & 12 & 40.1 & 18.0 & 117 & 31.0 & 1.29 \\
+			1YV8 &   {\tweakedsim}650 & \textcolor{blue}{35.9} & 12 & \textcolor{blue}{48.1} & 18.0 & 117 & 31.0 & \textcolor{blue}{1.55} \\
       1VIS &  {\tweakedsim}2500 & 52.7 & 15 & 34.1 & 48.7 & 135 & 11.2 & 3.04 \\
-      4ADJ & {\tweakedsim}10000 & 41.5 & 19 & 20.2 & 42.8 & 188 &  6.2 & 3.26
+      %4ADJ & {\tweakedsim}10000 & 41.5 & 19 & 20.2 & 42.8 & 188 &  6.2 & 3.26
+			4ADJ & {\tweakedsim}10000 & \textcolor{blue}{42.8} & 19 & \textcolor{blue}{15.5} & 42.8 & 188 &  6.2 & \textcolor{blue}{2.50}
     \end{tabular}
   \end{center}
 \end{table}
