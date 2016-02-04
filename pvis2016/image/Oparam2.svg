@@ -11,10 +11,10 @@
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    width="714.81281"
-   height="201.30505"
+   height="204.94958"
    id="svg2"
    version="1.1"
-   inkscape:version="0.48.4 r9939"
+   inkscape:version="0.91 r13725"
    sodipodi:docname="Oparam2.svg"
    inkscape:export-filename="C:\School\Projects\oit4cb\pvis2016\image\Oparam2.png"
    inkscape:export-xdpi="300"
@@ -28,14 +28,14 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="1.4"
-     inkscape:cx="351.59023"
-     inkscape:cy="22.33646"
+     inkscape:zoom="0.98994949"
+     inkscape:cx="277.7858"
+     inkscape:cy="25.980999"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
-     inkscape:window-width="1600"
-     inkscape:window-height="1178"
+     inkscape:window-width="1366"
+     inkscape:window-height="706"
      inkscape:window-x="-8"
      inkscape:window-y="-8"
      inkscape:window-maximized="1"
@@ -51,7 +51,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title />
+        <dc:title></dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -90,67 +90,67 @@
        width="144.81281" />
     <text
        xml:space="preserve"
-       style="font-size:12px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       style="font-style:normal;font-weight:normal;font-size:12px;line-height:125%;font-family:Sans;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none"
        x="44.220001"
-       y="240.75629"
+       y="244.75629"
        id="text3040"
        sodipodi:linespacing="125%"><tspan
          sodipodi:role="line"
          x="44.220001"
-         y="240.75629"
+         y="244.75629"
          id="tspan3044"
          style="font-size:14px"><tspan
-   style="font-style:oblique;-inkscape-font-specification:Sans Oblique"
+   style="font-style:oblique;-inkscape-font-specification:'Sans Oblique'"
    id="tspan2994">O</tspan> = 0.8, <tspan
-   style="font-style:oblique;-inkscape-font-specification:Sans Oblique"
+   style="font-style:oblique;-inkscape-font-specification:'Sans Oblique'"
    id="tspan3000">K</tspan> = 1</tspan></text>
     <text
        xml:space="preserve"
-       style="font-size:12px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       style="font-style:normal;font-weight:normal;font-size:12px;line-height:125%;font-family:Sans;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none"
        x="229.35965"
-       y="240.75629"
+       y="244.75629"
        id="text3040-8"
        sodipodi:linespacing="125%"><tspan
          sodipodi:role="line"
          x="229.35965"
-         y="240.75629"
+         y="244.75629"
          style="font-size:14px"
          id="tspan3120"><tspan
-   style="font-style:oblique;-inkscape-font-specification:Sans Oblique"
+   style="font-style:oblique;-inkscape-font-specification:'Sans Oblique'"
    id="tspan3018">O</tspan> = 0.8, <tspan
-   style="font-style:oblique;-inkscape-font-specification:Sans Oblique"
+   style="font-style:oblique;-inkscape-font-specification:'Sans Oblique'"
    id="tspan3020">K</tspan> = 16</tspan></text>
     <text
        xml:space="preserve"
-       style="font-size:12px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       style="font-style:normal;font-weight:normal;font-size:12px;line-height:125%;font-family:Sans;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none"
        x="424.21997"
-       y="240.75629"
+       y="244.75629"
        id="text3040-2"
        sodipodi:linespacing="125%"><tspan
          sodipodi:role="line"
          x="424.21997"
-         y="240.75629"
+         y="244.75629"
          id="tspan3044-4"
          style="font-size:14px"><tspan
-   style="font-style:oblique;-inkscape-font-specification:Sans Oblique"
+   style="font-style:oblique;-inkscape-font-specification:'Sans Oblique'"
    id="tspan3014">O</tspan> = 0.5, <tspan
-   style="font-style:oblique;-inkscape-font-specification:Sans Oblique"
+   style="font-style:oblique;-inkscape-font-specification:'Sans Oblique'"
    id="tspan3016">K</tspan> = 1</tspan></text>
     <text
        xml:space="preserve"
-       style="font-size:12px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       style="font-style:normal;font-weight:normal;font-size:12px;line-height:125%;font-family:Sans;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none"
        x="609.35968"
-       y="240.75629"
+       y="244.75629"
        id="text3040-8-5"
        sodipodi:linespacing="125%"><tspan
          sodipodi:role="line"
          x="609.35968"
-         y="240.75629"
+         y="244.75629"
          style="font-size:14px"
          id="tspan3120-5"><tspan
-   style="font-style:oblique;-inkscape-font-specification:Sans Oblique"
+   style="font-style:oblique;-inkscape-font-specification:'Sans Oblique'"
    id="tspan3010">O</tspan> = 0.5, <tspan
-   style="font-style:oblique;-inkscape-font-specification:Sans Oblique"
+   style="font-style:oblique;-inkscape-font-specification:'Sans Oblique'"
    id="tspan3012">K</tspan> = 16</tspan></text>
   </g>
 </svg>

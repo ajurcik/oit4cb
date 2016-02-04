@@ -37,6 +37,13 @@ Their system combines semi-transparent surface visualizations with sequence diag
 Lindow et al.~\cite{Lindow2013} presented an alternative approach to the exploration of the time-dependent changes of a cavity. 
 To avoid the animation of the traced cavity, they visualize the dynamics of the cavity as a compact representation in a single image, color coded according to time. 
 
+\begin{figure*}[tb]
+  \centering
+  \includegraphics[width=\textwidth]{image/overview_final.pdf}
+  \caption{Illustration of the visualization pipeline. The input data (Sec.~\ref{ch:overview}) contains snapshots of MD trajectories which are processed to construct the molecular surface and cavities (Sec.~\ref{ch:feature}). Then, the surface areas of cavities are estimated (Sec.~\ref{sec:area}), which are used as the color codes, ranging from yellow (smallest) to magenta (largest). These areas serve for filtering out of too small cavities. Finally, the surface elements are ray-cast (Sec.~\ref{sec:spherical-patches}) to compose the surface fragments used in the final stage to visualize the surfaces transparently via a user-defined opacity modulation (Sec.~\ref{sec:opacity}).}
+	\label{fig:overview}
+\end{figure*}
+
 \subsection{Visualization of Surface Features}
 There are also several visualization techniques enhancing the visibility of molecular surface features located inside the molecule. The main source of these techniques is described in the computer graphics literature. Bair and House~\cite{Bair2007} presented an approach for visualization of layered surfaces, which uses grid-based surface textures. Their experiments focus on the perception of textured surfaces and the best configuration of the textures. 
 Other illustrative techniques presented by Tarini et al.~\cite{Tarini2006} and Lawonn et al.~\cite{Lawonn2014} represent alternatives to the visualization of the shape of molecular surfaces. 

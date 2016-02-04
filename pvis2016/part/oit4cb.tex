@@ -96,7 +96,7 @@ This allows us to ray-cast the toroidal patches separately instead of the whole 
 
 \begin{figure}[bht]
   \centering
-  \includegraphics[width=3.3in]{image/hashing.png}
+  \includegraphics[width=3.3in]{image/hashing.pdf}
   \caption{Illustration of the data structure for storing spherical triangles. Triangles $t_1$ and $t_2$ are stored linearly in an array and their incident torus $\tau$ is connected to them via a hash table.}
 	\label{fig:hashing41}
 \end{figure}
@@ -167,9 +167,9 @@ We define the surface graph using the triangles representing vertices and the to
 In this graph, all the vertices are of degree three.
 In fact, the surface graph is an analogy to the graph of SAS (solvent-accessible surface) contours~\cite{totrov1996contour}.
 
-\begin{figure}[bht]
+\begin{figure}[htb]
   \centering
-  \includegraphics[width=3.3in]{image/graph.png}
+  \includegraphics[width=3.3in]{image/graph.pdf}
   \caption{Illustration of the surface graph construction.
 	Triangles form vertices and toroidal patches form edges between them.
 	Spherical patches are represented as cycles in the graph.}
@@ -239,7 +239,7 @@ First, a label for a torus is retrieved.
 Note that an isolated torus is not a part of the surface graph.
 Second, for each isolated torus, we clip fragments in its neighboring spherical patches that are overlaid by the torus. 
 Otherwise, these fragments would create a false surface layer between a torus and a spherical patch (Fig.~\ref{fig:isolated-hole}).
-\textcolor{red}{The clipping of fragments in the affected spherical patches is reached using a clipping plane (see Sec.~\ref{sec:spherical-patches})}.
+The clipping of fragments in the affected spherical patches is reached using a clipping plane (see Sec.~\ref{sec:spherical-patches}).
 
 \begin{figure}[htp]
   \centering
