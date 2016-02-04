@@ -55,10 +55,10 @@ we test twice as many intersections to obtain both front and back fragments and 
 			%        &       & buildup  & graph   & Area & casting &       \\
 							&      & (\%) & (ms)     & (ms)    & (ms) & (ms) & (FPS) \\
     \hline
-      1OGZ      &  {\tweakedsim}1000 & 41.5 &  3.5 & 0.3 & 0.2 &  5.9 & 47.8 \\
-      1VIS      &  {\tweakedsim}2500 & 50.5 &  5.9 & 0.8 & 0.2 &  9.5 & 34.1 \\
-			LINB-ACE* &  {\tweakedsim}4500 & 29.8 & 17.2 & 0.6 & 0.2 &  9.3 & 22.6 \\
-      4ADJ      & {\tweakedsim}10000 & 43.1 & 21.0 & 4.1 & 0.4 & 20.2 & 15.2
+      1OGZ      &  {\tweakedsim}1,000 & 41.5 &  3.5 & 0.3 & 0.2 &  5.9 & 47.8 \\
+      1VIS      &  {\tweakedsim}2,500 & 50.5 &  5.9 & 0.8 & 0.2 &  9.5 & 34.1 \\
+			LINB-ACE* &  {\tweakedsim}4,500 & 29.8 & 17.2 & 0.6 & 0.2 &  9.3 & 22.6 \\
+      4ADJ      & {\tweakedsim}10,000 & 43.1 & 21.0 & 4.1 & 0.4 & 20.2 & 15.2
     \end{tabular}
   \end{center}
 \end{table}
@@ -79,10 +79,10 @@ we test twice as many intersections to obtain both front and back fragments and 
 							 &          & (\%) &  &     & (\%) &  &     &         \\
     \hline
       %1YV8 &   {\tweakedsim}650 & 38.6 & 12 & 40.1 & 18.0 & 117 & 31.0 & 1.29 \\
-			1YV8 &   {\tweakedsim}650 & \textcolor{blue}{35.9} & 12 & \textcolor{blue}{48.1} & 18.0 & 117 & 31.0 & \textcolor{blue}{1.55} \\
-      1VIS &  {\tweakedsim}2500 & 52.7 & 15 & 34.1 & 48.7 & 135 & 11.2 & 3.04 \\
-      %4ADJ & {\tweakedsim}10000 & 41.5 & 19 & 20.2 & 42.8 & 188 &  6.2 & 3.26
-			4ADJ & {\tweakedsim}10000 & \textcolor{blue}{42.8} & 19 & \textcolor{blue}{15.5} & 42.8 & 188 &  6.2 & \textcolor{blue}{2.50}
+			1YV8 &   {\tweakedsim}650 & 35.9 & 12 & 48.1 & 18.0 & 117 & 31.0 & 1.55 \\
+      1VIS &  {\tweakedsim}2,500 & 52.7 & 15 & 34.1 & 48.7 & 135 & 11.2 & 3.04 \\
+      %4ADJ & {\tweakedsim}10,000 & 41.5 & 19 & 20.2 & 42.8 & 188 &  6.2 & 3.26
+			4ADJ & {\tweakedsim}10,000 & 42.8 & 19 & 15.5 & 42.8 & 188 &  6.2 & 2.50
     \end{tabular}
   \end{center}
 \end{table}
@@ -94,7 +94,7 @@ Based on the performed tests we assume that the key reason for this performance 
 
 \subsubsection{Discussion of Limitations}
 The main limitations of our method are currently the applicability to large data and the precision of the surface area calculation.
-When applying it to molecules consisting of more than $10,000$ of atoms, the performance of the method influences the interactivity.
+When applying it to molecules consisting of more than $10,000$ atoms, the performance of the method influences the interactivity.
 We anticipate that the performance can be improved by applying the transparent SES only to some interesting parts of the molecule, while using another visualization method for the rest of it.
 The second limitation can be overcome, e.g., by applying the method presented by Connolly~\cite{connolly1983analytical}, to be done as a future work.
 The method also evinces single-pixel artifacts (Sec.~\ref{sec:spherical-patches}) in the final image which can cause problems when creating high-quality images.
@@ -142,7 +142,7 @@ Then, the complexity ratio can be expressed as:
 \end{equation}
 
 which yields that the original structure is more than 100 times larger for only 64 neighbors.
-Actually, our maximum neighbor count is 128 to be able to compute the surface of molecules that contains hydrogens, which is a typical case for data produced by molecular dynamics simulations.
+Actually, our maximum neighbor count is 128 to be able to compute the surface of molecules that contains hydrogens, which is a typical case for data produced by MD simulations.
 
 
 \subsection{User Feedback}

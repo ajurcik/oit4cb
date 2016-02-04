@@ -47,7 +47,7 @@ Our method produces only patches that are part of the surface.
 \end{figure}
 
 In comparison with the previous solution, our main contribution here lies in the computation of toroidal and spherical patches.
-By using them we avoid the situation when the previous algorithm renders the parts of tori and spheres which do not form the final surface (Fig.~\ref{fig:cb-oit}).
+By using them we avoid the situation when the previous algorithm renders the parts of tori and spheres which do not form the final surface, see Fig.~\ref{fig:cb-oit} (right).
 
 
 %Regarding tori, Kauker et al.~\cite{kauker2013rendering} proposed to ray-cast a toroidal patch using a torus and two clipping planes defined by its delimiting triangles.
@@ -239,7 +239,7 @@ First, a label for a torus is retrieved.
 Note that an isolated torus is not a part of the surface graph.
 Second, for each isolated torus, we clip fragments in its neighboring spherical patches that are overlaid by the torus. 
 Otherwise, these fragments would create a false surface layer between a torus and a spherical patch (Fig.~\ref{fig:isolated-hole}).
-\textcolor{blue}{The clipping of fragments in the affected spherical patches is reached using a clipping plane (see Sec.~\ref{sec:spherical-patches})}.
+\textcolor{red}{The clipping of fragments in the affected spherical patches is reached using a clipping plane (see Sec.~\ref{sec:spherical-patches})}.
 
 \begin{figure}[htp]
   \centering
@@ -269,7 +269,7 @@ There can be two cases:
   \item One of the spheres forms only one patch. Then the torus lies in the same surface component as this patch.
 	\item Both spheres form two or more patches.
 	%We find a neighboring patch of the torus by employing the point in a spherical patch test (see Sec.~\ref{sec:spherical-patches}).
-	\textcolor{blue}{We find a neighboring patch of the torus among all patches of an arbitrary neighboring sphere.}
+	We find a neighboring patch of the torus among all patches of an arbitrary neighboring sphere.
 	Then the torus lies in the same surface component as its neighboring patch.
 \end{enumerate}
 
@@ -277,15 +277,15 @@ There can be two cases:
 %We use the latter approach, since the visibility spheres for tori were already computed in a previous phase of our technique.
 %Here, our kernel writes a texture, similarly to Krone et al.~\cite{krone2011parallel}, which stores all visibility spheres that intersect the sphere.
 %When ray-casting spherical patches, we use this texture to discard all fragments that are inside of the intersecting visibility sphere.
-\textcolor{blue}{In the latter case, we find the neighboring patch for a torus $\tau$ as follows.
+In the latter case, we find the neighboring patch for a torus $\tau$ as follows.
 First, an arbitrary neighboring sphere $S$ of $\tau$ is chosen.
 Then, a point $P$ is computed as a projection of the center of $\tau$ on the surface of $S$ along the axis of $\tau$.
-Finally, a (neighboring) patch containing $P$ is found by applying point-in-box tests to bounding boxes (see Sec.~\ref{sec:spherical-patches}) of all patches of $S$.} 
+Finally, a (neighboring) patch containing $P$ is found by applying point-in-box tests to bounding boxes (see Sec.~\ref{sec:spherical-patches}) of all patches of $S$.
 
 \subsubsection{Special Case -- Intersecting Surfaces}
 \label{sec:intersecting}
 The SES surface, more specifically its part that is formed by spherical triangles, can intersect itself.
-These self-intersections were solved by Krone et. al~\cite{krone2009interactive}.
+These self-intersections were solved by Krone et al.~\cite{krone2009interactive}.
 In our case, we compute one or more SES surfaces that can mutually intersect in the same way.
 We handle two different cases of such surface-surface intersections:
 \begin{enumerate}
