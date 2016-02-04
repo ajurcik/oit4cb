@@ -60,8 +60,8 @@ In 2013, Kauker et al.~\cite{kauker2013rendering} proposed to ray-cast a toroida
     \includegraphics[width=1.3in]{image/torus-planes.png}
     %\caption{Clipping by planes defined by spherical triangles.}
   \end{subfigure}
-	\caption{Ray-tracing a toroidal patch. Left: the saddle part of the torus (blue) is cut by the \textit{visibility sphere} (yellow) \textcolor{blue}{-- introduced in~\cite{krone2009interactive}}.
-Right: the patch (blue) is cut from the whole toroidal ring by clipping planes (yellow) defined by the spherical triangles (green).}
+	\caption{Ray-tracing a toroidal patch. Left: the saddle part of the torus (blue) is cut by the visibility sphere which was introduced in~\cite{krone2009interactive}.
+  Right: the patch (blue) is cut from the whole toroidal ring by clipping planes (yellow) defined by the spherical triangles (green).}
 	\label{fig:torus}
 \end{figure}
 
@@ -93,8 +93,8 @@ These special cases then resulted in pixel artifacts in the final image.
 Moreover, the implementation of the PIP test was performance demanding due to many texture memory accesses.
 On the other hand, the computation of a patch's bounding volume is based on the fact, that the spherical patch is bounded by planes defined by its bounding arcs.
 This way, we have a polyhedron $B_{poly}$ which bounds all the patches belonging to an atom sphere.
-For each patch, we add another plane \textcolor{blue}{$p_{cut}$} which cuts $B_{poly}$ in order to keep only the volume containing that patch.
-\textcolor{blue}{$p_{cut}$} is selected as an appropriate plane among planes of the OBB that was used for splatting the patch.
+For each patch, we add another plane $p_{cut}$ which cuts $B_{poly}$ in order to keep only the volume containing that patch.
+$p_{cut}$ is selected as an appropriate plane among planes of the OBB that was used for splatting the patch.
 In fact, by splatting, we clip $B_{poly}$ by all the six planes of the OBB.
 
 In the resulting image, there can still occur pixel artifacts caused by numerical issues when ray-casting the tori.
