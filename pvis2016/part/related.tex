@@ -56,7 +56,7 @@ The Virtual Pixel Maps technique is based on the idea of sorting at the pixel le
 %The A-buffer uses the Fourier window which in general helps to resolve the visibility problem among an arbitrary collection of opaque, transparent, and intersecting objects.
 
 While the algorithms for rendering of correctly transparent objects in real-time have emerged already in the previous decade \cite{everitt2001interactive}, new approaches removing the limitations of these methods are still emerging.
-Bavoil et al.~\cite{bavoil2008order} introduced the peeling of two depth layers in one rendering pass, thus halving the number of rendering passes performed by the original Depth Peeling approach \cite{everitt2001interactive}. However, in our case performing more rendering passes would become a bottleneck because of our ray-tracing approach to the surface rendering.
+Bavoil et al.~\cite{bavoil2008order} introduced the peeling of two depth layers in one rendering pass, thus halving the number of rendering passes performed by the original Depth Peeling approach \cite{everitt2001interactive}. However, in our case performing more rendering passes would become a bottleneck because of our ray-casting approach to the surface rendering.
 Thus, techniques based on the A-buffer suit our technique since they enable to render the entire scene in one pass.
 When using single pass rendering, it is necessary to store all participating or at least all important fragments into a data structure for later composition.
 The first approach storing the participating fragments was introduced by Yang et al.~\cite{yang2010real}. Salvi et al.~\cite{salvi2011adaptive} presented another approach, wherein it is required only to store the important fragments.

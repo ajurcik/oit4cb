@@ -130,7 +130,7 @@ where $O$ represents a user-defined parameter affecting the overall opacity and 
   \phi(x) = K-(K-1)x,
 	\label{eq:exponent}
 \end{equation}	
-where $K$ is the maximum value of the exponent and $x=|f_{i+1}-f_i|/l$ represents the ratio of the fragment interval to the entire length $l$. Note that if $x=1$, i.e., having just two fragments on the ray, then $\phi(x)=1$ determining the $\alpha_i=O$. The opacity of odd fragments, i.e., representing the exist surface points, is defined as $\alpha_i = O$, thus keeping them unmodulated since they are less prominent in the final image.
+where $K$ is the maximum value of the exponent and $x=|f_{i+1}-f_i|/l$ represents the ratio of the fragment interval to the entire length $l$. Note that if $x=1$, i.e., having just two fragments on the ray, then $\phi(x)=1$ determining the $\alpha_i=O$. The opacity of odd fragments, i.e., representing the exit surface points, is defined as $\alpha_i = O$, thus keeping them unmodulated since they are less prominent in the final image.
 Figure~\ref{fig:Oparam} showcases four different combinations of parameters $K$ and $O$.
 \begin{figure*}[htb]
   \centering
@@ -142,10 +142,11 @@ Figure~\ref{fig:Oparam} showcases four different combinations of parameters $K$ 
 \subsection{Cavity Area Estimation}\label{sec:area}
 We enhance the visualization of cavities by coloring their surface by their approximate areas.
 To estimate the area, we sum the areas of all triangles that form the cavity surface.
-The area of a spherical triangle is calculated as follows:
+The area of a spherical triangle is calculated according to Eq.~\ref{eq:area}:
 
 \begin{equation}
   S = r_{probe}^2 \left[ \left( A + B + C \right) - \pi \right],
+	\label{eq:area}
 \end{equation}
 
 where $A$, $B$, and $C$ are angles of the triangle. 
