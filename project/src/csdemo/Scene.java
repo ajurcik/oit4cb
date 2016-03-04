@@ -14,6 +14,8 @@ import com.jogamp.opengl.GLEventListener;
 import static com.jogamp.opengl.GL2.*;
 import static com.jogamp.opengl.GL4.*;
 import com.jogamp.opengl.GL4bc;
+import com.jogamp.opengl.GLDebugListener;
+import com.jogamp.opengl.GLDebugMessage;
 import com.jogamp.opengl.glu.GLU;
 import java.awt.Color;
 import java.io.File;
@@ -500,6 +502,19 @@ public class Scene implements GLEventListener {
     
     @Override
     public void init(GLAutoDrawable glad) {
+        // process OpenGL debug messages
+        glad.getContext().addGLDebugListener(new GLDebugListener() {
+            @Override
+            public void messageSent(GLDebugMessage event) {
+                int type = event.getDbgType();
+                if (type == GL_DEBUG_TYPE_ERROR
+                        || type == GL_DEBUG_TYPE_PERFORMANCE
+                        || type == GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR) {
+                    System.out.println(event.getDbgMsg());
+                }
+            }
+        });
+        
         // get GL2 interface
         GL4bc gl = new DebugGL4bc(glad.getGL().getGL4bc());
         

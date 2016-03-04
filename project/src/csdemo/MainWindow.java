@@ -17,6 +17,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.awt.image.BufferedImage;
 import com.jogamp.opengl.GLCapabilities;
+import com.jogamp.opengl.GLContext;
 import com.jogamp.opengl.GLProfile;
 import com.jogamp.opengl.awt.GLJPanel;
 import java.awt.Color;
@@ -65,6 +66,7 @@ public class MainWindow extends javax.swing.JFrame {
         
         GLProfile profile = GLProfile.get(GLProfile.GL4bc);
         panel = new GLJPanel(new GLCapabilities(profile));
+        panel.setContextCreationFlags(GLContext.CTX_OPTION_DEBUG);
         
         add(panel, BorderLayout.CENTER);
         
