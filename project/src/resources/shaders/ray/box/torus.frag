@@ -96,6 +96,8 @@ void storeFragment(vec4 color, float depth, float ao) {
 #define R2 radii.w
 
 void main() {
+    // ray-counting
+    //storeFragment(vec4(0.0, 0.0, 1.0, 1.0), 0.0, 0.0); discard;
     //if (radii.x > R) {
         //storeFragment(color * faceNormal.z, 10.0, 1.0); discard; // DEBUG
     //}

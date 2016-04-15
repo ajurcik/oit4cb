@@ -87,6 +87,8 @@ void storeFragment(vec4 color, float depth, float ao) {
 }
 
 void main() {
+    // ray-counting
+    //storeFragment(vec4(0.0, 1.0, 0.0, 1.0), 0.0, 0.0); discard;
     // discard fragment if cavity and clipping enabled
     uint label = texelFetch(labelsTex, int(index)).r;
     float area;

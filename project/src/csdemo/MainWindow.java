@@ -271,7 +271,9 @@ public class MainWindow extends javax.swing.JFrame {
         backOpacityExponentSpinner = new javax.swing.JSpinner();
         frontOpacityMaxExponentSpinner = new javax.swing.JSpinner();
         jLabel27 = new javax.swing.JLabel();
-        filler3 = new javax.swing.Box.Filler(new java.awt.Dimension(0, 310), new java.awt.Dimension(0, 310), new java.awt.Dimension(32767, 310));
+        jLabel28 = new javax.swing.JLabel();
+        ligandColorPanel = new javax.swing.JPanel();
+        filler3 = new javax.swing.Box.Filler(new java.awt.Dimension(0, 0), new java.awt.Dimension(100, 1000), new java.awt.Dimension(100, 1000));
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         getContentPane().setLayout(new java.awt.BorderLayout(4, 4));
@@ -1135,6 +1137,8 @@ public class MainWindow extends javax.swing.JFrame {
         develPanel.add(debugPanel);
 
         jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder("Test"));
+        jPanel1.setMinimumSize(new java.awt.Dimension(234, 200));
+        jPanel1.setPreferredSize(new java.awt.Dimension(234, 170));
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
         renderingModeComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "OIT (BOX)", "OIT (SPHERE)", "KRONE" }));
@@ -1158,7 +1162,7 @@ public class MainWindow extends javax.swing.JFrame {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridy = 6;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.FIRST_LINE_START;
         jPanel1.add(testGromacsButton, gridBagConstraints);
 
@@ -1200,7 +1204,7 @@ public class MainWindow extends javax.swing.JFrame {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
         jPanel1.add(dynamicsInterpolationComboBox, gridBagConstraints);
@@ -1208,7 +1212,7 @@ public class MainWindow extends javax.swing.JFrame {
         jLabel24.setText("Dynamics interpolation:");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_TRAILING;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 4);
         jPanel1.add(jLabel24, gridBagConstraints);
@@ -1216,7 +1220,7 @@ public class MainWindow extends javax.swing.JFrame {
         jLabel26.setText("Back opacity exponent:");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_TRAILING;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 4);
         jPanel1.add(jLabel26, gridBagConstraints);
@@ -1230,7 +1234,7 @@ public class MainWindow extends javax.swing.JFrame {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
         jPanel1.add(backOpacityExponentSpinner, gridBagConstraints);
@@ -1244,7 +1248,7 @@ public class MainWindow extends javax.swing.JFrame {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
         jPanel1.add(frontOpacityMaxExponentSpinner, gridBagConstraints);
@@ -1252,10 +1256,33 @@ public class MainWindow extends javax.swing.JFrame {
         jLabel27.setText("Front op. max exponent:");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_TRAILING;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 4);
         jPanel1.add(jLabel27, gridBagConstraints);
+
+        jLabel28.setText("Ligand color:");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_END;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 4);
+        jPanel1.add(jLabel28, gridBagConstraints);
+
+        ligandColorPanel.setBackground(new java.awt.Color(255, 0, 0));
+        ligandColorPanel.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
+        ligandColorPanel.setPreferredSize(new java.awt.Dimension(18, 18));
+        ligandColorPanel.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                ligandColorPanelMouseClicked(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
+        jPanel1.add(ligandColorPanel, gridBagConstraints);
 
         develPanel.add(jPanel1);
         develPanel.add(filler3);
@@ -1478,8 +1505,8 @@ public class MainWindow extends javax.swing.JFrame {
 
     private void testGromacsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_testGromacsButtonActionPerformed
         //File home = new File(System.getProperty("user.home"));
-        File topology = new File("C:\\Users\\xjurc\\caver\\dynamics\\gromacs\\LINB-ACETON.gro");
-        File trajectory = new File("C:\\Users\\xjurc\\caver\\dynamics\\gromacs\\LINB-ACE-pbc.xtc");
+        File topology = new File("C:\\Users\\Adam\\caver\\dynamics\\LINB-ACE\\LINB-ACETON.gro");
+        File trajectory = new File("C:\\Users\\Adam\\caver\\dynamics\\LINB-ACE\\LINB-ACE-pbc.xtc");
         try {
             //int snapshots = loader.getNumberOfSnapshots(trajectory);
             //JOptionPane.showMessageDialog(this, "Number of snapshots: " + snapshots);
@@ -1581,6 +1608,14 @@ public class MainWindow extends javax.swing.JFrame {
         scene.setBackOpacityExponent((float) backOpacityExponentSpinner.getValue());
     }//GEN-LAST:event_backOpacityExponentSpinnerStateChanged
 
+    private void ligandColorPanelMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_ligandColorPanelMouseClicked
+        Color color = JColorChooser.showDialog(this, "Ligand color", ligandColorPanel.getBackground());
+        if (color != null) {
+            ligandColorPanel.setBackground(color);
+            scene.setLigandColor(color);
+        }
+    }//GEN-LAST:event_ligandColorPanelMouseClicked
+
     /**
      * @param args the command line arguments
      */
@@ -1670,6 +1705,7 @@ public class MainWindow extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel25;
     private javax.swing.JLabel jLabel26;
     private javax.swing.JLabel jLabel27;
+    private javax.swing.JLabel jLabel28;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
@@ -1679,6 +1715,7 @@ public class MainWindow extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel9;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JPanel ligandColorPanel;
     private javax.swing.JSpinner ligandThresholdSpinner;
     private javax.swing.JCheckBox moleculeVisibleCheckBox;
     private javax.swing.JPanel otherPanel;

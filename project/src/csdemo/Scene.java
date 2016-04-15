@@ -268,6 +268,7 @@ public class Scene implements GLEventListener {
     private Interpolation interpolation = Interpolation.NEAREST;
     private float frontOpacityMaxExponent = 8f;
     private float backOpacityExponent = 2f;
+    private Color ligandColor = Color.RED;
     
     // debug parameters
     private boolean autoupdate = true;
@@ -404,6 +405,10 @@ public class Scene implements GLEventListener {
         this.tunnelColor = tunnelColor;
     }
 
+    public void setLigandColor(Color ligandColor) {
+        this.ligandColor = ligandColor;
+    }
+    
     public void setTunnelAOThreshold(float tunnelAOThreshold) {
         this.tunnelAOThreshold = tunnelAOThreshold;
     }
@@ -510,7 +515,7 @@ public class Scene implements GLEventListener {
                 if (type == GL_DEBUG_TYPE_ERROR
                         || type == GL_DEBUG_TYPE_PERFORMANCE
                         || type == GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR) {
-                    System.out.println(event.getDbgMsg());
+//                    System.out.println(event.getDbgMsg());
                 }
             }
         });
@@ -1641,6 +1646,7 @@ public class Scene implements GLEventListener {
         int pixelCount = Utils.getCounter(gl, countersBuffer, 0);
         int overdrawCount = Utils.getCounter(gl, countersBuffer, 4);
         int maxFragmentCount = Utils.getCounter(gl, countersBuffer, 8);
+        int totalFragmentCount = Utils.getCounter(gl, fragmentsIndexBuffer);
         if (overdrawCount > 0) {
             System.err.println("Warning: Overdraw in pixels: " + overdrawCount);
         }
@@ -1711,6 +1717,7 @@ public class Scene implements GLEventListener {
             }*/
             System.out.println("Max. fragments: " + maxFragmentCount);
             System.out.println("Coverage: " + 100f * ((float) pixelCount) / (width * height));
+            System.out.println("Total fragments: " + totalFragmentCount);
             // testing
             int cbElapsed = hashElapsed + neighborsElapsed + removeElapsed + arcsElapsed;
             int raycastElapsed = raycastSpheresElapsed + raycastTrianglesElapsed + raycastToriElapsed;
@@ -2069,7 +2076,7 @@ public class Scene implements GLEventListener {
         GL2 gl2 = gl.getGL2();
         //gl2.glPushAttrib(GL_ALL_ATTRIB_BITS);
         //gl2.glLineWidth(4f);
-        gl2.glColor3f(1f, 0f, 0f);
+        gl2.glColor3f(ligandColor.getRed() / 255f, ligandColor.getGreen() / 255f, ligandColor.getBlue() / 255f);
         //gl2.glBegin(GL_LINES);
         int c1 = 0;
         int c2 = 4;
