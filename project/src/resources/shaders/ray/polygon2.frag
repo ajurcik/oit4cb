@@ -334,7 +334,7 @@ void main() {
                 col.rgb = vec3(0.0, 1.0, 0.0);
             }
             if (vertexCount > 0) {
-                col.rgb = vec3(1.0, 0.0, 1.0);
+                //col.rgb = vec3(1.0, 0.0, 1.0);
             }
             storeIntersection(intPos1, normal1, eye, col, 0.2, 0.8, false);
         } else {

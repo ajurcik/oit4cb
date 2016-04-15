@@ -66,8 +66,9 @@ public class Scene implements GLEventListener {
     private int defaultProgram;
     private int resolveProgram;
     
-    // Other programs
+    // other programs
     private int stickProgram;
+    private int probeProgram;
     
     private int atomsBuffer;
     private int gridCountsBuffer;
@@ -312,6 +313,7 @@ public class Scene implements GLEventListener {
     private final CLArcs clArcs = new CLArcs();
     private final CLGraph clGraph = new CLGraph();
     
+    private Mesh sphere;
     private Mesh capsule;
     private Drug acetone;
     private Box box;
@@ -592,6 +594,8 @@ public class Scene implements GLEventListener {
                     "/resources/shaders/default.frag");
             stickProgram = Utils.loadProgram(gl, "/resources/shaders/stick.vert",
                     "/resources/shaders/stick.frag");
+            probeProgram = Utils.loadProgram(gl, "/resources/shaders/sphere.vert",
+                    "/resources/shaders/sphere.frag");
             kroneTriangleProgram = Utils.loadProgram(gl, "/resources/shaders/ray/triangle.vert",
                     "/resources/shaders/ray/krone/triangle.frag");
             kroneTorusProgram = Utils.loadProgram(gl, "/resources/shaders/ray/torus.vert",
@@ -886,6 +890,8 @@ public class Scene implements GLEventListener {
         Utils.bindShaderStorageBlock(gl, defaultProgram, "ABufferIndex", FRAGMENTS_INDEX_BUFFER_INDEX);
         Utils.bindShaderStorageBlock(gl, stickProgram, "ABuffer", FRAGMENTS_BUFFER_INDEX);
         Utils.bindShaderStorageBlock(gl, stickProgram, "ABufferIndex", FRAGMENTS_INDEX_BUFFER_INDEX);
+        Utils.bindShaderStorageBlock(gl, probeProgram, "ABuffer", FRAGMENTS_BUFFER_INDEX);
+        Utils.bindShaderStorageBlock(gl, probeProgram, "ABufferIndex", FRAGMENTS_INDEX_BUFFER_INDEX);
         Utils.bindShaderStorageBlock(gl, resolveProgram, "ABuffer", FRAGMENTS_BUFFER_INDEX);
         Utils.bindShaderStorageBlock(gl, resolveProgram, "ABufferIndex", FRAGMENTS_INDEX_BUFFER_INDEX);
         Utils.bindShaderStorageBlock(gl, resolveProgram, "CountersBuffer", COUNTERS_BUFFER_INDEX);
@@ -1030,6 +1036,7 @@ public class Scene implements GLEventListener {
         uploaded = true;
         
         capsule = Utils.loadMesh(gl, "/resources/obj/capsule.obj");
+        sphere = Utils.loadMesh(gl, "/resources/obj/sphere.obj");
         
         // DEBUG acetone molecule
         try {
@@ -1512,6 +1519,9 @@ public class Scene implements GLEventListener {
         
         gl.glTranslatef(aabbMin.x - 4f, aabbMin.y - 4f, aabbMin.z - 4f);
         
+        int[] viewport = new int[4];
+        gl.glGetIntegerv(GL_VIEWPORT, viewport, 0);
+        
         // DEBUG draw small circles
         //int smallCirclesCount = getAtomicCounter(gl, atomicCounterBuffer);
         //drawSmallCircles(gl, smallCirclesCount);
@@ -1522,7 +1532,9 @@ public class Scene implements GLEventListener {
         }
         
         if (renderPoint) {
-            Utils.drawPoint(gl, point, 2f);
+            //Utils.drawPoint(gl, point, 2f);
+            gl.glColor4f(1f, 1f, 0f, 0.5f);
+            sphere(gl, point, probeRadius, viewport);
         }
         
         // calc view vectors
@@ -1534,9 +1546,6 @@ public class Scene implements GLEventListener {
         right.cross(up, view);
         right.normalize();
         up.cross(view, right);
-        
-        int[] viewport = new int[4];
-        gl.glGetIntegerv(GL_VIEWPORT, viewport, 0);
 
         // render molecule
         if (moleculeVisible) {
@@ -1593,9 +1602,9 @@ public class Scene implements GLEventListener {
         gl.glUseProgram(defaultProgram);
         //renderAcetone(gl, acetone);
         
-        if (renderPoint) {
-            Utils.drawPoint(gl, point, 2f);
-        }
+//        if (renderPoint) {
+//            Utils.drawPoint(gl, point, 2f);
+//        }
         
         // render drugs
         Point3f moleculeCenter = new Point3f(aabbMin);
@@ -2142,6 +2151,29 @@ public class Scene implements GLEventListener {
         gl.glNormalPointer(GL_FLOAT, 24, 12);
         
         gl.glDrawArrays(GL_TRIANGLES, 0, 3 * capsule.getTriangleCount());
+        
+        gl.glDisableClientState(GL_VERTEX_ARRAY);
+        gl.glDisableClientState(GL_NORMAL_ARRAY);
+        
+        gl.glPopMatrix();
+    }
+    
+    private void sphere(GL2 gl, Vector3f center, float radius, int[] viewport) {
+        gl.glPushMatrix();
+        gl.glTranslatef(center.x, center.y, center.z);
+        
+        gl.glUseProgram(probeProgram);
+        Utils.setUniform(gl.getGL4(), probeProgram, "radius", radius);
+        Utils.setUniform(gl.getGL4(), probeProgram, "window", viewport[2], viewport[3]);
+        
+        gl.glEnableClientState(GL_VERTEX_ARRAY);
+        gl.glEnableClientState(GL_NORMAL_ARRAY);
+        
+        gl.glBindBuffer(GL_ARRAY_BUFFER, sphere.getVertexArrayBuffer());
+        gl.glVertexPointer(3, GL_FLOAT, 24, 0);
+        gl.glNormalPointer(GL_FLOAT, 24, 12);
+        
+        gl.glDrawArrays(GL_TRIANGLES, 0, 3 * sphere.getTriangleCount());
         
         gl.glDisableClientState(GL_VERTEX_ARRAY);
         gl.glDisableClientState(GL_NORMAL_ARRAY);

@@ -161,7 +161,7 @@ void main() {
     obbRot[2] = normalize(cross(obbRot[0], obbRot[1]));
     obbRot[1] = cross(obbRot[2], obbRot[0]);
 
-    vec3 obbScale = vec3(sx, syz, syz);
+    vec3 obbScale = 4.0 * vec3(sx, syz, syz);
 
     int of = 0;
     for (int f = 0; f < 6; f++) {
