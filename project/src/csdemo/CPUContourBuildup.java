@@ -1,16 +1,10 @@
 package csdemo;
 
-import static csdemo.Scene.MAX_NEIGHBORS;
-import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import javax.swing.JFrame;
-import javax.swing.JPanel;
-import javax.vecmath.Vector2f;
 import javax.vecmath.Vector3f;
 import javax.vecmath.Vector4f;
 
@@ -22,16 +16,23 @@ public class CPUContourBuildup {
     
     private Molecule molecule;
     
+    // settings
+    private final int maxNeighbors;
+    private final float probeRadius;
+    
     private List<Vector4f> atoms;
     private int[] neighborCounts;
     private int[] neighbors;
     private Vector4f[] smallCircles;
 
-    public CPUContourBuildup(Molecule molecule) {
+    public CPUContourBuildup(Molecule molecule, int maxNeighbors, float probeRadius) {
         this.molecule = molecule;
+        // settings
+        this.maxNeighbors = maxNeighbors;
+        this.probeRadius = probeRadius;
     }
     
-    public void computeNeighbors(float probeRadius) {
+    public void computeNeighbors() {
         float[] positions = molecule.getAtomPositions(0);
         
         atoms = new ArrayList<>();
@@ -45,8 +46,8 @@ public class CPUContourBuildup {
         }
         
         neighborCounts = new int[atoms.size()];
-        neighbors = new int[atoms.size() * MAX_NEIGHBORS];
-        smallCircles = new Vector4f[atoms.size() * MAX_NEIGHBORS];
+        neighbors = new int[atoms.size() * maxNeighbors];
+        smallCircles = new Vector4f[atoms.size() * maxNeighbors];
         
         // find small circles (brute force)
         Arrays.fill(neighborCounts, 0);
@@ -64,10 +65,10 @@ public class CPUContourBuildup {
                 vec.w = 0f;
                 float dist = vec.length();
                 if (dist < atom.w + other.w + 2 * probeRadius) {
-                    if (count > MAX_NEIGHBORS) {
+                    if (count > maxNeighbors) {
                         throw new IllegalStateException("MAX_NEIGHBORS exceded. Neighbors: " + count);
                     }
-                    neighbors[i * MAX_NEIGHBORS + count] = j;
+                    neighbors[i * maxNeighbors + count] = j;
                     Vector4f smallCircle = new Vector4f();
                     float r = ((atom.w + probeRadius) * (atom.w + probeRadius))
                         + (dist * dist)
@@ -77,18 +78,15 @@ public class CPUContourBuildup {
                     vec.scale(r);
                     smallCircle.set(vec);
                     smallCircle.w = (float) Math.sqrt(((atom.w + probeRadius) * (atom.w + probeRadius)) - vec.dot(vec));
-                    smallCircles[i * MAX_NEIGHBORS + count] = smallCircle;
+                    smallCircles[i * maxNeighbors + count] = smallCircle;
                     count++;
                 }
-            }
-            if (count == 0) {
-                int brk = 1;
             }
             neighborCounts[i] = count;
         }
         
         // print statistics
-        int minNeighborCount = MAX_NEIGHBORS;
+        int minNeighborCount = maxNeighbors;
         int maxNeighborCount = 0;
         int totalNeighbors = 0;
         for (int i = 0; i < atoms.size(); i++) {
@@ -195,21 +193,21 @@ public class CPUContourBuildup {
 //                }
 //            }
 //        }
-//        
-//        // print statistics
-//        int totalSmallCircles = 0;
-//        for (int i = 0; i < atoms.size(); i++) {
-//            for (int j = 0; j < neighborCounts[i]; j++) {
-//                if (smallCircles[i * MAX_NEIGHBORS + j].w >= 0f) {
-//                    totalSmallCircles++;
-//                }
-//            }
-//        }
-//        System.out.println("Small circles (CPU): " + totalSmallCircles);
+        
+        // print statistics
+        int totalSmallCircles = 0;
+        for (int i = 0; i < atoms.size(); i++) {
+            for (int j = 0; j < neighborCounts[i]; j++) {
+                if (smallCircles[i * maxNeighbors + j].w >= 0f) {
+                    totalSmallCircles++;
+                }
+            }
+        }
+        System.out.println("Small circles (CPU): " + totalSmallCircles);
     }
     
-    public void filterSmallCircles(final float probeRadius) {
-        for (int x = 0; x < MAX_NEIGHBORS; x++) {
+    public void filterSmallCircles() {
+        for (int x = 0; x < maxNeighbors; x++) {
             for (int y = 0; y < atoms.size(); y++) {
                 // get atom index
                 int atomIdx = y;
@@ -230,9 +228,9 @@ public class CPUContourBuildup {
                 boolean addJ = true;
 
                 // the atom index of j
-                int j = neighbors[atomIdx * MAX_NEIGHBORS + jIdx];
+                int j = neighbors[atomIdx * maxNeighbors + jIdx];
                 // get small circle j
-                Vector4f scj = smallCircles[atomIdx * MAX_NEIGHBORS + jIdx];
+                Vector4f scj = smallCircles[atomIdx * maxNeighbors + jIdx];
                 // vj = the small circle center
                 Vector3f vj = new Vector3f(scj.x, scj.y, scj.z);
                 // pj = center of atom j
@@ -244,12 +242,12 @@ public class CPUContourBuildup {
                     // don't compare the circle with itself
                     if (jIdx != kCnt) {
                         // the atom index of k
-                        int k = neighbors[atomIdx * MAX_NEIGHBORS + kCnt];
+                        int k = neighbors[atomIdx * maxNeighbors + kCnt];
                         // pk = center of atom k
                         Vector4f ak = atoms.get(k);
                         Vector3f pk = new Vector3f(ak.x, ak.y, ak.z);
                         // get small circle k
-                        Vector4f sck = smallCircles[atomIdx * MAX_NEIGHBORS + kCnt];
+                        Vector4f sck = smallCircles[atomIdx * maxNeighbors + kCnt];
                         // vk = the small circle center
                         Vector3f vk = new Vector3f(sck.x, sck.y, sck.z);
                         // vj * vk
@@ -302,9 +300,9 @@ public class CPUContourBuildup {
                                 } else {
                                     if (testCapInclusion(scj, vj, nj, sck, vk, nk)) {
                                         SmallCirclesPlot plot = new SmallCirclesPlot(atomi, aj, ak, vj, vk, nj, nk, h, probeRadius);
-                                        plot.setPreferredSize(new Dimension(800, 600));
+                                        plot.setPreferredSize(new Dimension(1280, 960));
                                         
-                                        JFrame f = new JFrame();
+                                        JFrame f = new JFrame("cap inside I");
                                         f.add(plot);
                                         f.pack();
                                         f.setVisible(true);
@@ -314,17 +312,25 @@ public class CPUContourBuildup {
                                 if (mj.dot(mk) > 0.0 && nj.dot(q) < 0.0) {
                                     // atom i has no contour
                                     neighborCounts[atomIdx] = 0;
+                                    
+                                    SmallCirclesPlot plot = new SmallCirclesPlot(atomi, aj, ak, vj, vk, nj, nk, h, probeRadius);
+                                    plot.setPreferredSize(new Dimension(1280, 960));
+
+                                    JFrame f = new JFrame("no contours");
+                                    f.add(plot);
+                                    f.pack();
+                                    f.setVisible(true);
                                 } else {
                                     // test cap inclusion
-                                    if (testCapInclusion(scj, vj, nj, sck, vk, nk)) {
-                                        SmallCirclesPlot plot = new SmallCirclesPlot(atomi, aj, ak, vj, vk, nj, nk, h, probeRadius);
-                                        plot.setPreferredSize(new Dimension(800, 600));
-                                        
-                                        JFrame f = new JFrame();
-                                        f.add(plot);
-                                        f.pack();
-                                        f.setVisible(true);
-                                    }
+//                                    if (testCapInclusion(scj, vj, nj, sck, vk, nk)) {
+//                                        SmallCirclesPlot plot = new SmallCirclesPlot(atomi, aj, ak, vj, vk, nj, nk, h, probeRadius);
+//                                        plot.setPreferredSize(new Dimension(1280, 960));
+//                                        
+//                                        JFrame f = new JFrame("cap inside II");
+//                                        f.add(plot);
+//                                        f.pack();
+//                                        f.setVisible(true);
+//                                    }
                                 }
                             }
                         }
@@ -332,7 +338,7 @@ public class CPUContourBuildup {
                 }
                 // all k were tested, see if j is cut off
                 if (!addJ) {
-//                    smallCircles[atomIdx * MAX_NEIGHBORS + jIdx].w = -11.0f;
+//                    smallCircles[atomIdx * maxNeighbors + jIdx].w = -11.0f;
                 }
             }
         }

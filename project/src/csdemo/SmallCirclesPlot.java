@@ -84,8 +84,8 @@ public class SmallCirclesPlot extends JPanel {
         bh.x = b1.dot(h);
         bh.y = b2.dot(h);
         
-        g2d.translate(400, 300);
-        float scale = 50f;
+        g2d.translate(640, 480);
+        float scale = 100f;
         Vector2f bi = new Vector2f();
         drawPoint(g2d, bi, "ai " + ai.w, scale);
         drawPoint(g2d, bj, "aj " + aj.w, scale);
