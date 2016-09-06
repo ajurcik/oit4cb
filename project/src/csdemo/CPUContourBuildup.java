@@ -15,7 +15,8 @@ public class CPUContourBuildup {
     
     private Molecule molecule;
     
-    private int[] neighborCount;
+    private List<Vector4f> atoms;
+    private int[] neighborCounts;
     private int[] neighbors;
     private Vector4f[] smallCircles;
 
@@ -23,10 +24,10 @@ public class CPUContourBuildup {
         this.molecule = molecule;
     }
     
-    public void countSmallCircles(float probeRadius) {
+    public void computeNeighbors(float probeRadius) {
         float[] positions = molecule.getAtomPositions(0);
         
-        List<Vector4f> atoms = new ArrayList<>();
+        atoms = new ArrayList<>();
         for (int i = 0; i < molecule.getAtomCount(); i++) {
             Vector4f atom = new Vector4f();
             atom.x = positions[3 * i];
@@ -36,12 +37,12 @@ public class CPUContourBuildup {
             atoms.add(atom);
         }
         
-        neighborCount = new int[atoms.size()];
+        neighborCounts = new int[atoms.size()];
         neighbors = new int[atoms.size() * MAX_NEIGHBORS];
         smallCircles = new Vector4f[atoms.size() * MAX_NEIGHBORS];
         
         // find small circles (brute force)
-        Arrays.fill(neighborCount, 0);
+        Arrays.fill(neighborCounts, 0);
         Arrays.fill(neighbors, -1);
         for (int i = 0; i < atoms.size(); i++) {
             int count = 0;
@@ -76,7 +77,7 @@ public class CPUContourBuildup {
             if (count == 0) {
                 int brk = 1;
             }
-            neighborCount[i] = count;
+            neighborCounts[i] = count;
         }
         
         // print statistics
@@ -84,13 +85,13 @@ public class CPUContourBuildup {
         int maxNeighborCount = 0;
         int totalNeighbors = 0;
         for (int i = 0; i < atoms.size(); i++) {
-            if (neighborCount[i] < minNeighborCount) {
-                minNeighborCount = neighborCount[i];
+            if (neighborCounts[i] < minNeighborCount) {
+                minNeighborCount = neighborCounts[i];
             }
-            if (neighborCount[i] > maxNeighborCount) {
-                maxNeighborCount = neighborCount[i];
+            if (neighborCounts[i] > maxNeighborCount) {
+                maxNeighborCount = neighborCounts[i];
             }
-            totalNeighbors += neighborCount[i];
+            totalNeighbors += neighborCounts[i];
         }
         System.out.println("Min. neighbor count (CPU): " + minNeighborCount);
         System.out.println("Max. neighbor count (CPU): " + maxNeighborCount);
@@ -99,7 +100,7 @@ public class CPUContourBuildup {
         
         // remove covered small circles
         for (int i = 0; i < atoms.size(); i++) {
-            for (int jIdx = 0; jIdx < neighborCount[i]; jIdx++) {
+            for (int jIdx = 0; jIdx < neighborCounts[i]; jIdx++) {
                 Vector4f atomi = atoms.get(i);
                 Vector3f pi = new Vector3f(atomi.x, atomi.y, atomi.z);
                 float R = atomi.w + probeRadius;
@@ -118,7 +119,7 @@ public class CPUContourBuildup {
                 Vector3f pj = new Vector3f(aj.x, aj.y, aj.z);
 
                 // check j with all other neighbors k
-                for (int kCnt = 0; kCnt < neighborCount[i]; kCnt++) {
+                for (int kCnt = 0; kCnt < neighborCounts[i]; kCnt++) {
                     // don't compare the circle with itself
                     if (jIdx != kCnt) {
                         // the atom index of k
@@ -175,7 +176,7 @@ public class CPUContourBuildup {
                             } else {
                                 if (mj.dot(mk) > 0.0f && nj.dot(q) < 0.0f) {
                                     // atom i has no contour
-                                    neighborCount[i] = 0;
+                                    neighborCounts[i] = 0;
                                 }
                             }
                         }
@@ -191,13 +192,128 @@ public class CPUContourBuildup {
         // print statistics
         int totalSmallCircles = 0;
         for (int i = 0; i < atoms.size(); i++) {
-            for (int j = 0; j < neighborCount[i]; j++) {
+            for (int j = 0; j < neighborCounts[i]; j++) {
                 if (smallCircles[i * MAX_NEIGHBORS + j].w >= 0f) {
                     totalSmallCircles++;
                 }
             }
         }
         System.out.println("Small circles (CPU): " + totalSmallCircles);
+    }
+    
+    public void filterSmallCircles(float probeRadius) {
+        for (int x = 0; x < MAX_NEIGHBORS; x++) {
+            for (int y = 0; y < atoms.size(); y++) {
+                // get atom index
+                int atomIdx = y;
+                // get neighbor atom index
+                int jIdx = x;
+                // set small circle visibility to false
+                //smallCirclesVisible[atomIdx * maxNumNeighbors + jIdx] = 0;
+                // check, if neighbor index is within bounds
+                int numNeighbors = neighborCounts[atomIdx];
+                if (jIdx >= numNeighbors) return;
+
+                // read position and radius of atom i from sorted array
+                Vector4f atomi = atoms.get(atomIdx);
+                Vector3f pi = new Vector3f(atomi.x, atomi.y, atomi.z);
+                float R = atomi.w + probeRadius;
+
+                // flag wether j should be added (true) is cut off (false)
+                boolean addJ = true;
+
+                // the atom index of j
+                int j = neighbors[atomIdx * MAX_NEIGHBORS + jIdx];
+                // get small circle j
+                Vector4f scj = smallCircles[atomIdx * MAX_NEIGHBORS + jIdx];
+                // vj = the small circle center
+                Vector3f vj = new Vector3f(scj.x, scj.y, scj.z);
+                // pj = center of atom j
+                Vector4f aj = atoms.get(j);
+                Vector3f pj = new Vector3f(aj.x, aj.y, aj.z);
+
+                // check j with all other neighbors k
+                for (int kCnt = 0; kCnt < numNeighbors; kCnt++) {
+                    // don't compare the circle with itself
+                    if (jIdx != kCnt) {
+                        // the atom index of k
+                        int k = neighbors[atomIdx * MAX_NEIGHBORS + kCnt];
+                        // pk = center of atom k
+                        Vector4f ak = atoms.get(k);
+                        Vector3f pk = new Vector3f(ak.x, ak.y, ak.z);
+                        // get small circle k
+                        Vector4f sck = smallCircles[atomIdx * MAX_NEIGHBORS + kCnt];
+                        // vk = the small circle center
+                        Vector3f vk = new Vector3f(sck.x, sck.y, sck.z);
+                        // vj * vk
+                        float vjvk = vj.dot(vk);
+                        // denominator
+                        float denom = vj.dot(vj) * vk.dot(vk) - vjvk * vjvk;
+                        // point on straight line (intersection of small circle planes)
+                        // h = vj * (dot(vj, vj - vk) * dot(vk, vk)) / denom + vk * (dot(vk - vj, vk) * dot(vj, vj)) / denom;
+                        Vector3f h = new Vector3f();
+                        Vector3f subvjvk = new Vector3f();
+                        Vector3f subvkvj = new Vector3f();
+                        subvjvk.sub(vj, vk);
+                        subvkvj.sub(vk, vj);
+                        Vector3f hj = new Vector3f(vj);
+                        hj.scale((vj.dot(subvjvk) * vk.dot(vk)) / denom);
+                        Vector3f hk = new Vector3f(vk);
+                        hk.scale((subvkvj.dot(vk) * vj.dot(vj)) / denom);
+                        h.add(hj, hk);
+                        // compute cases
+                        // nj = normalize(pi - pk);
+                        Vector3f nj = new Vector3f();
+                        nj.sub(pi, pj);
+                        nj.normalize();
+                        // nk = normalize(pi - pk);
+                        Vector3f nk = new Vector3f();
+                        nk.sub(pi, pk);
+                        nk.normalize();
+                        // q = vk - vj;
+                        Vector3f q = new Vector3f();
+                        q.sub(vk, vj);
+                        // if normals are the same (unrealistic, yet theoretically possible)
+                        if (nj.dot(nk) == 1.0) {
+                            if (nj.dot(nk) > 0.0 /*Redundant?*/) {
+                                if (nj.dot(q) > 0.0) {
+                                    // k cuts off j --> remove j
+                                    addJ = false;
+                                }
+                            }
+                        } else if (h.length() > R) {
+                            // mj = (vj - h);
+                            Vector3f mj = new Vector3f();
+                            mj.sub(vj, h);
+                            // mk = (vk - h);
+                            Vector3f mk = new Vector3f();
+                            mk.sub(vk, h);
+                            if (nj.dot(nk) > 0.0) {
+                                if (mj.dot(mk) > 0.0 && nj.dot(q) > 0.0) {
+                                    // k cuts off j --> remove j
+                                    addJ = false;
+                                }
+                                if (mj.dot(mk) <= 0f) {
+                                    int brk = 1;
+                                }
+                            } else {
+                                if (mj.dot(mk) > 0.0 && nj.dot(q) < 0.0) {
+                                    // atom i has no contour
+                                    neighborCounts[atomIdx] = 0;
+                                }
+                                if (mj.dot(mk) <= 0f) {
+                                    int brk = 1;
+                                }
+                            }
+                        }
+                    }
+                }
+                // all k were tested, see if j is cut off
+                if (!addJ) {
+                    smallCircles[atomIdx * MAX_NEIGHBORS + jIdx].w = -11.0f;
+                }
+            }
+        }
     }
     
 }
