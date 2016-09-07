@@ -322,15 +322,15 @@ public class CPUContourBuildup {
                                     f.setVisible(true);
                                 } else {
                                     // test cap inclusion
-//                                    if (testCapInclusion(scj, vj, nj, sck, vk, nk)) {
-//                                        SmallCirclesPlot plot = new SmallCirclesPlot(atomi, aj, ak, vj, vk, nj, nk, h, probeRadius);
-//                                        plot.setPreferredSize(new Dimension(1280, 960));
-//                                        
-//                                        JFrame f = new JFrame("cap inside II");
-//                                        f.add(plot);
-//                                        f.pack();
-//                                        f.setVisible(true);
-//                                    }
+                                    if (testCapInclusion2(scj, vj, nj, sck, vk, nk, R)) {
+                                        SmallCirclesPlot plot = new SmallCirclesPlot(atomi, aj, ak, vj, vk, nj, nk, h, probeRadius);
+                                        plot.setPreferredSize(new Dimension(1280, 960));
+                                        
+                                        JFrame f = new JFrame("cap inside II");
+                                        f.add(plot);
+                                        f.pack();
+                                        f.setVisible(true);
+                                    }
                                 }
                             }
                         }
@@ -368,6 +368,20 @@ public class CPUContourBuildup {
         float cosjk = nj.dot(nk);
         
         return Math.acos(cosk) > Math.acos(cosjk) + Math.acos(cosj);
+    }
+    
+    private boolean testCapInclusion2(Vector4f scj, Vector3f vj, Vector3f nj, Vector4f sck, Vector3f vk, Vector3f nk, float r) {
+        float dj = ((float) Math.sqrt(r * r - scj.w * scj.w)) / r;
+        float dk = ((float) Math.sqrt(r * r - sck.w * sck.w)) / r;
+        if (vj.dot(nj) > 0f) {
+            dj = -dj;
+        }
+        if (vk.dot(nk) > 0f) {
+            dk = -dk;
+        }
+        float a = nj.dot(nk) - dj * dk;
+        
+        return dk <= dj && (a >= 1f || (a >= 0f && a*a >= (1f - dk * dk) * (1f - dj * dj)));
     }
     
     private Vector3f perp(Vector3f v) {

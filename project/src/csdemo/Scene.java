@@ -613,7 +613,7 @@ public class Scene implements GLEventListener {
         }
         
         // Statistics
-        CPUContourBuildup cpucb = new CPUContourBuildup(dynamics.getMolecule(), 512, 3.0f);
+        CPUContourBuildup cpucb = new CPUContourBuildup(dynamics.getMolecule(), 512, 1.4f);
         cpucb.computeNeighbors();
         cpucb.filterSmallCircles();
         
