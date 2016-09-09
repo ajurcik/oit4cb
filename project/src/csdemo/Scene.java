@@ -604,7 +604,7 @@ public class Scene implements GLEventListener {
                     "/resources/shaders/ray/polygon2.geom", "/resources/shaders/ray/krone/polygon2.frag");
             // Load molecule
             //dynamics = new Dynamics(Utils.loadDynamicsFromResource("/resources/md/model", 1, 10));
-            dynamics = new Dynamics(Collections.singletonList(Utils.loadAtomsFromResource("/resources/1YV8_all.pdb")));
+            dynamics = new Dynamics(Collections.singletonList(Utils.loadAtomsFromResource("/resources/1AF6.pdb")));
             System.out.println("Atoms (molecule): " + dynamics.getMolecule().getAtomCount());
             System.out.println("Snapshots: " + dynamics.getSnapshotCount());
         } catch (Exception ex) {
@@ -616,6 +616,7 @@ public class Scene implements GLEventListener {
         CPUContourBuildup cpucb = new CPUContourBuildup(dynamics.getMolecule(), 512, 1.4f);
         cpucb.computeNeighbors();
         cpucb.filterSmallCircles();
+//        cpucb.computeArcs(0, 0);
         
         testTriangleProgram = boxTriangleProgram;
         testTorusProgram = boxTorusProgram;

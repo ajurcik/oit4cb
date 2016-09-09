@@ -67,7 +67,7 @@ kernel void arcs(
     //uint j = read_imageui(neighbors, sampler, (int2)(atomIdx * maxNumNeighbors + jIdx)).x; // PROFILE
     // get small circle j
     float4 scj = smallCircles[atomIdx * params->maxNumNeighbors + jIdx];
-    //float4 scj = read_imagef(smallCircles, sampler, (int2)(atomIdx * maxNumNeighbors + jIdx)); // PROFILE
+    //float4 scj = read_imagef(smallCircles, sampler, (int2)(atomIdx * maxNumNeighbors + jIdx)); // PROFILE   
     // do nothing if small circle j has radius -1 (removed)
     if (scj.w < -10.0f) {
         //arcCount[atomIdx * maxNumNeighbors + jIdx] = 0; // DEBUG
@@ -111,7 +111,7 @@ kernel void arcs(
     yAxis = normalize(yAxis);
 
     // check j with all other neighbors k
-    for (uint kCnt = 0; kCnt < numNeighbors; kCnt++) {
+    for (uint kCnt = 0; arcCnt > 0 && kCnt < numNeighbors; kCnt++) { // arcCnt > 0 small optimization
         // don't compare the circle with itself
         if (jIdx == kCnt) { 
             continue;

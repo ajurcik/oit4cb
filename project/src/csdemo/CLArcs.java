@@ -53,7 +53,9 @@ public class CLArcs {
         System.out.println("OpenCL device: " + device);
         
         try {
-            CLProgram arcsProgram = cl.createProgram(CLPerformance.class.getResourceAsStream("/resources/cl/arcs.cl")).build();
+            CLProgram arcsProgram = cl.createProgram(CLPerformance.class.getResourceAsStream("/resources/cl/arcs.cl"))
+                    .build(/*"-cl-nv-verbose"*/);
+            System.out.println("OpenCL build log (arcs.cl):\n" + arcsProgram.getBuildLog());
             arcsKernel = arcsProgram.createCLKernel("arcs");
         } catch (IOException ex) {
             System.err.println("Resource loading failed. " + ex.getMessage());
@@ -83,8 +85,8 @@ public class CLArcs {
     
     public int computeArcs(GL4 gl, int atomCount, int maxNumNeighbors, int maxNumTotalArcHashes,
             int maxHashIterations, float probeRadius) {
-        int localWorkSizeX = 64;
-        int localWorkSizeY = 4;
+        int localWorkSizeX = maxNumNeighbors;
+        int localWorkSizeY = 1;
         int globalWorkSizeX = roundUp(localWorkSizeX, maxNumNeighbors); // rounded up to the nearest multiple of the localWorkSize
         int globalWorkSizeY = roundUp(localWorkSizeY, atomCount);
         
