@@ -98,19 +98,62 @@ void main() {
         dist = -dist;
     }
 
+    // shrink OBB
+    vec3 o = vertex.objPos.xyz + (probeRadius - dist) * plane.xyz;
+    vec3 pp1 = p1 - dot(p1 - o, plane.xyz) * plane.xyz;
+    vec3 pp2 = p2 - dot(p2 - o, plane.xyz) * plane.xyz;
+    vec3 pp3 = p3 - dot(p3 - o, plane.xyz) * plane.xyz;
+    vec3 pv1 = normalize(pp1 - o);
+    vec3 pv2 = normalize(pp2 - o);
+    vec3 pv3 = normalize(pp3 - o);
+    float d12 = dot(pv1, pv2);
+    float d13 = dot(pv1, pv3);
+    float d23 = dot(pv2, pv3);
+    vec3 zAxis;
+    if (d12 < d13) {
+        if (d12 < d23) {
+            zAxis = pp1 - pp2;
+        } else { // d12 >= d23
+            zAxis = pp2 - pp3;
+        }
+    } else { // d12 >= d13
+        if (d13 < d23) {
+            zAxis = pp1 - pp3;
+        } else { // d13 >= d23
+            zAxis = pp2 - pp3;
+        }
+    }
+
+    zAxis = normalize(zAxis);
+    vec3 yAxis = cross(zAxis, plane.xyz);
+    vec3 yv1 = probeRadius * normalize(p1 - dot(p1 - o, zAxis) * zAxis - vertex.objPos.xyz);
+    vec3 yv2 = probeRadius * normalize(p2 - dot(p2 - o, zAxis) * zAxis - vertex.objPos.xyz);
+    vec3 yv3 = probeRadius * normalize(p3 - dot(p3 - o, zAxis) * zAxis - vertex.objPos.xyz);
+    float sy1 = min(min(dot(yv1, yAxis), dot(yv2, yAxis)), dot(yv3, yAxis));
+    float sy2 = max(max(dot(yv1, yAxis), dot(yv2, yAxis)), dot(yv3, yAxis));
+    /*float sy1 = min(min(dot(pp1 - o, yAxis), dot(pp2 - o, yAxis)), dot(pp3 - o, yAxis));
+    float sy2 = max(max(dot(pp1 - o, yAxis), dot(pp2 - o, yAxis)), dot(pp3 - o, yAxis));*/
+
     float sx = (probeRadius + dist) / 2.0;
     float syz = sqrt(probeRadius * probeRadius - dist * dist);
 
+    if (dot(cross(yAxis, zAxis), plane.xyz) < 0.9) {
+        vertex.color.rgb = vec3(0.0, 1.0, 1.0);
+    }
+
     vec3 obbC = vertex.objPos.xyz + (probeRadius - sx) * plane.xyz;
+    obbC += (sy2 + sy1) / 2.0 * yAxis;
 
     mat3 obbRot;
     obbRot[0] = plane.xyz;
-    obbRot[1] = ((obbRot[0].x > 0.9) || (obbRot[0].x < -0.9))
+    /*obbRot[1] = ((obbRot[0].x > 0.9) || (obbRot[0].x < -0.9))
             ? vec3(0.0, 1.0, 0.0) : vec3(1.0, 0.0, 0.0); // normal on tmp
     obbRot[2] = normalize(cross(obbRot[0], obbRot[1]));
-    obbRot[1] = cross(obbRot[2], obbRot[0]);
+    obbRot[1] = cross(obbRot[2], obbRot[0]);*/
+    obbRot[1] = yAxis;
+    obbRot[2] = zAxis;
 
-    vec3 obbScale = vec3(sx, syz, syz);
+    vec3 obbScale = vec3(sx, (sy2 - sy1) / 2.0, syz);
 
     int of = 0;
     for (int f = 0; f < 6; f++) {
@@ -133,7 +176,7 @@ void main() {
         //vec4 color = vec4(1.0, 1.0, 0.0, 1.0);
         if (n.z < 0) {
             continue;
-            //color.rgb = vec3(0.5, 0.5, 0.5);
+            //vertex.color.rgb = vec3(0.5, 0.5, 0.5);
         }
         
         vertex.faceVertices[of][0] = pv0.xy;
