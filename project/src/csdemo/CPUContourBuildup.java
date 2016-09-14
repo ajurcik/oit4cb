@@ -1,10 +1,8 @@
 package csdemo;
 
-import java.awt.Dimension;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import javax.swing.JFrame;
 import javax.vecmath.Vector3f;
 import javax.vecmath.Vector4f;
 
@@ -25,6 +23,7 @@ public class CPUContourBuildup {
     private int[] neighbors;
     private Vector4f[] smallCircles;
     private boolean[] smallCirclesValid;
+    private int[] arcCounts;
 
     public CPUContourBuildup(Molecule molecule, int maxNeighbors, float probeRadius) {
         this.molecule = molecule;
@@ -46,14 +45,16 @@ public class CPUContourBuildup {
             atoms.add(atom);
         }
         
-        neighborCounts = new int[atoms.size()];
         neighbors = new int[atoms.size() * maxNeighbors];
+        neighborCounts = new int[atoms.size()];
         smallCircles = new Vector4f[atoms.size() * maxNeighbors];
         smallCirclesValid = new boolean[atoms.size() * maxNeighbors];
+        arcCounts = new int[atoms.size() * maxNeighbors];
         
         // find small circles (brute force)
         Arrays.fill(neighborCounts, 0);
         Arrays.fill(neighbors, -1);
+        Arrays.fill(arcCounts, 0);
         for (int i = 0; i < atoms.size(); i++) {
             int count = 0;
             for (int j = 0; j < atoms.size(); j++) {
@@ -440,6 +441,15 @@ public class CPUContourBuildup {
                 computeArcs(atomIdx, jIdx);
             }
         }
+        
+        // statistics
+        int totalArcs = 0;
+        for (int i = 0; i < atoms.size(); i++) {
+            for (int j = 0; j < neighborCounts[i]; j++) {
+                totalArcs += arcCounts[i * maxNeighbors + j];
+            }
+        }
+        System.out.println("Arcs (CPU): " + totalArcs);
     }
     
     public void computeArcs(int atomIdx, int jIdx) {
@@ -449,7 +459,7 @@ public class CPUContourBuildup {
         float R = atomi.w + probeRadius;
 
         // the atom index of j
-        //int j = neighbors[atomIdx * maxNeighbors + jIdx];
+        int j = neighbors[atomIdx * maxNeighbors + jIdx];
         // get small circle j
         Vector4f scj = smallCircles[atomIdx * maxNeighbors + jIdx];
         // do nothing if small circle j has radius -1 (removed)
@@ -770,12 +780,12 @@ public class CPUContourBuildup {
             arcCnt--;
         }
 
-//        int arcWritten = 0;
+        int arcWritten = 0;
         // copy arcs to global arc array
-//        for (uint aCnt = 0; aCnt < arcCnt; aCnt++) {
-//            if (atomIdx < j) {
-//                uint k = startkIndex[aCnt];
-//                if (j < k) {
+        for (int aCnt = 0; aCnt < arcCnt; aCnt++) {
+            if (atomIdx < j) {
+                int k = startkIndex[aCnt];
+                if (j < k) {
 //                    uint index = atomic_add(&counters->totalArcCount, 1);
 //                    //uint index = atomicCounterIncrement(totalArcCount);
 //                    //uint index = atomIdx * maxNumNeighbors * maxNumArcs + jIdx * maxNumArcs + arcWritten;
@@ -784,10 +794,10 @@ public class CPUContourBuildup {
 //                    writeArcHash(atomIdx, j, k, index, true, arcHashes, counters, params);
 //                    writeArcHash(atomIdx, k, j, index, false, arcHashes, counters, params);
 //                    writeArcHash(j, k, atomIdx, index, false, arcHashes, counters, params);
-//                    arcWritten++;
-//                }
-//                k = endkIndex[aCnt];
-//                if (j < k) {
+                    arcWritten++;
+                }
+                k = endkIndex[aCnt];
+                if (j < k) {
 //                    uint index = atomic_add(&counters->totalArcCount, 1);
 //                    //uint index = atomicCounterIncrement(totalArcCount);
 //                    //uint index = atomIdx * maxNumNeighbors * maxNumArcs + jIdx * maxNumArcs + arcWritten;
@@ -796,13 +806,13 @@ public class CPUContourBuildup {
 //                    writeArcHash(atomIdx, j, k, index, true, arcHashes, counters, params);
 //                    writeArcHash(atomIdx, k, j, index, false, arcHashes, counters, params);
 //                    writeArcHash(j, k, atomIdx, index, false, arcHashes, counters, params);
-//                    arcWritten++;
-//                }
-//            }
-//        }
-//
-//        // write number of arcs
-//        arcCount[atomIdx * params->maxNumNeighbors + jIdx] = arcWritten;
+                    arcWritten++;
+                }
+            }
+        }
+
+        // write number of arcs
+        arcCounts[atomIdx * maxNeighbors + jIdx] = arcWritten;
 
         // set small circle j visible if at least one arc was created and i < j
         if (arcCnt > 0) {
