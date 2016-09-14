@@ -43,6 +43,10 @@ uniform float aoThreshold;
 uniform bool silhouettes;
 uniform bool bfmod;
 
+// DEBUG
+uniform bool obb;
+uniform bool obbIdx;
+
 in vec4 objPos;
 in vec4 camPos;
 in vec4 lightPos;
@@ -96,8 +100,10 @@ void storeFragment(vec4 color, float depth, float ao) {
 #define R2 radii.w
 
 void main() {
-    // ray-counting
-    //storeFragment(vec4(0.0, 0.0, 1.0, 1.0), 0.0, 0.0); discard;
+    // BV visualization, ray-counting
+    if (obb) {
+        storeFragment(vec4(0.0, 0.0, 1.0, 1.0), 0.0, 0.0); discard;
+    }
     //if (radii.x > R) {
         //storeFragment(color * faceNormal.z, 10.0, 1.0); discard; // DEBUG
     //}

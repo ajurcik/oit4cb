@@ -17,7 +17,7 @@ uniform sampler1D areasTex;
 
 in VertexData {
     // OBB
-    vec2 faceVertices[3][4];
+    vec3 faceVertices[3][4];
     int faceCount;
     vec3 faceNormal[3]; // DEBUG
     // ray-casting
@@ -101,13 +101,13 @@ void main() {
 
     for (int f = 0; f < vertex[0].faceCount; f++) {
         faceNormal = vertex[0].faceNormal[f]; // DEBUG
-        gl_Position = vec4(vertex[0].faceVertices[f][0], 0.0, 1.0);
+        gl_Position = vec4(vertex[0].faceVertices[f][0], 1.0);
         EmitVertex();
-        gl_Position = vec4(vertex[0].faceVertices[f][1], 0.0, 1.0);
+        gl_Position = vec4(vertex[0].faceVertices[f][1], 1.0);
         EmitVertex();
-        gl_Position = vec4(vertex[0].faceVertices[f][2], 0.0, 1.0);
+        gl_Position = vec4(vertex[0].faceVertices[f][2], 1.0);
         EmitVertex();
-        gl_Position = vec4(vertex[0].faceVertices[f][3], 0.0, 1.0);
+        gl_Position = vec4(vertex[0].faceVertices[f][3], 1.0);
         EmitVertex();
         EndPrimitive();
     }

@@ -49,7 +49,7 @@ out flat uint label;
 
 out VertexData {
     // OBB
-    vec2 faceVertices[3][4];
+    vec3 faceVertices[3][4];
     int faceCount;
     vec3 faceNormal[3]; // DEBUG
     // torus
@@ -188,10 +188,10 @@ void main() {
             //color.rgb = vec3(0.5, 0.5, 0.5);
         }
         
-        vertex.faceVertices[of][0] = pv0.xy;
-        vertex.faceVertices[of][1] = pv1.xy;
-        vertex.faceVertices[of][2] = pv2.xy;
-        vertex.faceVertices[of][3] = pv3.xy;
+        vertex.faceVertices[of][0] = pv0.xyz;
+        vertex.faceVertices[of][1] = pv1.xyz;
+        vertex.faceVertices[of][2] = pv2.xyz;
+        vertex.faceVertices[of][3] = pv3.xyz;
         vertex.faceNormal[of] = n;
         of++;
     }
