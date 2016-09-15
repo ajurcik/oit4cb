@@ -19,6 +19,8 @@ import com.jogamp.opengl.GLDebugMessage;
 import com.jogamp.opengl.glu.GLU;
 import java.awt.Color;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 import javax.vecmath.Point3f;
 import javax.vecmath.Vector3f;
 import javax.vecmath.Vector4f;
@@ -604,7 +606,7 @@ public class Scene implements GLEventListener {
                     "/resources/shaders/ray/polygon2.geom", "/resources/shaders/ray/krone/polygon2.frag");
             // Load molecule
             //dynamics = new Dynamics(Utils.loadDynamicsFromResource("/resources/md/model", 1, 10));
-            dynamics = new Dynamics(Collections.singletonList(Utils.loadAtomsFromResource("/resources/1AF6.pdb")));
+            dynamics = new Dynamics(Collections.singletonList(Utils.loadAtomsFromResource("/resources/1CRN_3.pdb")));
             System.out.println("Atoms (molecule): " + dynamics.getMolecule().getAtomCount());
             System.out.println("Snapshots: " + dynamics.getSnapshotCount());
         } catch (Exception ex) {
@@ -612,11 +614,74 @@ public class Scene implements GLEventListener {
             System.exit(1);
         }
         
-        // Statistics
-        CPUContourBuildup cpucb = new CPUContourBuildup(dynamics.getMolecule(), 512, 1.4f);
-        cpucb.computeNeighbors();
-        cpucb.filterSmallCircles();
-//        cpucb.computeArcs(0, 0);
+        // statistics
+//        CPUContourBuildup cpucb = new CPUContourBuildup(dynamics.getMolecule(), 128, 1.4f);
+//        cpucb.computeNeighbors();
+//        cpucb.filterSmallCircles();
+//        cpucb.computeArcs();
+        
+        // DEBUG bounding sphere
+        Vector3f v0 = new Vector3f(-0.506037f, -0.795516f, -0.333289f);
+        Vector3f v1 = new Vector3f(0.822108f, -0.176054f, -0.541427f);
+        Vector3f v2 = new Vector3f(0.693754f, 0.667855f, 0.269584f);
+        Vector3f v3 = new Vector3f(-0.737542f, 0.407722f, 0.538326f);
+        Vector3f v4 = new Vector3f(-0.973889f, -0.221222f, 0.051001f);
+        
+        Vector4f c0 = BoundingSphere.sphere(v0, v2, v3);
+        Vector4f c1 = BoundingSphere.sphere(v1, v2, v3);
+        Vector4f s0 = BoundingSphere.sphere(v0, v1, v2, v3);
+        Vector4f s0a = BoundingSphere.sphere(v0, v2, v1, v3);
+        Vector4f s0b = BoundingSphere.sphere(v1, v0, v2, v3);
+        Vector4f s0c = BoundingSphere.sphere(v1, v2, v0, v3);
+        Vector4f s0d = BoundingSphere.sphere(v2, v0, v1, v3);
+        Vector4f s0e = BoundingSphere.sphere(v2, v1, v0, v3);
+        Vector4f s1 = BoundingSphere.sphere(v1, v2, v3, v0);
+        
+        List<Vector3f> good = new ArrayList<>();
+        List<Vector3f> opp = new ArrayList<>();
+        good.add(v0); good.add(v1); good.add(v2); good.add(v3); good.add(v4);
+        opp.add(v4); opp.add(v0); opp.add(v1); opp.add(v2); opp.add(v3);
+        
+        float min = -1f;
+        float max = 1f;
+        Vector3f as = new Vector3f();
+        float minMaxD = Float.MAX_VALUE;
+        for (int i = 0; i < 200; i++) {
+            for (int j = 0; j < 200; j++) {
+                for (int k = 0; k < 200; k++) {
+                    Vector3f c = new Vector3f(
+                            min + (max - min) / i,
+                            min + (max - min) / j,
+                            min + (max - min) / k);
+                    float maxD = 0;
+                    for (Vector3f v : good) {
+                        Vector3f d = new Vector3f();
+                        d.sub(v, c);
+                        if (d.length() > maxD) {
+                            maxD = d.length();
+                        }
+                    }
+                    if (maxD < minMaxD) {
+                        minMaxD = maxD;
+                        as = c;
+                    }
+                }
+            }
+        }
+        System.out.println(as);
+        
+//        BoundingSphere goodBS = new BoundingSphere(good);
+//        BoundingSphere oppBS = new BoundingSphere(opp);
+//        Vector4f goodS = goodBS.getSphere();
+//        Vector4f oppS = oppBS.getSphere();
+//        
+//        Vector4f s = goodS;
+//        for (Vector3f v : good) {
+//            Vector3f d = new Vector3f(v.x - s.x, v.y - s.y, v.z - s.z);
+//            if (d.lengthSquared() > s.w * s.w) {
+//                int brk = 1;
+//            }
+//        }
         
         testTriangleProgram = boxTriangleProgram;
         testTorusProgram = boxTorusProgram;

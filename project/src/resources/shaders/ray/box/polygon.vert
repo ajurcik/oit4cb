@@ -386,7 +386,7 @@ vec4 sphere(vec3 p0, vec3 p1, vec3 p2, vec3 p3) {
     // circle plane
     vec4 cp;
     cp.xyz = normalize(cross(p1 - p0, p2 - p0));
-    cp.w = -dot(s0.xyz, p0);
+    cp.w = -dot(cp.xyz, p0);
     
     // compute e
     vec3 e;
@@ -397,7 +397,7 @@ vec4 sphere(vec3 p0, vec3 p1, vec3 p2, vec3 p3) {
     } else {
         // project p3 on cp
         vec3 p3cp = p3 - dot(p3 - p0, cp.xyz) * cp.xyz;
-        vec3 e = s0.xyz + s0.w * normalize(p3cp - s0.xyz);
+        e = s0.xyz + s0.w * normalize(p3cp - s0.xyz);
     }
     
     vec3 ep3 = (e + p3) / 2.0;
