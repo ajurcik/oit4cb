@@ -642,38 +642,41 @@ public class Scene implements GLEventListener {
         good.add(v0); good.add(v1); good.add(v2); good.add(v3); good.add(v4);
         opp.add(v4); opp.add(v0); opp.add(v1); opp.add(v2); opp.add(v3);
         
-        float min = -1f;
-        float max = 1f;
-        Vector3f as = new Vector3f();
-        float minMaxD = Float.MAX_VALUE;
-        for (int i = 0; i < 200; i++) {
-            for (int j = 0; j < 200; j++) {
-                for (int k = 0; k < 200; k++) {
-                    Vector3f c = new Vector3f(
-                            min + (max - min) / i,
-                            min + (max - min) / j,
-                            min + (max - min) / k);
-                    float maxD = 0;
-                    for (Vector3f v : good) {
-                        Vector3f d = new Vector3f();
-                        d.sub(v, c);
-                        if (d.length() > maxD) {
-                            maxD = d.length();
-                        }
-                    }
-                    if (maxD < minMaxD) {
-                        minMaxD = maxD;
-                        as = c;
-                    }
-                }
-            }
-        }
-        System.out.println(as);
+//        Vector4f mb = BoundingSphere.minball(good);
         
-//        BoundingSphere goodBS = new BoundingSphere(good);
-//        BoundingSphere oppBS = new BoundingSphere(opp);
-//        Vector4f goodS = goodBS.getSphere();
-//        Vector4f oppS = oppBS.getSphere();
+        
+//        float min = -1f;
+//        float max = 1f;
+//        Vector3f as = new Vector3f();
+//        float minMaxD = Float.MAX_VALUE;
+//        for (int i = 0; i < 200; i++) {
+//            for (int j = 0; j < 200; j++) {
+//                for (int k = 0; k < 200; k++) {
+//                    Vector3f c = new Vector3f(
+//                            min + (max - min) / i,
+//                            min + (max - min) / j,
+//                            min + (max - min) / k);
+//                    float maxD = 0;
+//                    for (Vector3f v : good) {
+//                        Vector3f d = new Vector3f();
+//                        d.sub(v, c);
+//                        if (d.length() > maxD) {
+//                            maxD = d.length();
+//                        }
+//                    }
+//                    if (maxD < minMaxD) {
+//                        minMaxD = maxD;
+//                        as = c;
+//                    }
+//                }
+//            }
+//        }
+//        System.out.println(as);
+        
+        BoundingSphere goodBS = new BoundingSphere(good);
+        BoundingSphere oppBS = new BoundingSphere(opp);
+        Vector4f goodS = goodBS.getCone();
+        Vector4f oppS = oppBS.getCone();
 //        
 //        Vector4f s = goodS;
 //        for (Vector3f v : good) {

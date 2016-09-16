@@ -2,6 +2,7 @@ package csdemo;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import javax.vecmath.Vector3f;
 import javax.vecmath.Vector4f;
@@ -15,6 +16,7 @@ public class BoundingSphere {
     private static final float HALF_PI = (float) (Math.PI / 2.0);
     
     private Vector4f sphere;
+    private Vector4f cone;
 
     public BoundingSphere(Collection<Vector3f> vectors) {
         if (vectors.isEmpty()) {
@@ -35,7 +37,12 @@ public class BoundingSphere {
 //            return;
 //        }
         
-        sphere = minSphere(points);
+        cone = minCone(points);
+        //sphere = minSphere(points);
+    }
+    
+    public Vector4f getCone() {
+        return cone;
     }
     
     public Vector4f getSphere() {
@@ -365,7 +372,7 @@ public class BoundingSphere {
         return s;
     }
     
-    private boolean sphereContains(Vector4f s, Vector3f p) {
+    private static boolean sphereContains(Vector4f s, Vector3f p) {
         Vector3f d = new Vector3f();
         d.x = p.x - s.x;
         d.y = p.y - s.y;
@@ -473,6 +480,138 @@ public class BoundingSphere {
     
     private boolean sphericalCircleContains(Vector4f c, Vector3f p) {
         return c.x * p.x + c.y * p.y + c.z * p.z >= c.w;
+    }
+    
+    /*
+     * Welzel
+     */
+    
+    public static Vector4f minball(List<Vector3f> P) {
+        return minball_b(P, Collections.<Vector3f>emptyList());
+    }
+    
+    private static Vector4f minball_b(List<Vector3f> P, List<Vector3f> R) {
+        Vector4f D;
+        if (P.isEmpty() || R.size() == 4) {
+            D = sphere(R);
+        } else {
+            //choose random p ∈ P;
+            Vector3f p = P.get(P.size() - 1);
+            D = minball_b(P.subList(0, P.size() - 1), R);
+            if (!sphereContains(D, p)) {
+                List<Vector3f> Rp = new ArrayList<>(R);
+                Rp.add(p);
+                D = minball_b(P.subList(0, P.size() - 1), Rp);
+            }
+        }
+        return D;
+    }
+    
+    private static Vector4f sphere(List<Vector3f> R) {
+        if (R.isEmpty()) {
+            return new Vector4f();
+        } else if (R.size() == 1) {
+            Vector3f p = R.get(0);
+            return new Vector4f(p.x, p.y, p.z, 0);
+        } else if (R.size() == 2) {
+            return sphere(R.get(0), R.get(1), R.get(1), R.get(1));
+        } else if (R.size() == 3) {
+            return sphere(R.get(0), R.get(1), R.get(2), R.get(2));
+        } else {
+            return sphere(R.get(0), R.get(1), R.get(2), R.get(3));
+        }
+    }
+    
+    /*
+     * MinCone
+     */
+    
+    private Vector4f minCone(List<Vector3f> points) {
+        Vector4f c = cone(points.get(0), points.get(1), points.get(2));
+        for (int i = 3; i < points.size(); i++) {
+            Vector3f pi = points.get(i);
+            if (!coneContains(c, pi)) {
+                c = minCone(points.subList(0, i), pi);
+            }
+        }
+        return c;
+    }
+    
+    private Vector4f minCone(List<Vector3f> points, Vector3f q) {
+        Vector4f c = cone(points.get(0), points.get(1), q);
+        for (int i = 2; i < points.size(); i++) {
+            Vector3f pi = points.get(i);
+            if (!coneContains(c, pi)) {
+                c = minCone(points.subList(0, i), pi, q);
+            }
+        }
+        return c;
+    }
+    
+    private Vector4f minCone(List<Vector3f> points, Vector3f q1, Vector3f q2) {
+        Vector4f c = cone(points.get(0), q1, q2);
+        for (int i = 1; i < points.size(); i++) {
+            Vector3f pi = points.get(i);
+            if (!coneContains(c, pi)) {
+                c = minCone(points.subList(0, i), pi, q1, q2);
+            }
+        }
+        return c;
+    }
+    
+    private Vector4f minCone(List<Vector3f> points, Vector3f q1, Vector3f q2, Vector3f q3) {
+        Vector4f c = cone(q1, q2, q3);
+        for (int i = 0; i < points.size(); i++) {
+            Vector3f pi = points.get(i);
+            if (!coneContains(c, pi)) {
+                c = cone(q1, q2, q3, pi);
+            }
+        }
+        return c;
+    }
+    
+    private Vector4f cone(Vector3f p0, Vector3f p1, Vector3f p2) {
+        return sphericalCircle(p0, p1, p2);
+    }
+    
+    private Vector4f cone(Vector3f p0, Vector3f p1, Vector3f p2, Vector3f p3) {
+        // find all four circles
+        Vector4f c0 = sphericalCircle(p0, p1, p2);
+        Vector4f c1 = sphericalCircle(p0, p1, p3);
+        Vector4f c2 = sphericalCircle(p0, p2, p3);
+        Vector4f c3 = sphericalCircle(p1, p2, p3);
+        
+        // make circles cones
+        if (!coneContains(c0, p3)) {
+            c0.scale(-1f);
+        }
+        if (!coneContains(c1, p2)) {
+            c1.scale(-1f);
+        }
+        if (!coneContains(c2, p1)) {
+            c2.scale(-1f);
+        }
+        if (!coneContains(c3, p0)) {
+            c3.scale(-1f);
+        }
+        
+        // choose smallest cone
+        Vector4f c = c0;
+        if (c1.w > c.w) {
+            c = c1;
+        }
+        if (c2.w > c.w) {
+            c = c2;
+        }
+        if (c3.w > c.w) {
+            c = c3;
+        }
+        
+        return c;
+    }
+    
+    private boolean coneContains(Vector4f c, Vector3f p) {
+        return sphericalCircleContains(c, p);
     }
     
 }
