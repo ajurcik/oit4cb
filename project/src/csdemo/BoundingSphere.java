@@ -478,7 +478,7 @@ public class BoundingSphere {
         return c;
     }
     
-    private boolean sphericalCircleContains(Vector4f c, Vector3f p) {
+    private static boolean sphericalCircleContains(Vector4f c, Vector3f p) {
         return c.x * p.x + c.y * p.y + c.z * p.z >= c.w;
     }
     
@@ -610,8 +610,29 @@ public class BoundingSphere {
         return c;
     }
     
-    private boolean coneContains(Vector4f c, Vector3f p) {
+    private static boolean coneContains(Vector4f c, Vector3f p) {
         return sphericalCircleContains(c, p);
+    }
+    
+    public static <T> List<T> rotate(List<T> list, int shift) {
+        List<T> rotated = new ArrayList<>();
+        for (int i = 0; i < list.size(); i++) {
+            int li = (list.size() + i - shift) % list.size();
+            rotated.add(list.get(li));
+        }
+        return rotated;
+    }
+    
+    public static void checkCone(Vector4f c, List<Vector3f> l, String name) {
+        boolean valid = true;
+        for (Vector3f p : l) {
+            if (!coneContains(c, p)) {
+                System.out.println("Invalid point " + p);
+                valid = false;
+                break;
+            }
+        }
+        System.out.println("Cone " + name + ": " + valid);
     }
     
 }

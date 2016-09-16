@@ -606,7 +606,7 @@ public class Scene implements GLEventListener {
                     "/resources/shaders/ray/polygon2.geom", "/resources/shaders/ray/krone/polygon2.frag");
             // Load molecule
             //dynamics = new Dynamics(Utils.loadDynamicsFromResource("/resources/md/model", 1, 10));
-            dynamics = new Dynamics(Collections.singletonList(Utils.loadAtomsFromResource("/resources/1CRN_3.pdb")));
+            dynamics = new Dynamics(Collections.singletonList(Utils.loadAtomsFromResource("/resources/1CRN.pdb")));
             System.out.println("Atoms (molecule): " + dynamics.getMolecule().getAtomCount());
             System.out.println("Snapshots: " + dynamics.getSnapshotCount());
         } catch (Exception ex) {
@@ -621,26 +621,35 @@ public class Scene implements GLEventListener {
 //        cpucb.computeArcs();
         
         // DEBUG bounding sphere
-        Vector3f v0 = new Vector3f(-0.506037f, -0.795516f, -0.333289f);
-        Vector3f v1 = new Vector3f(0.822108f, -0.176054f, -0.541427f);
-        Vector3f v2 = new Vector3f(0.693754f, 0.667855f, 0.269584f);
-        Vector3f v3 = new Vector3f(-0.737542f, 0.407722f, 0.538326f);
-        Vector3f v4 = new Vector3f(-0.973889f, -0.221222f, 0.051001f);
+//        Vector3f v0 = new Vector3f(-0.506037f, -0.795516f, -0.333289f);
+//        Vector3f v1 = new Vector3f(0.822108f, -0.176054f, -0.541427f);
+//        Vector3f v2 = new Vector3f(0.693754f, 0.667855f, 0.269584f);
+//        Vector3f v3 = new Vector3f(-0.737542f, 0.407722f, 0.538326f);
+//        Vector3f v4 = new Vector3f(-0.973889f, -0.221222f, 0.051001f);
+        Vector3f v0 = new Vector3f(-0.031954f, 0.952386f, -0.303216f);
+        Vector3f v1 = new Vector3f(0.186770f, 0.978176f, 0.091039f);
+        Vector3f v2 = new Vector3f(0.301680f, 0.901105f, 0.311445f);
+        Vector3f v3 = new Vector3f(0.212268f, 0.646881f, 0.732453f);
+        Vector3f v4 = new Vector3f(-0.147298f, 0.078040f, 0.986009f);
+        Vector3f v5 = new Vector3f(0.107185f, -0.855006f, -0.507421f);
+        Vector3f v6 = new Vector3f(0.120860f, -0.667815f, -0.734450f);
+        Vector3f v7 = new Vector3f(0.006091f, -0.585474f, -0.810668f);
+        Vector3f v8 = new Vector3f(-0.597561f, -0.437472f, -0.671966f);
         
-        Vector4f c0 = BoundingSphere.sphere(v0, v2, v3);
-        Vector4f c1 = BoundingSphere.sphere(v1, v2, v3);
-        Vector4f s0 = BoundingSphere.sphere(v0, v1, v2, v3);
-        Vector4f s0a = BoundingSphere.sphere(v0, v2, v1, v3);
-        Vector4f s0b = BoundingSphere.sphere(v1, v0, v2, v3);
-        Vector4f s0c = BoundingSphere.sphere(v1, v2, v0, v3);
-        Vector4f s0d = BoundingSphere.sphere(v2, v0, v1, v3);
-        Vector4f s0e = BoundingSphere.sphere(v2, v1, v0, v3);
-        Vector4f s1 = BoundingSphere.sphere(v1, v2, v3, v0);
+//        Vector4f c0 = BoundingSphere.sphere(v0, v2, v3);
+//        Vector4f c1 = BoundingSphere.sphere(v1, v2, v3);
+//        Vector4f s0 = BoundingSphere.sphere(v0, v1, v2, v3);
+//        Vector4f s0a = BoundingSphere.sphere(v0, v2, v1, v3);
+//        Vector4f s0b = BoundingSphere.sphere(v1, v0, v2, v3);
+//        Vector4f s0c = BoundingSphere.sphere(v1, v2, v0, v3);
+//        Vector4f s0d = BoundingSphere.sphere(v2, v0, v1, v3);
+//        Vector4f s0e = BoundingSphere.sphere(v2, v1, v0, v3);
+//        Vector4f s1 = BoundingSphere.sphere(v1, v2, v3, v0);
         
-        List<Vector3f> good = new ArrayList<>();
-        List<Vector3f> opp = new ArrayList<>();
-        good.add(v0); good.add(v1); good.add(v2); good.add(v3); good.add(v4);
-        opp.add(v4); opp.add(v0); opp.add(v1); opp.add(v2); opp.add(v3);
+        List<Vector3f> l0 = new ArrayList<>();
+        l0.add(v0); l0.add(v1); l0.add(v2); l0.add(v3); l0.add(v4);
+        l0.add(v5); l0.add(v6); l0.add(v7); l0.add(v8);
+        List<Vector3f> l1 = BoundingSphere.rotate(l0, 4);
         
 //        Vector4f mb = BoundingSphere.minball(good);
         
@@ -673,18 +682,13 @@ public class Scene implements GLEventListener {
 //        }
 //        System.out.println(as);
         
-        BoundingSphere goodBS = new BoundingSphere(good);
-        BoundingSphere oppBS = new BoundingSphere(opp);
-        Vector4f goodS = goodBS.getCone();
-        Vector4f oppS = oppBS.getCone();
-//        
-//        Vector4f s = goodS;
-//        for (Vector3f v : good) {
-//            Vector3f d = new Vector3f(v.x - s.x, v.y - s.y, v.z - s.z);
-//            if (d.lengthSquared() > s.w * s.w) {
-//                int brk = 1;
-//            }
-//        }
+        for (int i = 0; i < l0.size(); i++) {
+            List<Vector3f> l = BoundingSphere.rotate(l0, i);
+            Vector4f c = new BoundingSphere(l).getCone();
+            BoundingSphere.checkCone(c, l, "c" + i);
+            Vector4f mb = BoundingSphere.minball(l);
+            System.out.println(mb);
+        }
         
         testTriangleProgram = boxTriangleProgram;
         testTorusProgram = boxTorusProgram;
