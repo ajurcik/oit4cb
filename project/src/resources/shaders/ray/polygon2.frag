@@ -45,6 +45,9 @@ uniform vec3 tunnelColor;
 // clipping by isolated tori
 uniform uint maxSphereIsolatedTori;
 
+// debug
+uniform bool obb;
+
 in vec4 objPos;
 in vec4 camPos;
 in vec4 lightPos;
@@ -95,6 +98,11 @@ vec3 rotate(vec3 v, vec3 axis, float angle);
 int sphericalLineArcIntersection(vec4 sphere, vec4 circle, vec4 arc, vec3 p, vec3 o);
 
 void main() {
+    // BV visualization, ray counting
+    if (obb) {
+        /*if (index == 0)*/ { storeFragment(vec4(1.0, 0.0, 0.0, 1.0), 0.0, 0.0); discard; }
+    }
+
     // transform fragment coordinates from window coordinates to view coordinates.
     vec4 coord = gl_FragCoord
         * vec4(viewport.z, viewport.w, 2.0, 0.0) 

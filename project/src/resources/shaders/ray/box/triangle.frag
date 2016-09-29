@@ -44,6 +44,9 @@ uniform vec3 cavityColor2;
 uniform float tunnelAOThreshold;
 uniform vec3 tunnelColor;
 
+// debug
+uniform bool obb;
+
 in flat vec4 objPos;
 in flat vec4 camPos;
 in flat vec4 lightPos;
@@ -91,8 +94,11 @@ void storeFragment(vec4 color, float depth, float ao) {
 }
 
 void main() {
-    // ray-counting
-    ///*if (index == 0)*/ { storeFragment(vec4(0.0, 1.0, 0.0, 1.0), 0.0, 0.0); discard; }
+    // splat visualiztion, ray counting
+    if (obb) {
+        /*if (index == 0)*/ { storeFragment(vec4(0.0, 1.0, 0.0, 1.0), 0.0, 0.0); discard; }
+    }
+    
     // discard fragment if cavity and clipping enabled
     uint label = texelFetch(labelsTex, int(index)).r;
     float area;

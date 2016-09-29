@@ -43,6 +43,9 @@ uniform vec3 tunnelColor;
 // clipping by isolated tori
 uniform uint maxSphereIsolatedTori;
 
+// debug
+uniform bool obb;
+
 in vec4 objPos;
 in vec4 camPos;
 in vec4 lightPos;
@@ -92,12 +95,18 @@ float squaredLength(vec3 v);
 void storeIntersection(vec3 position, vec3 normal, vec3 eye, vec4 color, float Ka, float Kd, bool bfmod);
 
 void main() {
-    if (index == 1668) {
+    // splat visualization, ray counting
+    if (obb) {
+        /*if (index == 0)*/ { storeFragment(vec4(1.0, 0.0, 0.0, 1.0), 0.0, 0.0); discard; }
+    }
+    
+    /*if (index == 1668) {
         //discard;
         storeFragment(color, 10.0, 1.0); discard; // DEBUG
     } else {
         discard;
-    }
+    }*/
+    
     // transform fragment coordinates from window coordinates to view coordinates.
     vec4 coord = gl_FragCoord
         * vec4(viewport.z, viewport.w, 2.0, 0.0) 

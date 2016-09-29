@@ -115,5 +115,5 @@ void main() {
     vec2 window = 2.0 / viewport.zw;
 
     gl_Position = vec4((mins + maxs) * 0.5, 0.0, 1.0);
-    gl_PointSize = max((maxs.x - mins.x + 0.001) * window.x, (maxs.y - mins.y + 0.001) * window.y) * 0.5;
+    gl_PointSize = max((maxs.x - mins.x) * window.x  + 0.01, (maxs.y - mins.y) * window.y  + 0.01) * 0.5;
 }

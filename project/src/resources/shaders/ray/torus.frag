@@ -43,6 +43,9 @@ uniform float aoThreshold;
 uniform bool silhouettes;
 uniform bool bfmod;
 
+// debug
+uniform bool obb;
+
 in vec4 objPos;
 in vec4 camPos;
 in vec4 lightPos;
@@ -94,8 +97,11 @@ void storeFragment(vec4 color, float depth, float ao) {
 #define R2 radii.w
 
 void main() {
-    // ray-counting
-    //storeFragment(vec4(0.0, 0.0, 1.0, 1.0), 0.0, 0.0); discard;
+    // BV visualization, ray counting
+    if (obb) {
+        storeFragment(vec4(0.0, 0.0, 1.0, 1.0), 0.0, 0.0); discard;
+    }
+    
     // change color if selected
     vec4 col = (selectCavity && (cavityLabel == label)) ? YELLOW : color;
     col = (label == 999) ? vec4(1.0, 0.0, 0.0, 1.0) : col;

@@ -69,6 +69,7 @@ vec4 sphericalCircle(vec3 p0, vec3 p1);
 vec4 sphericalCircle(vec3 p0, vec3 p1, vec3 p2);
 bool sphericalCircleContains(vec4 c, vec3 p);
 
+vec4 minCone(uint count);
 vec4 minSphere(uint count);
 
 void main() {
@@ -147,23 +148,23 @@ void main() {
         //cap.xyz += line.xyz;
     }
 
-    for (uint i = 0; i < vertex.circleEnd - vertex.circleStart; i++) {
+    /*for (uint i = 0; i < vertex.circleEnd - vertex.circleStart; i++) {
         spherePoints[i] = normalize(points[2 * i] - vertex.objPos.xyz);
-        if (vertex.index == 1668) {
+        if (vertex.index == 52) {
             debug[i] = vec4(spherePoints[i], 0.0);
         }
-    }
+    }*/
 
-    vec4 s = minSphere(vertex.circleEnd - vertex.circleStart);
-    float x = (1 + dot(s.xyz, s.xyz) - s.w * s.w) / (2.0 * length(s.xyz));
-    if (x < 0) {
+    //vec4 c = minCone(vertex.circleEnd - vertex.circleStart);
+    //float x = (1 + dot(s.xyz, s.xyz) - s.w * s.w) / (2.0 * length(s.xyz));
+    //if (c.w < 0) {
         // 
-        vertex.color = vec4(0.0, 0.0, 0.0, gl_Color.a);
-    }
+        //vertex.color = vec4(0.0, 0.0, 0.0, gl_Color.a);
+    //}
 
-    //cap.xyz = normalize(cap.xyz);
+    cap.xyz = normalize(cap.xyz);
     //cap.xyz = minSphericalCircle(vertex.circleEnd - vertex.circleStart).xyz;
-    cap.xyz = normalize(s.xyz);
+    //cap.xyz = normalize(c.xyz);
     cap.w = -dot(cap.xyz, vertex.objPos.xyz);
 
     // compute orientation
@@ -229,6 +230,87 @@ void main() {
     vertex.faceCount = of;
 
     gl_Position = vec4(0.0, 0.0, 0.0, 1.0);
+}
+
+vec4 minCone(uint count, vec3 q);
+vec4 minCone(uint count, vec3 q1, vec3 q2);
+vec4 minCone(uint count, vec3 q1, vec3 q2, vec3 q3);
+vec4 cone(vec3 p0, vec3 p1, vec3 p2);
+vec4 cone(vec3 p0, vec3 p1, vec3 p2, vec3 p3);
+bool coneContains(vec4 s, vec3 p);
+
+vec4 minCone(uint count) {
+    vec4 c = cone(spherePoints[0], spherePoints[1], spherePoints[2]);
+    for (uint i = 3; i < count; i++) {
+        vec3 pi = spherePoints[i];
+        if (!coneContains(c, pi)) {
+            c = minCone(i, pi);
+        }
+    }
+    return c;
+}
+
+vec4 minCone(uint count, vec3 q) {
+    vec4 c = cone(spherePoints[0], spherePoints[1], q);
+    for (uint i = 2; i < count; i++) {
+        vec3 pi = spherePoints[i];
+        if (!coneContains(c, pi)) {
+            c = minCone(i, pi, q);
+        }
+    }
+    return c;
+}
+
+vec4 minCone(uint count, vec3 q1, vec3 q2) {
+    vec4 c = cone(spherePoints[0], q1, q2);
+    for (uint i = 1; i < count; i++) {
+        vec3 pi = spherePoints[i];
+        if (!coneContains(c, pi)) {
+            c = minCone(i, pi, q1, q2);
+        }
+    }
+    return c;
+}
+
+vec4 minCone(uint count, vec3 q1, vec3 q2, vec3 q3) {
+    vec4 c = cone(q1, q2, q3);
+    for (uint i = 0; i < count; i++) {
+        vec3 pi = spherePoints[i];
+        if (!coneContains(c, pi)) {
+            c = cone(q1, q2, q3, pi);
+        }
+    }
+    return c;
+}
+
+vec4 cone(vec3 p0, vec3 p1, vec3 p2) {
+    return sphericalCircle(p0, p1, p2);
+}
+
+vec4 cone(vec3 p0, vec3 p1, vec3 p2, vec3 p3) {
+    // find all four circles
+    vec4 c0 = sphericalCircle(p0, p1, p2);
+    vec4 c1 = sphericalCircle(p0, p1, p3);
+    vec4 c2 = sphericalCircle(p0, p2, p3);
+    vec4 c3 = sphericalCircle(p1, p2, p3);
+
+    // make circles cones
+    c0 = coneContains(c0, p3) ? c0 : -c0;
+    c1 = coneContains(c1, p2) ? c1 : -c1;
+    c2 = coneContains(c2, p1) ? c2 : -c2;
+    c3 = coneContains(c3, p0) ? c3 : -c3;
+
+    // choose smallest cone
+    vec4 c = c0;
+    c = (c1.w > c.w) ? c1 : c;
+    c = (c2.w > c.w) ? c2 : c;
+    c = (c3.w > c.w) ? c3 : c;
+
+    return c;
+}
+
+bool coneContains(vec4 c, vec3 p) {
+    return dot(c.xyz, p) >= c.w;
 }
 
 vec4 minSphere(uint count, vec3 q);

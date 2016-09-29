@@ -273,6 +273,8 @@ public class MainWindow extends javax.swing.JFrame {
         jLabel27 = new javax.swing.JLabel();
         jLabel28 = new javax.swing.JLabel();
         ligandColorPanel = new javax.swing.JPanel();
+        splatCheckBox = new javax.swing.JCheckBox();
+        jLabel29 = new javax.swing.JLabel();
         filler3 = new javax.swing.Box.Filler(new java.awt.Dimension(0, 0), new java.awt.Dimension(100, 1000), new java.awt.Dimension(100, 1000));
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
@@ -1284,6 +1286,25 @@ public class MainWindow extends javax.swing.JFrame {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
         jPanel1.add(ligandColorPanel, gridBagConstraints);
 
+        splatCheckBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                splatCheckBoxActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 7;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
+        jPanel1.add(splatCheckBox, gridBagConstraints);
+
+        jLabel29.setText("Render splats:");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 7;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_END;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 4);
+        jPanel1.add(jLabel29, gridBagConstraints);
+
         develPanel.add(jPanel1);
         develPanel.add(filler3);
 
@@ -1616,6 +1637,10 @@ public class MainWindow extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_ligandColorPanelMouseClicked
 
+    private void splatCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_splatCheckBoxActionPerformed
+        scene.setOBB(splatCheckBox.isSelected());
+    }//GEN-LAST:event_splatCheckBoxActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -1706,6 +1731,7 @@ public class MainWindow extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel26;
     private javax.swing.JLabel jLabel27;
     private javax.swing.JLabel jLabel28;
+    private javax.swing.JLabel jLabel29;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
@@ -1740,6 +1766,7 @@ public class MainWindow extends javax.swing.JFrame {
     private javax.swing.JPanel sphereColorPanel;
     private javax.swing.JSpinner sphereSpinner;
     private javax.swing.JCheckBox spheresCheckBox;
+    private javax.swing.JCheckBox splatCheckBox;
     private javax.swing.JPanel surfaceColorPanel;
     private javax.swing.JComboBox surfaceComboBox;
     private javax.swing.JPanel surfacePanel;

@@ -1,7 +1,7 @@
 #define LOCAL_SIZE 256
 //#define LOG_LOCAL_SIZE 8
-#define WARP_COUNT 4
-#define WARP_SIZE 64
+#define WARP_COUNT 8
+#define WARP_SIZE 32
 
 typedef struct {
     int count;

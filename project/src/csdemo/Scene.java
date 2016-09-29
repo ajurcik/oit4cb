@@ -19,8 +19,6 @@ import com.jogamp.opengl.GLDebugMessage;
 import com.jogamp.opengl.glu.GLU;
 import java.awt.Color;
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
 import javax.vecmath.Point3f;
 import javax.vecmath.Vector3f;
 import javax.vecmath.Vector4f;
@@ -297,6 +295,7 @@ public class Scene implements GLEventListener {
     private int testPolygonProgram;
     private boolean moleculeVisible = false;
     private float ligandThreshold = 15f;
+    private boolean obb = false;
 
     // spherical polygon
     private final Polygon polygon = new Polygon();
@@ -497,6 +496,10 @@ public class Scene implements GLEventListener {
         this.ligandThreshold = distance;
     }
     
+    public void setOBB(boolean obb) {
+        this.obb = obb;
+    }
+    
     public void togglePolygonMode() {
         mode = (++mode) % 3;
     }
@@ -626,15 +629,15 @@ public class Scene implements GLEventListener {
 //        Vector3f v2 = new Vector3f(0.693754f, 0.667855f, 0.269584f);
 //        Vector3f v3 = new Vector3f(-0.737542f, 0.407722f, 0.538326f);
 //        Vector3f v4 = new Vector3f(-0.973889f, -0.221222f, 0.051001f);
-        Vector3f v0 = new Vector3f(-0.031954f, 0.952386f, -0.303216f);
-        Vector3f v1 = new Vector3f(0.186770f, 0.978176f, 0.091039f);
-        Vector3f v2 = new Vector3f(0.301680f, 0.901105f, 0.311445f);
-        Vector3f v3 = new Vector3f(0.212268f, 0.646881f, 0.732453f);
-        Vector3f v4 = new Vector3f(-0.147298f, 0.078040f, 0.986009f);
-        Vector3f v5 = new Vector3f(0.107185f, -0.855006f, -0.507421f);
-        Vector3f v6 = new Vector3f(0.120860f, -0.667815f, -0.734450f);
-        Vector3f v7 = new Vector3f(0.006091f, -0.585474f, -0.810668f);
-        Vector3f v8 = new Vector3f(-0.597561f, -0.437472f, -0.671966f);
+//        Vector3f v0 = new Vector3f(-0.031954f, 0.952386f, -0.303216f);
+//        Vector3f v1 = new Vector3f(0.186770f, 0.978176f, 0.091039f);
+//        Vector3f v2 = new Vector3f(0.301680f, 0.901105f, 0.311445f);
+//        Vector3f v3 = new Vector3f(0.212268f, 0.646881f, 0.732453f);
+//        Vector3f v4 = new Vector3f(-0.147298f, 0.078040f, 0.986009f);
+//        Vector3f v5 = new Vector3f(0.107185f, -0.855006f, -0.507421f);
+//        Vector3f v6 = new Vector3f(0.120860f, -0.667815f, -0.734450f);
+//        Vector3f v7 = new Vector3f(0.006091f, -0.585474f, -0.810668f);
+//        Vector3f v8 = new Vector3f(-0.597561f, -0.437472f, -0.671966f);
         
 //        Vector4f c0 = BoundingSphere.sphere(v0, v2, v3);
 //        Vector4f c1 = BoundingSphere.sphere(v1, v2, v3);
@@ -646,10 +649,10 @@ public class Scene implements GLEventListener {
 //        Vector4f s0e = BoundingSphere.sphere(v2, v1, v0, v3);
 //        Vector4f s1 = BoundingSphere.sphere(v1, v2, v3, v0);
         
-        List<Vector3f> l0 = new ArrayList<>();
-        l0.add(v0); l0.add(v1); l0.add(v2); l0.add(v3); l0.add(v4);
-        l0.add(v5); l0.add(v6); l0.add(v7); l0.add(v8);
-        List<Vector3f> l1 = BoundingSphere.rotate(l0, 4);
+//        List<Vector3f> l0 = new ArrayList<>();
+//        l0.add(v0); l0.add(v1); l0.add(v2); l0.add(v3); l0.add(v4);
+//        l0.add(v5); l0.add(v6); l0.add(v7); l0.add(v8);
+//        List<Vector3f> l1 = BoundingSphere.rotate(l0, 4);
         
 //        Vector4f mb = BoundingSphere.minball(good);
         
@@ -682,13 +685,13 @@ public class Scene implements GLEventListener {
 //        }
 //        System.out.println(as);
         
-        for (int i = 0; i < l0.size(); i++) {
-            List<Vector3f> l = BoundingSphere.rotate(l0, i);
-            Vector4f c = new BoundingSphere(l).getCone();
-            BoundingSphere.checkCone(c, l, "c" + i);
-            Vector4f mb = BoundingSphere.minball(l);
-            System.out.println(mb);
-        }
+//        for (int i = 0; i < l0.size(); i++) {
+//            List<Vector3f> l = BoundingSphere.rotate(l0, i);
+//            Vector4f c = new BoundingSphere(l).getCone();
+//            BoundingSphere.checkCone(c, l, "c" + i);
+//            Vector4f mb = BoundingSphere.minball(l);
+//            System.out.println(mb);
+//        }
         
         testTriangleProgram = boxTriangleProgram;
         testTorusProgram = boxTorusProgram;
@@ -1125,6 +1128,14 @@ public class Scene implements GLEventListener {
         
         box = new Box();
         box.init(gl, FRAGMENTS_BUFFER_INDEX, FRAGMENTS_INDEX_BUFFER_INDEX);
+        
+        // setup camera
+        center.x = aabbMin.x + 0.5f * aabbSize - 4f;
+        center.y = aabbMin.y + 0.5f * aabbSize - 4f;
+        center.z = aabbMin.z + 0.5f * aabbSize - 4f;
+        eye.x = center.x;
+        eye.y = center.y;
+        eye.z = center.z + 1f;
     }
 
     @Override
@@ -1671,10 +1682,10 @@ public class Scene implements GLEventListener {
         //polygon.display(gl, eye, center);
         
         // DEBUG AABB
-        /*gl.glPushMatrix();
+        gl.glPushMatrix();
         gl.glTranslatef(-4f, -4f, -4f);
-        Utils.drawAABB(gl, aabbMin, aabbSize);
-        gl.glPopMatrix();*/
+        //Utils.drawAABB(gl, aabbMin, aabbSize);
+        gl.glPopMatrix();
         
         // DEBUG acetone
         gl.glUseProgram(defaultProgram);
@@ -1919,6 +1930,8 @@ public class Scene implements GLEventListener {
         Utils.setUniform(gl, program, "tunnelAOThreshold", tunnelAOThreshold);
         // clipping by isolated tori
         Utils.setUniform(gl, program, "maxSphereIsolatedTori", MAX_SPHERE_ISOLATED_TORI);
+        // debug
+        Utils.setUniform(gl, program, "obb", obb);
         
         gl.glEnableClientState(GL_VERTEX_ARRAY);
         gl.glClientActiveTexture(GL_TEXTURE0);
@@ -1999,6 +2012,8 @@ public class Scene implements GLEventListener {
         Utils.setUniform(gl, program, "cavityColor2", cavityColor2);
         //Utils.setUniform(gl, program, "tunnelColor", tunnelColor);
         Utils.setUniform(gl, program, "tunnelAOThreshold", tunnelAOThreshold);
+        // debug
+        Utils.setUniform(gl, program, "obb", obb);
         
         gl.glEnableClientState(GL_VERTEX_ARRAY);
         gl.glClientActiveTexture(GL_TEXTURE0);
@@ -2089,6 +2104,8 @@ public class Scene implements GLEventListener {
         Utils.setUniform(gl, program, "cavityColor2", cavityColor2);
         //Utils.setUniform(gl, program, "tunnelColor", tunnelColor);
         Utils.setUniform(gl, program, "tunnelAOThreshold", tunnelAOThreshold);
+        // debug
+        Utils.setUniform(gl, program, "obb", obb);
         
         gl.glEnableClientState(GL_VERTEX_ARRAY);
         gl.glClientActiveTexture(GL_TEXTURE0);
