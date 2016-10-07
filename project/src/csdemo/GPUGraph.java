@@ -394,7 +394,8 @@ public class GPUGraph {
                 int v0 = adjacency.get(4 * i + 1);
                 int v1 = adjacency.get(4 * i + 2);
                 int v2 = adjacency.get(4 * i + 3);
-                writer.append(String.format("(%4d): %4d %4d %4d", i, v0, v1, v2));
+                //writer.append(String.format("(%4d): %4d %4d %4d", i, v0, v1, v2));
+                writer.append(String.format("%d %d %d", v0, v1, v2));
                 writer.newLine();
             }
             // unmap adjacency buffer

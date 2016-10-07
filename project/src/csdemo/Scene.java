@@ -1104,7 +1104,18 @@ public class Scene implements GLEventListener {
         clArcs.init(gl, atomsBuffer, neighborsBuffer, neighborCountsBuffer, smallCirclesBuffer,
                 arcsBuffer, arcCountsBuffer, arcHashesBuffer, smallCirclesVisibleBuffer);
         
-        //clGraph.init(gl);
+        clGraph.init(gl);
+//        clGraph.testScan();
+        clGraph.test();
+        clGraph.test();
+        clGraph.test();
+        clGraph.test();
+        clGraph.test();
+        clGraph.test();
+        clGraph.test();
+        clGraph.test();
+        clGraph.test();
+        clGraph.test();
         
         // init GPU array
         if (PERFORMANCE_TESTS_ENABLED) {

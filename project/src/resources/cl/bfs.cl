@@ -96,6 +96,8 @@ kernel void groupIterate(global const row_t * adjacency,
     int index = get_local_id(0);
     int groupSize = get_local_size(0);
     
+    //if (index == 0) printf("\nWork group size: %d\n", groupSize);
+    
     local int size;
     local int frontiers[2][2 * LOCAL_SIZE];
     
@@ -125,6 +127,14 @@ kernel void groupIterate(global const row_t * adjacency,
         
         barrier(CLK_LOCAL_MEM_FENCE);
         
+//        if (index == size - 1) {
+//            printf("Expanded counts: ");
+//            for (int i = 0; i < 32; i++) {
+//                printf("%d ", sums[i]);
+//            }
+//            printf("\n");
+//        }
+        
         // scan neighbor counts
         int offset = scan(sums, index);
         int lastIndex = size - 1;
@@ -132,11 +142,25 @@ kernel void groupIterate(global const row_t * adjacency,
             size = offset + count;
         }
         
+        //barrier(CLK_LOCAL_MEM_FENCE);
+        
+//        if (index == 0) {
+//            printf("Scanned counts: ");
+//            for (int i = 0; i < 32; i++) {
+//                printf("%d ", sums[i]);
+//            }
+//            printf("\n");
+//            printf("Expanded frontier (%d): ", size);
+//        }
+        
         // write new vertex frontier
         iter++;
         for (int i = 0; i < count; i++) {
             frontiers[iter & 1][offset + i] = neighbors[i * LOCAL_SIZE + index];
+            //printf("%d ", neighbors[i * LOCAL_SIZE + index]);
         }
+        
+        //if (index == 0) printf("\n");
         
         barrier(CLK_LOCAL_MEM_FENCE);
     }
@@ -164,6 +188,29 @@ kernel void unlabelled(global const int * labels, const int size, global int * v
         *vertex = index;
     }
 }
+
+//kernel void testScan() {
+//    int index = get_local_id(0);
+//    int size = get_local_size(0);
+//    
+//    int count = index % 2;
+//    local int sums[LOCAL_SIZE];
+//    sums[index] = count;
+//
+//    barrier(CLK_LOCAL_MEM_FENCE);
+//
+//    scan(sums, index);
+//
+//    barrier(CLK_LOCAL_MEM_FENCE);
+//
+//    if (index == 0) {
+//        printf("Scanned counts: ");
+//        for (int i = 0; i < size; i++) {
+//            printf("%d ", sums[i]);
+//        }
+//        printf("\n");
+//    }
+//}
 
 int expand(const int vertex, const int threadId, global const row_t * adjacency,
         global int * visited, global int * labels, local int hashes[][256], local int * neighbors) {
@@ -245,12 +292,46 @@ int scan(local int * data, const int threadId) {
     return sum;
 }
 
+//void printWarp(local int * data) {
+//    printf("Warp scanned: ");
+//    for (int i = 0; i < WARP_SIZE; i++) {
+//        printf("%d ", data[i]);
+//    }
+//    printf("\n");
+//}
+
 int warpScanExclusive(local int * data, const int idx, const int laneId) {
+    //barrier(CLK_LOCAL_MEM_FENCE);
+    //if (idx == 0) printf("Threads: ");
+    //barrier(CLK_LOCAL_MEM_FENCE);
+    //printf("%d(%d) ", idx, laneId);
+    //barrier(CLK_LOCAL_MEM_FENCE);
+    //if (idx == 0) { printf("Input: "); printWarp(data); }
+    //barrier(CLK_LOCAL_MEM_FENCE);
+    //float tmp = (laneId > 0) ? data[idx - 1] : 0;
+    //barrier(CLK_LOCAL_MEM_FENCE);
     if (laneId > 0) data[idx] += data[idx - 1];
+    //barrier(CLK_LOCAL_MEM_FENCE); if (idx == 0) printWarp(data);
+    
+    //tmp = (laneId > 1) ? data[idx - 2] : 0;
+    //barrier(CLK_LOCAL_MEM_FENCE);
     if (laneId > 1) data[idx] += data[idx - 2];
+    //barrier(CLK_LOCAL_MEM_FENCE); if (idx == 0) printWarp(data);
+    
+    //tmp = (laneId > 3) ? data[idx - 4] : 0;
+    //barrier(CLK_LOCAL_MEM_FENCE);
     if (laneId > 3) data[idx] += data[idx - 4];
+    //barrier(CLK_LOCAL_MEM_FENCE); if (idx == 0) printWarp(data);
+    
+    //tmp = (laneId > 7) ? data[idx - 8] : 0;
+    //barrier(CLK_LOCAL_MEM_FENCE);
     if (laneId > 7) data[idx] += data[idx - 8];
+    //barrier(CLK_LOCAL_MEM_FENCE); if (idx == 0) printWarp(data);
+    
+    //tmp = (laneId > 15) ? data[idx - 16] : 0;
+    //barrier(CLK_LOCAL_MEM_FENCE);
     if (laneId > 15) data[idx] += data[idx - 16];
+    //if (idx == 0) printWarp(data);
     
 #if WARP_SIZE > 32
     if (laneId > 31) data[idx] += data[idx - 32];

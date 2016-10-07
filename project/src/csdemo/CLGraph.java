@@ -58,6 +58,8 @@ public class CLGraph {
         device = platform.getMaxFlopsDevice(CLDevice.Type.GPU);
         CLGLContext cl = CLGLContext.create(gl.getContext(), device);
         System.out.println("OpenCL device: " + device);
+        System.out.println("Local mem size: " + device.getLocalMemSize());
+        System.out.println("Local mem type: " + device.getLocalMemType());
         
         queue = device.createCommandQueue(CLCommandQueue.Mode.PROFILING_MODE);
         
@@ -77,20 +79,26 @@ public class CLGraph {
         unlabelled = cl.createIntBuffer(1, CLBuffer.Mem.READ_WRITE);
     }
     
+    public void testScan() {
+        CLKernel scanKernel = bfsProgram.createCLKernel("testScan");
+        
+        queue.put1DRangeKernel(scanKernel, 0, 128 /*256*/, 128 /*256*/)
+                .finish();
+    }
+    
     public void test() {
         CLKernel iterateKernel = bfsProgram.createCLKernel("iterate");
         CLKernel groupIterateKernel = bfsProgram.createCLKernel("groupIterate");
         CLKernel unlabelledKernel = bfsProgram.createCLKernel("unlabelled");
         
-        //edu.princeton.cs.algs4.Graph graph = GraphGenerator.regular(40960, 3);
-        List<List<Integer>> myGraph = generateGraph(128/*, 64, 32, 32, 16*/);//adjacencyMatrix(graph);
-        /*try {
-            //myGraph = readGraph("test-graph-32.txt");
-            writeGraph(myGraph);
+        List<List<Integer>> myGraph = generateGraph(10240, 64, 32, 32, 16);
+        try {
+            myGraph = readGraph("graph-1AF6.txt");
+            //writeGraph(myGraph);
         } catch (IOException ex) {
             ex.printStackTrace(System.err);
             return;
-        }*/
+        }
         
         // set static data
         IntBuffer adjancecyData = adjacency.getBuffer();
@@ -139,6 +147,8 @@ public class CLGraph {
         unlabelledKernel.putArg(labels)
                 .putArg(myGraph.size())
                 .putArg(unlabelled);
+        
+        long totalBttoTime = 0;
         
         int start = 0;
         int label = 0;
@@ -215,11 +225,14 @@ public class CLGraph {
             long startTime = events.getEvent(0).getProfilingInfo(CLEvent.ProfilingCommand.START);
             long endTime = events.getEvent(iter - 1).getProfilingInfo(CLEvent.ProfilingCommand.END);
             long bttoTime = endTime - startTime;
-            System.out.println("Time elapsed (OpenCL: bfs - btto): " + (bttoTime / 1000000.0) + " ms");
+            totalBttoTime += bttoTime;
+            //System.out.println("Time elapsed (OpenCL: bfs - btto): " + (bttoTime / 1000000.0) + " ms");
             
             start = unlabelled.getBuffer().get(0);
             done = start < 0;
         } while (!done);
+        
+        System.out.println("Time elapsed (OpenCL: bfs - btto): " + (totalBttoTime / 1000000.0) + " ms");
         
         // read results
         queue.putReadBuffer(labels, true);
@@ -236,7 +249,7 @@ public class CLGraph {
             counter.increment();
         }
         for (Map.Entry<Integer, MutableInt> size : components.entrySet()) {
-            System.out.println("Component " + size.getKey() + " size " + size.getValue());
+            //System.out.println("Component " + size.getKey() + " size " + size.getValue());
         }
         
         /*System.out.print("Expanded vertices:");
