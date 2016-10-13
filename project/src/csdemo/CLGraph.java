@@ -2,6 +2,7 @@ package csdemo;
 
 import com.jogamp.opencl.CLBuffer;
 import com.jogamp.opencl.CLCommandQueue;
+import com.jogamp.opencl.CLContext;
 import com.jogamp.opencl.CLDevice;
 import com.jogamp.opencl.CLEvent;
 import com.jogamp.opencl.CLEventList;
@@ -9,6 +10,7 @@ import com.jogamp.opencl.CLKernel;
 import com.jogamp.opencl.CLPlatform;
 import com.jogamp.opencl.CLProgram;
 import com.jogamp.opencl.gl.CLGLContext;
+import com.jogamp.opencl.llb.CLDeviceBinding;
 import com.jogamp.opencl.util.CLPlatformFilters;
 import com.jogamp.opengl.GL4;
 import edu.princeton.cs.algs4.GraphGenerator;
@@ -18,7 +20,9 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.IntBuffer;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -37,6 +41,7 @@ public class CLGraph {
     private CLCommandQueue queue;
     
     private CLProgram bfsProgram;
+    private CLProgram bruteBfsProgram;
     
     private CLBuffer<IntBuffer> vertices;
     private CLBuffer<IntBuffer> adjacency;
@@ -45,6 +50,7 @@ public class CLGraph {
     private CLBuffer<IntBuffer> outVertices;
     private CLBuffer<IntBuffer> outSize;
     private CLBuffer<IntBuffer> unlabelled;
+    private CLBuffer<IntBuffer> outLabel;
     
     private static final int MAX_VERTICES = 81920;
     private static final int MAX_FRONTIER_VERTICES = 81920;
@@ -65,6 +71,7 @@ public class CLGraph {
         
         try {
             bfsProgram = cl.createProgram(CLGraph.class.getResourceAsStream("/resources/cl/bfs.cl")).build();
+            bruteBfsProgram = cl.createProgram(CLGraph.class.getResourceAsStream("/resources/cl/bruteBfs.cl")).build();
         } catch (IOException ex) {
             System.err.println("Resource loading failed. " + ex.getMessage());
             System.exit(1);
@@ -77,6 +84,7 @@ public class CLGraph {
         outVertices = cl.createIntBuffer(MAX_FRONTIER_VERTICES, CLBuffer.Mem.READ_WRITE);
         outSize = cl.createIntBuffer(1, CLBuffer.Mem.READ_WRITE);
         unlabelled = cl.createIntBuffer(1, CLBuffer.Mem.READ_WRITE);
+        outLabel = cl.createIntBuffer(1, CLBuffer.Mem.READ_WRITE);
     }
     
     public void testScan() {
@@ -86,19 +94,94 @@ public class CLGraph {
                 .finish();
     }
     
+    public void testBrute() {
+        CLKernel bruteKernel = bruteBfsProgram.createCLKernel("bruteBfs");
+        
+        List<List<Integer>> myGraph = generateGraph(20480);
+        try {
+            myGraph = readGraph("graph-1AF6.txt");
+//            writeGraph(myGraph);
+        } catch (IOException ex) {
+            ex.printStackTrace(System.err);
+            return;
+        }
+        
+        // NVIDIA only
+        int[] warpSize = device.getCLAccessor().getInts(CLDeviceBinding.CL_DEVICE_WARP_SIZE_NV, 1);
+        //System.out.println("Warp size: " + warpSize[0]);
+        
+        CLContext cl = device.getContext();
+        CLBuffer<IntBuffer> vertexDistances = cl.createIntBuffer(MAX_VERTICES, CLBuffer.Mem.READ_WRITE);
+        CLBuffer<IntBuffer> vertexLabels = cl.createIntBuffer(MAX_VERTICES, CLBuffer.Mem.READ_WRITE);
+        CLBuffer<IntBuffer> vertices = cl.createIntBuffer(MAX_VERTICES, CLBuffer.Mem.READ_WRITE);
+        CLBuffer<IntBuffer> outVertexLabels = cl.createIntBuffer(MAX_VERTICES, CLBuffer.Mem.WRITE_ONLY);
+        CLBuffer<IntBuffer> labels = cl.createIntBuffer(64, CLBuffer.Mem.WRITE_ONLY);
+        CLBuffer<IntBuffer> outerLabel = cl.createIntBuffer(1, CLBuffer.Mem.WRITE_ONLY);
+        
+        // set static data
+        IntBuffer adjancecyData = adjacency.getBuffer();
+        for (int v = 0; v < myGraph.size(); v++) {
+            Iterator<Integer> itAdj = myGraph.get(v).iterator();
+            adjancecyData.put(v * 4 + 1, itAdj.next());
+            adjancecyData.put(v * 4 + 2, itAdj.next());
+            adjancecyData.put(v * 4 + 3, itAdj.next());
+        }
+        
+        // set initial data
+        IntBuffer labelsData = labels.getBuffer();
+        for (int i = 0; i < 64; i++) {
+            labelsData.put(i, 0);
+        }
+        
+        IntBuffer vertexDistancesData = vertexDistances.getBuffer();
+        IntBuffer vertexLabelsData = vertexLabels.getBuffer();
+        for (int i = 0; i < MAX_VERTICES; i++) {
+            vertexDistancesData.put(i, -1);
+            vertexLabelsData.put(i, 0);
+        }
+        
+        IntBuffer verticesData = vertices.getBuffer();
+        for (int i = 0; i < MAX_VERTICES; i += 2) {
+            verticesData.put(i, -1);
+            verticesData.put(i + 1, 0);
+        }
+        
+        CLEventList events = new CLEventList(1);
+        
+        // copy static and initial data
+        queue.putWriteBuffer(adjacency, false)
+                //.putWriteBuffer(vertexLabels, false)
+                //.putWriteBuffer(vertexDistances, false)
+                .putWriteBuffer(vertices, false)
+                .putWriteBuffer(labels, false);
+        
+        // arguments for kernels
+        bruteKernel.putArgs(adjacency, vertices /*vertexDistances, vertexLabels*/, outVertexLabels, labels, outerLabel)
+                    .putArg(myGraph.size());
+        
+        queue.put1DRangeKernel(bruteKernel, 0, 1024, 1024, events)
+                .finish();
+        
+        long time = events.getEvent(0).getProfilingInfo(CLEvent.ProfilingCommand.START);
+        time = events.getEvent(0).getProfilingInfo(CLEvent.ProfilingCommand.END) - time;
+        System.out.println("Time elapsed (OpenCL: bruteBfs - ntto): " + (time / 1000000.0) + " ms");
+    }
+    
     public void test() {
         CLKernel iterateKernel = bfsProgram.createCLKernel("iterate");
         CLKernel groupIterateKernel = bfsProgram.createCLKernel("groupIterate");
         CLKernel unlabelledKernel = bfsProgram.createCLKernel("unlabelled");
         
-        List<List<Integer>> myGraph = generateGraph(10240, 64, 32, 32, 16);
+        List<List<Integer>> myGraph = generateGraph(20480);
         try {
             myGraph = readGraph("graph-1AF6.txt");
-            //writeGraph(myGraph);
+//            writeGraph(myGraph);
         } catch (IOException ex) {
             ex.printStackTrace(System.err);
             return;
         }
+        
+        bfs("graph-1AF6.txt");
         
         // set static data
         IntBuffer adjancecyData = adjacency.getBuffer();
@@ -142,7 +225,8 @@ public class CLGraph {
         groupIterateKernel.putArg(adjacency)
                     .putArg(0) // start vertex
                     .putArg(1) // label
-                    .putArgs(visited, labels, outVertices, outSize);
+                    .putArg(myGraph.size())
+                    .putArgs(visited, labels, outVertices, outSize, outLabel);
         
         unlabelledKernel.putArg(labels)
                 .putArg(myGraph.size())
@@ -169,21 +253,33 @@ public class CLGraph {
             // optimization for small sized frontiers
             groupIterateKernel.setArg(1, start);
             groupIterateKernel.setArg(2, label);
+            groupIterateKernel.setArg(3, myGraph.size());
 
-            queue.put1DRangeKernel(groupIterateKernel, 0, 256, 256, events)
-                    .putReadBuffer(outSize, true);
+            outLabel.getBuffer().put(0, label);
+            
+            queue.finish();
+            
+            queue.put1DRangeKernel(groupIterateKernel, 0, 256, 256, events).finish()
+                    .putReadBuffer(outSize, false)
+                    .putReadBuffer(outLabel, true);
 
+            long giTime = events.getEvent(0).getProfilingInfo(CLEvent.ProfilingCommand.START);
+            giTime = events.getEvent(0).getProfilingInfo(CLEvent.ProfilingCommand.END) - giTime;
+            System.out.println("Time elapsed (OpenCL: bfs(GI) - ntto): " + (giTime / 1000000.0) + " ms");
+            
+            label = outLabel.getBuffer().get(0);
+            
             int iter = 1;
             int size = outSizeData.get(0);
             while (size > 0) {
                 boolean odd = (iter % 2) > 0;
                 int localWorkSize = 256;
                 int globalWorkSize = roundUp(localWorkSize, size);
-
+                
                 iterateKernel.setArg(0, odd ? outVertices : vertices);
                 iterateKernel.setArg(4, size);
-                iterateKernel.setArg(5, odd ? vertices : outVertices);
-
+                iterateKernel.setArg(5, odd ? vertices : outVertices); 
+                
                 //System.out.println("Iteration " + iter + ", size = " + size);
                 /*CLBuffer<IntBuffer> in = odd ? outVertices : vertices;
                 queue.putReadBuffer(in, true)
@@ -197,16 +293,11 @@ public class CLGraph {
                 }*/
 
                 outSizeData.put(0, 0); // reset output frontier size
-
-                //long start = System.nanoTime();
-
+                
                 queue.putWriteBuffer(outSize, false)
-                    .put1DRangeKernel(iterateKernel, 0, globalWorkSize, localWorkSize, events)
-                    .putReadBuffer(outSize, true);
-
-                //long duration = System.nanoTime() - start;
-                //System.out.println("Kernel execution: " + duration / 1000.0 / 1000.0 + " ms");
-
+                        .put1DRangeKernel(iterateKernel, 0, globalWorkSize, localWorkSize, events)
+                        .putReadBuffer(outSize, true, events); 
+                
                 size = outSizeData.get(0);
                 iter++;
             }
@@ -218,21 +309,28 @@ public class CLGraph {
             unlabelled.getBuffer().put(0, -1);
             
             queue.putWriteBuffer(unlabelled, false)
-                    .put1DRangeKernel(unlabelledKernel, 0, globalWorkSize, localWorkSize)
-                    .putReadBuffer(unlabelled, true);
+                    .put1DRangeKernel(unlabelledKernel, 0, globalWorkSize, localWorkSize, events)
+                    .putReadBuffer(unlabelled, true, events);
             
             // performance
             long startTime = events.getEvent(0).getProfilingInfo(CLEvent.ProfilingCommand.START);
-            long endTime = events.getEvent(iter - 1).getProfilingInfo(CLEvent.ProfilingCommand.END);
+            long endTime = events.getEvent(2 * iter /*iter - 1*/).getProfilingInfo(CLEvent.ProfilingCommand.END);
             long bttoTime = endTime - startTime;
             totalBttoTime += bttoTime;
-            //System.out.println("Time elapsed (OpenCL: bfs - btto): " + (bttoTime / 1000000.0) + " ms");
+            System.out.println("Time elapsed (OpenCL: bfs - btto): " + (bttoTime / 1000000.0) + " ms");
+            
+            long totalNttoTime = 0;
+            for (int i = 0; i < 2 * iter + 1; i++) {
+                long nttoTime = events.getEvent(i).getProfilingInfo(CLEvent.ProfilingCommand.START);
+                totalNttoTime += events.getEvent(i).getProfilingInfo(CLEvent.ProfilingCommand.END) - nttoTime;
+            }
+            System.out.println("Time elapsed (OpenCL: bfs - ntto): " + (totalNttoTime / 1000000.0) + " ms");
             
             start = unlabelled.getBuffer().get(0);
             done = start < 0;
         } while (!done);
         
-        System.out.println("Time elapsed (OpenCL: bfs - btto): " + (totalBttoTime / 1000000.0) + " ms");
+        System.out.println("Time elapsed (OpenCL: bfs - total btto): " + (totalBttoTime / 1000000.0) + " ms");
         
         // read results
         queue.putReadBuffer(labels, true);
@@ -248,9 +346,9 @@ public class CLGraph {
             }
             counter.increment();
         }
-        for (Map.Entry<Integer, MutableInt> size : components.entrySet()) {
-            //System.out.println("Component " + size.getKey() + " size " + size.getValue());
-        }
+        /*for (Map.Entry<Integer, MutableInt> size : components.entrySet()) {
+            System.out.println("Component " + size.getKey() + " size " + size.getValue());
+        }*/
         
         /*System.out.print("Expanded vertices:");
         int count = outSize.getBuffer().get(0);
@@ -462,6 +560,80 @@ public class CLGraph {
         } else {
             return globalSize + groupSize - r;
         }
+    }
+    
+    public void bfs(String file) {
+        List<List<Integer>> adjacency;
+        try {
+            adjacency = readGraph(file);
+        } catch (IOException ex) {
+            throw new RuntimeException(ex);
+        }
+        
+        long cpuTime = System.nanoTime();
+        
+        int start = 0;
+        int components = 0;
+        boolean[] visited = new boolean[adjacency.size()];
+        Deque<Integer> queue = new ArrayDeque<>();
+        while (start >= 0) {
+            /*List<Integer> frontier = new ArrayList<>();
+            frontier.add(start);
+            while (!frontier.isEmpty()) {
+                List<Integer> expanded = new ArrayList<>();
+
+                for (int v : frontier) {
+                    visited[v] = true;
+                    Integer[] neighbors = adjacency.get(v).toArray(new Integer[3]);
+                    if (!visited[neighbors[0]]) {
+                        expanded.add(neighbors[0]);
+                    }
+                    if (!visited[neighbors[1]]) {
+                        expanded.add(neighbors[1]);
+                    }
+                    if (!visited[neighbors[2]]) {
+                        expanded.add(neighbors[2]);
+                    }
+//                    System.out.print(v + " ");
+                }
+//                System.out.println("");
+
+                frontier = expanded;
+            
+            }*/
+//            System.out.println("");
+            
+            queue.add(start);
+            while (!queue.isEmpty()) {
+                int v = queue.poll();
+                visited[v] = true;
+                List<Integer> neighbors = adjacency.get(v);
+                if (!visited[neighbors.get(0)]) {
+                    queue.add(neighbors.get(0));
+                }
+                if (!visited[neighbors.get(1)]) {
+                    queue.add(neighbors.get(1));
+                }
+                if (!visited[neighbors.get(2)]) {
+                    queue.add(neighbors.get(2));
+                }
+            }
+            
+            components++;
+            
+            start = -1;
+            for (int v = 0; v < visited.length; v++) {
+                if (!visited[v]) {
+                    start = v;
+                    break;
+                }
+            }
+        }
+        
+        cpuTime = System.nanoTime() - cpuTime;
+        System.out.println("Time elapsed (CPU: bfs): " + (cpuTime / 1000000.0) + " ms");
+        
+        System.out.println("Components: " + components);
     }
     
 }
