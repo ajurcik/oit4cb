@@ -56,6 +56,11 @@ layout(points) in;
 layout(triangle_strip, max_vertices = 12) out;
 
 void main() {
+    if (vertex[0].faceCount > 3) {
+        // discard invalid boxes
+        return;
+    }
+
     objPos = vertex[0].objPos;
     camPos = vertex[0].camPos;
     lightPos = vertex[0].lightPos;

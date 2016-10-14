@@ -54,6 +54,11 @@ layout(points) in;
 layout(triangle_strip, max_vertices = 12) out;
 
 void main() {
+    if (vertex[0].faceCount > 3) {
+        // discard invalid boxes
+        return;
+    }
+
     bool surface = vertex[0].label == surfaceLabel;
     if (clipSurface && surface) {
         return;

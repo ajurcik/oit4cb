@@ -175,11 +175,13 @@ void main() {
             //vertex.color.rgb = vec3(0.5, 0.5, 0.5);
         }
         
-        vertex.faceVertices[of][0] = pv0.xyz;
-        vertex.faceVertices[of][1] = pv1.xyz;
-        vertex.faceVertices[of][2] = pv2.xyz;
-        vertex.faceVertices[of][3] = pv3.xyz;
-        of++;
+        if (of < 3) {
+            vertex.faceVertices[of][0] = pv0.xyz;
+            vertex.faceVertices[of][1] = pv1.xyz;
+            vertex.faceVertices[of][2] = pv2.xyz;
+            vertex.faceVertices[of][3] = pv3.xyz;
+        }
+        of++; // more than 3 faces indicate invalid box
     }
 
     vertex.faceCount = of;

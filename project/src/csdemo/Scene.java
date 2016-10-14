@@ -1116,16 +1116,16 @@ public class Scene implements GLEventListener {
 //        clGraph.test();
 //        clGraph.test();
 //        clGraph.test();
-        clGraph.testBrute();
-        clGraph.testBrute();
-        clGraph.testBrute();
-        clGraph.testBrute();
-        clGraph.testBrute();
-        clGraph.testBrute();
-        clGraph.testBrute();
-        clGraph.testBrute();
-        clGraph.testBrute();
-        clGraph.testBrute();
+//        clGraph.testBrute();
+//        clGraph.testBrute();
+//        clGraph.testBrute();
+//        clGraph.testBrute();
+//        clGraph.testBrute();
+//        clGraph.testBrute();
+//        clGraph.testBrute();
+//        clGraph.testBrute();
+//        clGraph.testBrute();
+//        clGraph.testBrute();
         
         // init GPU array
         if (PERFORMANCE_TESTS_ENABLED) {
