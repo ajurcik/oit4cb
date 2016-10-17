@@ -49,7 +49,7 @@ public class GPUGraph {
     public static final int MAX_LABEL_COUNT = 64;
     private static final int MAX_CIRCLE_COUNT = Scene.MAX_TORI;
     private static final int MAX_CIRCLE_EDGE_COUNT = 32;
-    private static final int MAX_SPHERE_POLYGON_COUNT = 8;
+    public static final int MAX_SPHERE_POLYGON_COUNT = 8;
     
     // buffer indices for shaders
     private static final int EDGES_BUFFER_INDEX = 0;

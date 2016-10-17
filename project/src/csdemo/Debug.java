@@ -1,5 +1,6 @@
 package csdemo;
 
+import com.jogamp.common.nio.Buffers;
 import com.jogamp.opengl.GL4;
 import static com.jogamp.opengl.GL4.*;
 import java.io.BufferedWriter;
@@ -396,6 +397,40 @@ public class Debug {
                 }
                 writer.newLine();
             }
+            gl.glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
+        }
+    }
+    
+    public void writeSphereCavityPlanes(GL4 gl, int sphereCavityCountsBuffer, int sphereCavityCirclesBuffer,
+            int sphereCavityPlanesBuffer, int atomCount) throws IOException {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(new File(debugDir, "sphere-cavities.txt")))) {
+            // read counts
+            gl.glBindBuffer(GL_SHADER_STORAGE_BUFFER, sphereCavityCountsBuffer);
+            ByteBuffer data = gl.glMapBuffer(GL_SHADER_STORAGE_BUFFER, GL_READ_ONLY);
+            int counts[] = new int[atomCount];
+            data.asIntBuffer().get(counts);
+            gl.glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
+            // write counts, circles and planes
+            gl.glBindBuffer(GL_SHADER_STORAGE_BUFFER, sphereCavityCirclesBuffer);
+            ByteBuffer circlesData = gl.glMapBuffer(GL_SHADER_STORAGE_BUFFER, GL_READ_ONLY);
+            gl.glBindBuffer(GL_SHADER_STORAGE_BUFFER, sphereCavityPlanesBuffer);
+            ByteBuffer planesData = gl.glMapBuffer(GL_SHADER_STORAGE_BUFFER, GL_READ_ONLY);
+            for (int i = 0; i < counts.length; i++) {
+                writer.append(String.format("%4d (%2d): ", i, counts[i]));
+                for (int j = 0; j < counts[i]; j++) {
+                    int circleOffset = (i * GPUGraph.MAX_SPHERE_POLYGON_COUNT + j) * 2 * Buffers.SIZEOF_INT;
+                    int circleStart = circlesData.getInt(circleOffset);
+                    int circleLen = circlesData.getInt(circleOffset + 4);
+                    writer.append(String.format("circle: [%d, %d], ", circleStart, circleLen));
+                    Vector4f plane = getVec4(planesData, (i * GPUGraph.MAX_SPHERE_POLYGON_COUNT + j) * Scene.SIZEOF_VEC4);
+                    writer.append(String.format("plane: [%f, %f, %f, %f], ", plane.x, plane.y, plane.z, plane.w));
+                }
+                writer.newLine();
+            }
+            // unbind buffers
+            gl.glBindBuffer(GL_SHADER_STORAGE_BUFFER, sphereCavityCirclesBuffer);
+            gl.glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
+            gl.glBindBuffer(GL_SHADER_STORAGE_BUFFER, sphereCavityPlanesBuffer);
             gl.glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
         }
     }

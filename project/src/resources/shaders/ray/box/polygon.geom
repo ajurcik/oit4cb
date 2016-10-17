@@ -3,7 +3,7 @@
 // clipping
 uniform bool clipCavities;
 uniform bool clipSurface;
-uniform uint surfaceLabel;
+uniform uint outerLabel;
 uniform float threshold;
 
 // coloring by cavity area
@@ -59,7 +59,7 @@ void main() {
         return;
     }
 
-    bool surface = vertex[0].label == surfaceLabel;
+    bool surface = vertex[0].label == outerLabel;
     if (clipSurface && surface) {
         return;
     }

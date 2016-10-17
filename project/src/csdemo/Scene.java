@@ -40,15 +40,13 @@ public class Scene implements GLEventListener {
     private int neighborsProgram;
     private int removeProgram;
     private int arcsProgram;
-    private int visualizeProgram;
     private int singularityProgram;
     
-    private int genSmallCirclesProgram;
-    private int readSurfaceAtomsProgram;
     private int writeProgram;
     private int writeSpheresProgram;
     private int smallCirclesProgram;
     private int isolatedProgram;
+    private int capsProgram;
     
     // ray-casting programs
     private int sphereProgram;
@@ -91,6 +89,9 @@ public class Scene implements GLEventListener {
     private int polygonsPlanesBuffer;
     private int sphereIsolatedCountsBuffer;
     private int sphereIsolatedVSBuffer;
+    private int sphereCavityCountsBuffer;
+    private int sphereCavityCirclesBuffer;
+    private int sphereCavityPlanesBuffer;
     private int countersBuffer;
     
     private int atomsTex;
@@ -112,6 +113,9 @@ public class Scene implements GLEventListener {
     private int polygonsPlanesTex;
     private int sphereIsolatedCountsTex;
     private int sphereIsolatedVSTex;
+    private int sphereCavityCountsTex;
+    private int sphereCavityCirclesTex;
+    private int sphereCavityPlanesTex;
     
     // Vertex array buffers
     private int quadArrayBuffer;
@@ -220,6 +224,10 @@ public class Scene implements GLEventListener {
     // indices for isolated shader
     private static final int SPHERE_ISOLATED_COUNTS_BUFFER_INDEX = 4;
     private static final int SPHERE_ISOLATED_VS_BUFFER_INDEX = 5;
+    // indices for cavity caps shader
+    private static final int SPHERE_CAVITY_COUNTS_BUFFER_INDEX = 1;
+    private static final int SPHERE_CAVITY_CIRCLES_BUFFER_INDEX = 2;
+    private static final int SPHERE_CAVITY_PLANES_BUFFER_INDEX = 3;
     // indices for write shaders
     private static final int SPHERES_ARRAY_BUFFER_INDEX = 0;
     private static final int TRIANGLES_ARRAY_BUFFER_INDEX = 0;
@@ -571,11 +579,8 @@ public class Scene implements GLEventListener {
             writeSpheresProgram = Utils.loadComputeProgram(gl, "/resources/shaders/cb/writeSpheres.glsl");
             singularityProgram = Utils.loadComputeProgram(gl, "/resources/shaders/cb/singularity.glsl");
             isolatedProgram = Utils.loadComputeProgram(gl, "/resources/shaders/cb/isolated.glsl");
+            capsProgram = Utils.loadComputeProgram(gl, "/resources/shaders/cb/caps.glsl");
             // other programs
-            visualizeProgram = Utils.loadProgram(gl, "/resources/shaders/visualize.vert",
-                    "/resources/shaders/visualize.frag");
-            genSmallCirclesProgram = Utils.loadComputeProgram(gl, "/resources/shaders/genSmallCircles.glsl");
-            readSurfaceAtomsProgram = Utils.loadComputeProgram(gl, "/resources/shaders/readSurfaceAtoms.glsl");
             smallCirclesProgram = Utils.loadProgram(gl, "/resources/shaders/smallCircles.vert",
                     "/resources/shaders/smallCircles.frag");
             // ray-casting programs
@@ -609,7 +614,7 @@ public class Scene implements GLEventListener {
                     "/resources/shaders/ray/polygon2.geom", "/resources/shaders/ray/krone/polygon2.frag");
             // Load molecule
             //dynamics = new Dynamics(Utils.loadDynamicsFromResource("/resources/md/model", 1, 10));
-            dynamics = new Dynamics(Collections.singletonList(Utils.loadAtomsFromResource("/resources/1CRN.pdb")));
+            dynamics = new Dynamics(Collections.singletonList(Utils.loadAtomsFromResource("/resources/1VIS.pdb")));
             System.out.println("Atoms (molecule): " + dynamics.getMolecule().getAtomCount());
             System.out.println("Snapshots: " + dynamics.getSnapshotCount());
         } catch (Exception ex) {
@@ -710,8 +715,8 @@ public class Scene implements GLEventListener {
         atomsPos = Buffers.newDirectFloatBuffer(MAX_ATOMS * 4);
         
         // Create buffers
-        int buffers[] = new int[31];
-        gl.glGenBuffers(31, buffers, 0);
+        int buffers[] = new int[34];
+        gl.glGenBuffers(34, buffers, 0);
         // contour-buildup
         atomsBuffer = buffers[0];
         gridCountsBuffer = buffers[1];
@@ -750,8 +755,12 @@ public class Scene implements GLEventListener {
         polygonsPlanesBuffer = buffers[27];
         sphereIsolatedCountsBuffer = buffers[28];
         sphereIsolatedVSBuffer = buffers[29];
+        // cavities
+        sphereCavityCountsBuffer = buffers[30];
+        sphereCavityCirclesBuffer = buffers[31];
+        sphereCavityPlanesBuffer = buffers[32];
         // counters
-        countersBuffer = buffers[30];
+        countersBuffer = buffers[33];
         
         // quad array buffer
         FloatBuffer quad = FloatBuffer.allocate(16);
@@ -763,76 +772,58 @@ public class Scene implements GLEventListener {
         gl.glBindBuffer(GL_ARRAY_BUFFER, quadArrayBuffer);
         gl.glBufferData(GL_ARRAY_BUFFER, 4 * SIZEOF_VEC4, quad, GL_STATIC_DRAW);
         
-        // 0
         gl.glBindBuffer(GL_SHADER_STORAGE_BUFFER, atomsBuffer);
         gl.glBufferData(GL_SHADER_STORAGE_BUFFER, atomsPos.capacity() * Buffers.SIZEOF_FLOAT, atomsPos, GL_DYNAMIC_DRAW);
         
-        // 1
         gl.glBindBuffer(GL_SHADER_STORAGE_BUFFER, gridCountsBuffer);
         gl.glBufferData(GL_SHADER_STORAGE_BUFFER, CELL_COUNT * Buffers.SIZEOF_INT, null, GL_DYNAMIC_COPY);
         
-        // 2
         gl.glBindBuffer(GL_SHADER_STORAGE_BUFFER, gridIndicesBuffer);
         gl.glBufferData(GL_SHADER_STORAGE_BUFFER, CELL_COUNT * MAX_CELL_ATOMS * Buffers.SIZEOF_INT, null, GL_DYNAMIC_COPY);
         
-        // 3
         gl.glBindBuffer(GL_SHADER_STORAGE_BUFFER, neighborsBuffer);
         gl.glBufferData(GL_SHADER_STORAGE_BUFFER, MAX_ATOMS * MAX_NEIGHBORS * Buffers.SIZEOF_INT, null, GL_DYNAMIC_COPY);
         
-        // 4
         gl.glBindBuffer(GL_SHADER_STORAGE_BUFFER, neighborCountsBuffer);
         gl.glBufferData(GL_SHADER_STORAGE_BUFFER, MAX_ATOMS * Buffers.SIZEOF_INT, null, GL_DYNAMIC_COPY);
         
-        // 5
         gl.glBindBuffer(GL_SHADER_STORAGE_BUFFER, smallCirclesBuffer);
         gl.glBufferData(GL_SHADER_STORAGE_BUFFER, MAX_ATOMS * MAX_NEIGHBORS * SIZEOF_VEC4, null, GL_DYNAMIC_COPY);
         
-        // 6
         gl.glBindBuffer(GL_SHADER_STORAGE_BUFFER, smallCirclesVisibleBuffer);
         gl.glBufferData(GL_SHADER_STORAGE_BUFFER, MAX_ATOMS * MAX_NEIGHBORS * Buffers.SIZEOF_INT, null, GL_DYNAMIC_COPY);
         
-        // 0
         gl.glBindBuffer(GL_SHADER_STORAGE_BUFFER, arcsBuffer);
         //gl.glBufferData(GL_SHADER_STORAGE_BUFFER, atoms.size() * MAX_NEIGHBORS * MAX_ARCS * SIZEOF_VEC4, null, GL_DYNAMIC_COPY);
         gl.glBufferData(GL_SHADER_STORAGE_BUFFER, MAX_TOTAL_ARCS * SIZEOF_VEC4, null, GL_DYNAMIC_COPY);
-
-        // 1
+        
         gl.glBindBuffer(GL_SHADER_STORAGE_BUFFER, arcCountsBuffer);
         gl.glBufferData(GL_SHADER_STORAGE_BUFFER, MAX_ATOMS * MAX_NEIGHBORS * Buffers.SIZEOF_INT, null, GL_DYNAMIC_COPY);
         
-        // 2
         gl.glBindBuffer(GL_SHADER_STORAGE_BUFFER, arcHashesBuffer);
         gl.glBufferData(GL_SHADER_STORAGE_BUFFER, MAX_TOTAL_ARC_HASHES * SIZEOF_HASH, null, GL_DYNAMIC_COPY);
         
-        // 3
         gl.glBindBuffer(GL_SHADER_STORAGE_BUFFER, probeNeighborCountsBuffer);
         gl.glBufferData(GL_SHADER_STORAGE_BUFFER, MAX_PROBES * Buffers.SIZEOF_INT, null, GL_DYNAMIC_COPY);
         
-        // 4
         gl.glBindBuffer(GL_SHADER_STORAGE_BUFFER, probeNeighborProbesBuffer);
         gl.glBufferData(GL_SHADER_STORAGE_BUFFER, MAX_PROBES * MAX_NEIGHBORS * SIZEOF_VEC4, null, GL_DYNAMIC_COPY);
         
-        // 7
         gl.glBindBuffer(GL_ARRAY_BUFFER, smallCirclesArrayBuffer);
         gl.glBufferData(GL_ARRAY_BUFFER, 32000 * 13 * SIZEOF_VEC4, null, GL_DYNAMIC_COPY);
         
-        // 0
         gl.glBindBuffer(GL_SHADER_STORAGE_BUFFER, atomsVisibleBuffer);
         gl.glBufferData(GL_SHADER_STORAGE_BUFFER, MAX_ATOMS * Buffers.SIZEOF_INT, null, GL_DYNAMIC_COPY);
         
-        // 1
         gl.glBindBuffer(GL_SHADER_STORAGE_BUFFER, spheresArrayBuffer);
         gl.glBufferData(GL_SHADER_STORAGE_BUFFER, (3 * MAX_ATOMS / 2) * SIZEOF_POLYGON, null, GL_STREAM_COPY);
         
-        // 2
         gl.glBindBuffer(GL_SHADER_STORAGE_BUFFER, trianglesArrayBuffer);
         gl.glBufferData(GL_SHADER_STORAGE_BUFFER, MAX_TRIANGLES * SIZEOF_TRIANGLE, null, GL_STREAM_COPY);
         
-        // 3
         gl.glBindBuffer(GL_SHADER_STORAGE_BUFFER, toriArrayBuffer);
         gl.glBufferData(GL_SHADER_STORAGE_BUFFER, MAX_TORI * SIZEOF_TORUS, null, GL_STREAM_COPY);
         
-        // 4
         gl.glBindBuffer(GL_SHADER_STORAGE_BUFFER, surfaceEdgesBuffer);
         gl.glBufferData(GL_SHADER_STORAGE_BUFFER, MAX_TORI * SIZEOF_EDGE, null, GL_DYNAMIC_COPY);
         
@@ -848,11 +839,9 @@ public class Scene implements GLEventListener {
         gl.glBindBuffer(GL_SHADER_STORAGE_BUFFER, debugBuffer);
         gl.glBufferData(GL_SHADER_STORAGE_BUFFER, 1024 * Buffers.SIZEOF_INT, null, GL_DYNAMIC_READ);
         
-        // 1
         gl.glBindBuffer(GL_SHADER_STORAGE_BUFFER, fragmentsBuffer);
         gl.glBufferData(GL_SHADER_STORAGE_BUFFER, MAX_ABUFFER_FRAGMENTS * SIZEOF_FRAGMENT, null, GL_DYNAMIC_COPY);
         
-        // 2
         gl.glBindBuffer(GL_SHADER_STORAGE_BUFFER, fragmentsIndexBuffer);
         gl.glBufferData(GL_SHADER_STORAGE_BUFFER, (MAX_ABUFFER_PIXELS + 1) * Buffers.SIZEOF_INT, null, GL_DYNAMIC_READ);
         
@@ -866,6 +855,15 @@ public class Scene implements GLEventListener {
         gl.glBufferData(GL_SHADER_STORAGE_BUFFER, MAX_ATOMS * Buffers.SIZEOF_INT, null, GL_DYNAMIC_COPY);
         
         gl.glBindBuffer(GL_SHADER_STORAGE_BUFFER, sphereIsolatedVSBuffer);
+        gl.glBufferData(GL_SHADER_STORAGE_BUFFER, MAX_ATOMS * MAX_SPHERE_ISOLATED_TORI * SIZEOF_VEC4, null, GL_DYNAMIC_COPY);
+        
+        gl.glBindBuffer(GL_SHADER_STORAGE_BUFFER, sphereCavityCountsBuffer);
+        gl.glBufferData(GL_SHADER_STORAGE_BUFFER, MAX_ATOMS * Buffers.SIZEOF_INT, null, GL_DYNAMIC_COPY);
+        
+        gl.glBindBuffer(GL_SHADER_STORAGE_BUFFER, sphereCavityCirclesBuffer);
+        gl.glBufferData(GL_SHADER_STORAGE_BUFFER, MAX_ATOMS * MAX_SPHERE_ISOLATED_TORI * 2 * Buffers.SIZEOF_INT, null, GL_DYNAMIC_COPY);
+        
+        gl.glBindBuffer(GL_SHADER_STORAGE_BUFFER, sphereCavityPlanesBuffer);
         gl.glBufferData(GL_SHADER_STORAGE_BUFFER, MAX_ATOMS * MAX_SPHERE_ISOLATED_TORI * SIZEOF_VEC4, null, GL_DYNAMIC_COPY);
         
         gl.glBindBuffer(GL_SHADER_STORAGE_BUFFER, countersBuffer);
@@ -914,11 +912,6 @@ public class Scene implements GLEventListener {
         // bind singularity buffers
         Utils.bindShaderStorageBlock(gl, singularityProgram, "NeighborCounts", PROBE_NEIGHBOR_COUNTS_BUFFER_INDEX);
         Utils.bindShaderStorageBlock(gl, singularityProgram, "NeighborProbes", PROBE_NEIGHBOR_PROBES_BUFFER_INDEX);
-        // bind read surface atoms buffers
-        Utils.bindShaderStorageBlock(gl, readSurfaceAtomsProgram, "NeighborCounts", NEIGHBOR_COUNTS_BUFFER_INDEX);
-        Utils.bindShaderStorageBlock(gl, readSurfaceAtomsProgram, "Neighbors", NEIGHBORS_BUFFER_INDEX);
-        Utils.bindShaderStorageBlock(gl, readSurfaceAtomsProgram, "ArcsCounts", ARC_COUNTS_BUFFER_INDEX);
-        Utils.bindShaderStorageBlock(gl, readSurfaceAtomsProgram, "Arcs", ARCS_BUFFER_INDEX);
         // bind write primitives buffers
         Utils.bindShaderStorageBlock(gl, writeProgram, "Triangles", TRIANGLES_ARRAY_BUFFER_INDEX);
         Utils.bindShaderStorageBlock(gl, writeProgram, "Tori", TORI_ARRAY_BUFFER_INDEX);
@@ -929,6 +922,8 @@ public class Scene implements GLEventListener {
         Utils.bindShaderStorageBlock(gl, writeProgram, "CountersBuffer", COUNTERS_BUFFER_INDEX);
         Utils.bindShaderStorageBlock(gl, writeProgram, "Debug", DEBUG_BUFFER_INDEX);
         Utils.bindShaderStorageBlock(gl, writeSpheresProgram, "Spheres", SPHERES_ARRAY_BUFFER_INDEX);
+        Utils.bindShaderStorageBlock(gl, writeSpheresProgram, "CavityCounts", SPHERE_CAVITY_COUNTS_BUFFER_INDEX);
+        Utils.bindShaderStorageBlock(gl, writeSpheresProgram, "CavityCircles", SPHERE_CAVITY_CIRCLES_BUFFER_INDEX);
         Utils.bindShaderStorageBlock(gl, writeSpheresProgram, "CountersBuffer", COUNTERS_BUFFER_INDEX);
         // bind isolated buffers
         Utils.bindShaderStorageBlock(gl, isolatedProgram, "Tori", TORI_ARRAY_BUFFER_INDEX);
@@ -936,6 +931,9 @@ public class Scene implements GLEventListener {
         Utils.bindShaderStorageBlock(gl, isolatedProgram, "PolygonsPlanes", POLYGONS_PLANES_BUFFER_INDEX);
         Utils.bindShaderStorageBlock(gl, isolatedProgram, "SphereIsolatedCounts", SPHERE_ISOLATED_COUNTS_BUFFER_INDEX);
         Utils.bindShaderStorageBlock(gl, isolatedProgram, "SphereIsolatedVisSphere", SPHERE_ISOLATED_VS_BUFFER_INDEX);
+        // bind cavity caps buffers
+        Utils.bindShaderStorageBlock(gl, capsProgram, "SphereCavityPlanes", SPHERE_CAVITY_PLANES_BUFFER_INDEX);
+        Utils.bindShaderStorageBlock(gl, capsProgram, "Debug", DEBUG_BUFFER_INDEX);
         // bind sphere ray-tracing buffers
         Utils.bindShaderStorageBlock(gl, sphereProgram, "ABuffer", FRAGMENTS_BUFFER_INDEX);
         Utils.bindShaderStorageBlock(gl, sphereProgram, "ABufferIndex", FRAGMENTS_INDEX_BUFFER_INDEX);
@@ -993,8 +991,8 @@ public class Scene implements GLEventListener {
         Utils.bindUniformBlock(gl, kronePolygonProgram, "MinMaxCavityArea", MINMAX_CAVITY_AREA_BUFFER_INDEX);
         
         // textures
-        int[] textures = new int[19];
-        gl.glGenTextures(19, textures, 0);
+        int[] textures = new int[22];
+        gl.glGenTextures(22, textures, 0);
         atomsTex = textures[0];
         gridCountsTex = textures[1];
         gridIndicesTex = textures[2];
@@ -1014,60 +1012,41 @@ public class Scene implements GLEventListener {
         polygonsPlanesTex = textures[16];
         sphereIsolatedCountsTex = textures[17];
         sphereIsolatedVSTex = textures[18];
+        sphereCavityCountsTex = textures[19];
+        sphereCavityCirclesTex = textures[20];
+        sphereCavityPlanesTex = textures[21];
         
-        gl.glBindTexture(GL_TEXTURE_BUFFER, atomsTex);
-        gl.glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA32F, atomsBuffer);
+        Utils.bindTextureBuffer(gl, atomsTex, GL_RGBA32F, atomsBuffer);
         
-        gl.glBindTexture(GL_TEXTURE_BUFFER, gridCountsTex);
-        gl.glTexBuffer(GL_TEXTURE_BUFFER, GL_R32UI, gridCountsBuffer);
+        Utils.bindTextureBuffer(gl, gridCountsTex, GL_R32UI, gridCountsBuffer);
+        Utils.bindTextureBuffer(gl, gridIndicesTex, GL_R32UI, gridIndicesBuffer);
         
-        gl.glBindTexture(GL_TEXTURE_BUFFER, gridIndicesTex);
-        gl.glTexBuffer(GL_TEXTURE_BUFFER, GL_R32UI, gridIndicesBuffer);
+        Utils.bindTextureBuffer(gl, neighborsTex, GL_R32UI, neighborsBuffer);
+        Utils.bindTextureBuffer(gl, neighborCountsTex, GL_R32UI, neighborCountsBuffer);
         
-        gl.glBindTexture(GL_TEXTURE_BUFFER, neighborsTex);
-        gl.glTexBuffer(GL_TEXTURE_BUFFER, GL_R32UI, neighborsBuffer);
+        Utils.bindTextureBuffer(gl, smallCirclesTex, GL_RGBA32F, smallCirclesBuffer);
+        Utils.bindTextureBuffer(gl, smallCirclesVisibleTex, GL_R32UI, smallCirclesVisibleBuffer);
         
-        gl.glBindTexture(GL_TEXTURE_BUFFER, neighborCountsTex);
-        gl.glTexBuffer(GL_TEXTURE_BUFFER, GL_R32UI, neighborCountsBuffer);
+        Utils.bindTextureBuffer(gl, arcsTex, GL_RGBA32F, arcsBuffer);
+        Utils.bindTextureBuffer(gl, arcCountsTex, GL_R32UI, arcCountsBuffer);
+        Utils.bindTextureBuffer(gl, arcHashesTex, GL_RGBA32UI, arcHashesBuffer);
         
-        gl.glBindTexture(GL_TEXTURE_BUFFER, smallCirclesTex);
-        gl.glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA32F, smallCirclesBuffer);
+        Utils.bindTextureBuffer(gl, probeNeighborCountsTex, GL_R32UI, probeNeighborCountsBuffer);
+        Utils.bindTextureBuffer(gl, probeNeighborProbesTex, GL_RGBA32F, probeNeighborProbesBuffer);
         
-        gl.glBindTexture(GL_TEXTURE_BUFFER, smallCirclesVisibleTex);
-        gl.glTexBuffer(GL_TEXTURE_BUFFER, GL_R32UI, smallCirclesVisibleBuffer);
+        Utils.bindTextureBuffer(gl, surfaceEdgesTex, GL_RGBA32UI, surfaceEdgesBuffer);
+        Utils.bindTextureBuffer(gl, surfaceVerticesTex, GL_R32UI, surfaceVerticesBuffer);
+        Utils.bindTextureBuffer(gl, surfaceEdgesCircleTex, GL_RGBA32F, surfaceEdgesCircleBuffer);
+        Utils.bindTextureBuffer(gl, surfaceEdgesLineTex, GL_RGBA32F, surfaceEdgesLineBuffer);
         
-        gl.glBindTexture(GL_TEXTURE_BUFFER, arcsTex);
-        gl.glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA32F, arcsBuffer);
-        
-        gl.glBindTexture(GL_TEXTURE_BUFFER, arcCountsTex);
-        gl.glTexBuffer(GL_TEXTURE_BUFFER, GL_R32UI, arcCountsBuffer);
-        
-        gl.glBindTexture(GL_TEXTURE_BUFFER, arcHashesTex);
-        gl.glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA32UI, arcHashesBuffer);
-        
-        gl.glBindTexture(GL_TEXTURE_BUFFER, probeNeighborCountsTex);
-        gl.glTexBuffer(GL_TEXTURE_BUFFER, GL_R32UI, probeNeighborCountsBuffer);
-        
-        gl.glBindTexture(GL_TEXTURE_BUFFER, probeNeighborProbesTex);
-        gl.glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA32F, probeNeighborProbesBuffer);
-        
-        gl.glBindTexture(GL_TEXTURE_BUFFER, surfaceEdgesTex);
-        gl.glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA32UI, surfaceEdgesBuffer);
-        
-        gl.glBindTexture(GL_TEXTURE_BUFFER, surfaceVerticesTex);
-        gl.glTexBuffer(GL_TEXTURE_BUFFER, GL_R32UI, surfaceVerticesBuffer);
-        
-        gl.glBindTexture(GL_TEXTURE_BUFFER, surfaceEdgesCircleTex);
-        gl.glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA32F, surfaceEdgesCircleBuffer);
-        
-        gl.glBindTexture(GL_TEXTURE_BUFFER, surfaceEdgesLineTex);
-        gl.glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA32F, surfaceEdgesLineBuffer);
-        
-        gl.glBindTexture(GL_TEXTURE_BUFFER, polygonsPlanesTex);
-        gl.glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA32F, polygonsPlanesBuffer);
+        Utils.bindTextureBuffer(gl, polygonsPlanesTex, GL_RGBA32F, polygonsPlanesBuffer);
         
         Utils.bindTextureBuffer(gl, sphereIsolatedCountsTex, GL_R32UI, sphereIsolatedCountsBuffer);
         Utils.bindTextureBuffer(gl, sphereIsolatedVSTex, GL_RGBA32F, sphereIsolatedVSBuffer);
+        
+        Utils.bindTextureBuffer(gl, sphereCavityCountsTex, GL_R32UI, sphereCavityCountsBuffer);
+        Utils.bindTextureBuffer(gl, sphereCavityCirclesTex, GL_RG32UI, sphereCavityCirclesBuffer);
+        Utils.bindTextureBuffer(gl, sphereCavityPlanesTex, GL_RGBA32F, sphereCavityPlanesBuffer);
         
         int atomicCounterBufferIndex = 0;
         gl.glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, atomicCountersBuffer);
@@ -1500,10 +1479,13 @@ public class Scene implements GLEventListener {
         gl.glUseProgram(writeSpheresProgram);
         
         gl.glBindBufferBase(GL_SHADER_STORAGE_BUFFER, SPHERES_ARRAY_BUFFER_INDEX, spheresArrayBuffer);
+        gl.glBindBufferBase(GL_SHADER_STORAGE_BUFFER, SPHERE_CAVITY_COUNTS_BUFFER_INDEX, sphereCavityCountsBuffer);
+        gl.glBindBufferBase(GL_SHADER_STORAGE_BUFFER, SPHERE_CAVITY_CIRCLES_BUFFER_INDEX, sphereCavityCirclesBuffer);
         gl.glBindBufferBase(GL_SHADER_STORAGE_BUFFER, COUNTERS_BUFFER_INDEX, countersBuffer);
         //gl.glBindBufferBase(GL_SHADER_STORAGE_BUFFER, DEBUG_BUFFER_INDEX, debugBuffer);
         
         Utils.clearCounter(gl, countersBuffer, 0);
+        Utils.clearCounter(gl, countersBuffer, 4); // DEBUG
         
         gl.glActiveTexture(GL_TEXTURE0);
         gl.glBindTexture(GL_TEXTURE_BUFFER, atomsTex);
@@ -1527,11 +1509,55 @@ public class Scene implements GLEventListener {
         
         //Utils.setUniform(gl, writeSpheresProgram, "atomCount", atoms.size());
         Utils.setUniform(gl, writeSpheresProgram, "circleCount", gr.getCircleCount());
+        Utils.setUniform(gl, writeSpheresProgram, "maxSphereCavityCount", GPUGraph.MAX_SPHERE_POLYGON_COUNT);
+        Utils.setUniform(gl, writeSpheresProgram, "outerLabel", gr.getOuterSurfaceLabel());
+        
+        int cavityCount = 0;
+        if (autoupdate || update) {
+            gl.glBindBuffer(GL_SHADER_STORAGE_BUFFER, sphereCavityCountsBuffer);
+            gl.glClearBufferData(GL_SHADER_STORAGE_BUFFER, GL_R32UI, GL_RED_INTEGER, GL_UNSIGNED_INT,
+                    IntBuffer.wrap(new int[] { 0 }));
+            gl.glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+            
+            gl.glDispatchCompute((gr.getCircleCount() + 63) / 64, 1, 1); // writeSpheresProgram
+            gl.glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT | GL_VERTEX_ATTRIB_ARRAY_BARRIER_BIT | GL_TEXTURE_FETCH_BARRIER_BIT);
+            sphereCount = Utils.getCounter(gl, countersBuffer, 0);
+            cavityCount = Utils.getCounter(gl, countersBuffer, 4);
+        }
+        
+        // cavities handling
+        gl.glUseProgram(capsProgram);
+        
+        gl.glBindBufferBase(GL_SHADER_STORAGE_BUFFER, SPHERE_CAVITY_PLANES_BUFFER_INDEX, sphereCavityPlanesBuffer);
+        gl.glBindBufferBase(GL_SHADER_STORAGE_BUFFER, DEBUG_BUFFER_INDEX, debugBuffer);
+        
+        gl.glActiveTexture(GL_TEXTURE0);
+        gl.glBindTexture(GL_TEXTURE_BUFFER, atomsTex);
+        gl.glActiveTexture(GL_TEXTURE1);
+        gl.glBindTexture(GL_TEXTURE_BUFFER, gr.getCirclesTex());
+        gl.glActiveTexture(GL_TEXTURE2);
+        gl.glBindTexture(GL_TEXTURE_BUFFER, surfaceEdgesCircleTex);
+        gl.glActiveTexture(GL_TEXTURE3);
+        gl.glBindTexture(GL_TEXTURE_BUFFER, surfaceEdgesLineTex);
+        gl.glActiveTexture(GL_TEXTURE4);
+        gl.glBindTexture(GL_TEXTURE_BUFFER, sphereCavityCountsTex);
+        gl.glActiveTexture(GL_TEXTURE5);
+        gl.glBindTexture(GL_TEXTURE_BUFFER, sphereCavityCirclesTex);
+        
+        Utils.setSampler(gl, capsProgram, "atomsTex", 0);
+        Utils.setSampler(gl, capsProgram, "circlesTex", 1);
+        Utils.setSampler(gl, capsProgram, "edgesCircleTex", 2);
+        Utils.setSampler(gl, capsProgram, "edgesLineTex", 3);
+        Utils.setSampler(gl, capsProgram, "sphereCavityCountsTex", 4);
+        Utils.setSampler(gl, capsProgram, "sphereCavityCirclesTex", 5);
+        
+        Utils.setUniform(gl, capsProgram, "atomCount", atomCount);
+        Utils.setUniform(gl, capsProgram, "maxSphereCavityCount", GPUGraph.MAX_SPHERE_POLYGON_COUNT);
+        //Utils.setUniform(gl, capsProgram, "probeRadius", probeRadius);
         
         if (autoupdate || update) {
-            gl.glDispatchCompute((gr.getCircleCount() + 63) / 64, 1, 1); // writeSpheresProgram
-            gl.glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT | GL_VERTEX_ATTRIB_ARRAY_BARRIER_BIT);
-            sphereCount = Utils.getCounter(gl, countersBuffer, 0);
+            gl.glDispatchCompute((atomCount + 63) / 64, 1, 1); // capsProgram
+            gl.glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT | GL_TEXTURE_FETCH_BARRIER_BIT);
         }
         
         gl.glEndQuery(GL_TIME_ELAPSED);
@@ -1599,8 +1625,6 @@ public class Scene implements GLEventListener {
         
         gl.glEndQuery(GL_TIME_ELAPSED);
         
-        gl.glBeginQuery(GL_TIME_ELAPSED, raycastSpheresElapsedQuery);
-        
         // bind and clear A-Buffer
         gl.glBindBuffer(GL_SHADER_STORAGE_BUFFER, fragmentsIndexBuffer);
         gl.glClearBufferData(GL_SHADER_STORAGE_BUFFER, GL_R32UI, GL_RED_INTEGER, GL_UNSIGNED_INT,
@@ -1662,7 +1686,11 @@ public class Scene implements GLEventListener {
             renderMolecule(gl, dynamics.getMolecule(), viewport);
         }
         
+        gl.glBeginQuery(GL_TIME_ELAPSED, raycastSpheresElapsedQuery);
+        
         renderPolygons(gl, testPolygonProgram, gr, ar, aoVolumeTex, sphereCount, view, up, right, viewport);
+        
+        gl.glEndQuery(GL_TIME_ELAPSED);
         
         if (renderSelectedSphere) {
             gl.glColor4f(1f, 1f, 0f, 1f);
@@ -1673,8 +1701,6 @@ public class Scene implements GLEventListener {
             glut.glutSolidSphere(dynamics.getMolecule().getAtom(selectedSphere).r, 16, 16);
             gl.glPopMatrix();
         }
-        
-        gl.glEndQuery(GL_TIME_ELAPSED);
         
         gl.glBeginQuery(GL_TIME_ELAPSED, raycastTrianglesElapsedQuery);
         
@@ -1793,6 +1819,7 @@ public class Scene implements GLEventListener {
             System.out.println("Triangles: " + triangleCount);
             System.out.println("Tori: " + torusCount);
             System.out.println("Isolated tori: " + isolatedTorusCount);
+            System.out.println("Cavity spheres: " + cavityCount);
             // write timer results
             IntBuffer resultBuffer = Buffers.newDirectIntBuffer(1);
             while (resultBuffer.get(0) != 1) {
@@ -1855,6 +1882,7 @@ public class Scene implements GLEventListener {
                 debug.writeTori(gl, toriArrayBuffer, torusCount);
                 debug.writePolygons(gl, spheresArrayBuffer, sphereCount);
                 debug.writeSphereIsolated(gl, sphereIsolatedCountsBuffer, sphereIsolatedVSBuffer, atomCount);
+                debug.writeSphereCavityPlanes(gl, sphereCavityCountsBuffer, sphereCavityCirclesBuffer, sphereCavityPlanesBuffer, atomCount);
                 debug.writeDebug4f(gl, debugBuffer, 32);
                 gpuGraph.writeResults(gl);
                 area.writeResults(gl);
@@ -1901,6 +1929,10 @@ public class Scene implements GLEventListener {
         gl.glActiveTexture(GL_TEXTURE7);
         gl.glBindTexture(GL_TEXTURE_BUFFER, sphereIsolatedVSTex);
         gl.glActiveTexture(GL_TEXTURE8);
+        gl.glBindTexture(GL_TEXTURE_BUFFER, sphereCavityCountsTex);
+        gl.glActiveTexture(GL_TEXTURE9);
+        gl.glBindTexture(GL_TEXTURE_BUFFER, sphereCavityPlanesTex);
+        gl.glActiveTexture(GL_TEXTURE10);
         gl.glBindTexture(GL_TEXTURE_3D, aoVolumeTex);
         
         Utils.setSampler(gl, program, "circlesTex", 0);
@@ -1913,7 +1945,9 @@ public class Scene implements GLEventListener {
         Utils.setSampler(gl, program, "areasTex", 5);
         Utils.setSampler(gl, program, "sphereIsolatedCountsTex", 6);
         Utils.setSampler(gl, program, "sphereIsolatedVSTex", 7);
-        Utils.setSampler(gl, program, "aoVolumeTex", 8);
+        Utils.setSampler(gl, program, "sphereCavityCountsTex", 8);
+        Utils.setSampler(gl, program, "sphereCavityPlanesTex", 9);
+        Utils.setSampler(gl, program, "aoVolumeTex", 10);
         
         // camera
         if (program != boxPolygonProgram) {
@@ -1931,7 +1965,7 @@ public class Scene implements GLEventListener {
         // cavity clipping
         Utils.setUniform(gl, program, "clipCavities", clipCavities);
         Utils.setUniform(gl, program, "clipSurface", clipSurface);
-        Utils.setUniform(gl, program, "surfaceLabel", gr.getOuterSurfaceLabel());
+        Utils.setUniform(gl, program, "outerLabel", gr.getOuterSurfaceLabel());
         Utils.setUniform(gl, program, "threshold", threshold);
         // ambient occlusion & lighting
         Utils.setUniform(gl, program, "lambda", volumetricAO.getLambda());
@@ -1949,8 +1983,9 @@ public class Scene implements GLEventListener {
         // tunnel coloring
         //Utils.setUniform(gl, program, "tunnelColor", tunnelColor);
         Utils.setUniform(gl, program, "tunnelAOThreshold", tunnelAOThreshold);
-        // clipping by isolated tori
+        // clipping by isolated tori, cavities
         Utils.setUniform(gl, program, "maxSphereIsolatedTori", MAX_SPHERE_ISOLATED_TORI);
+        Utils.setUniform(gl, program, "maxSphereCavities", GPUGraph.MAX_SPHERE_POLYGON_COUNT);
         // debug
         Utils.setUniform(gl, program, "obb", obb);
         

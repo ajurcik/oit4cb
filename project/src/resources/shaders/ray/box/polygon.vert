@@ -30,7 +30,7 @@ uniform bool sas;
 uniform float probeRadius;
 // cavity clipping
 uniform bool clipCavities;
-uniform uint surfaceLabel;
+uniform uint outerLabel;
 
 uniform usamplerBuffer circlesTex;
 uniform samplerBuffer edgesCircleTex;
@@ -89,7 +89,7 @@ void main() {
     //vertex.plane = gl_MultiTexCoord1;
 
     /*if (clipCavities) {
-        if (label != surfaceLabel) {
+        if (label != outerLabel) {
             gl_Position = vec4(0.0, 0.0, 2.0, 1.0);
             return;
         }
@@ -148,23 +148,17 @@ void main() {
         //cap.xyz += line.xyz;
     }
 
-    /*for (uint i = 0; i < vertex.circleEnd - vertex.circleStart; i++) {
-        spherePoints[i] = normalize(points[2 * i] - vertex.objPos.xyz);
-        if (vertex.index == 52) {
-            debug[i] = vec4(spherePoints[i], 0.0);
+    if (vertex.label == outerLabel) {
+        cap.xyz = normalize(cap.xyz);
+    } else {
+        for (uint i = 0; i < vertex.circleEnd - vertex.circleStart; i++) {
+            spherePoints[i] = (points[2 * i] - vertex.objPos.xyz) / vertex.radius;
+            //if (vertex.index == 52) {
+            //    debug[i] = vec4(spherePoints[i], 0.0);
+            //}
         }
-    }*/
-
-    //vec4 c = minCone(vertex.circleEnd - vertex.circleStart);
-    //float x = (1 + dot(s.xyz, s.xyz) - s.w * s.w) / (2.0 * length(s.xyz));
-    //if (c.w < 0) {
-        // 
-        //vertex.color = vec4(0.0, 0.0, 0.0, gl_Color.a);
-    //}
-
-    cap.xyz = normalize(cap.xyz);
-    //cap.xyz = minSphericalCircle(vertex.circleEnd - vertex.circleStart).xyz;
-    //cap.xyz = normalize(c.xyz);
+        cap.xyz = minSphericalCircle(vertex.circleEnd - vertex.circleStart).xyz;
+    }
     cap.w = -dot(cap.xyz, vertex.objPos.xyz);
 
     // compute orientation
