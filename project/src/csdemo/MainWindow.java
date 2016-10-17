@@ -1859,8 +1859,8 @@ public class MainWindow extends javax.swing.JFrame {
         int diffX = panel.getWidth() / 2 - e.getX();
         int diffY = panel.getHeight() / 2 - e.getY();
         
-        scene.tilt(-diffY / 100f);
-        scene.pan(diffX / 100f);
+        scene.tilt(-diffY / 10000f);
+        scene.pan(diffX / 10000f);
         
         if (diffX != 0 || diffY != 0) {
             Point center = new Point(panel.getWidth() / 2, panel.getHeight() / 2);

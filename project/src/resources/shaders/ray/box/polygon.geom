@@ -26,6 +26,7 @@ in VertexData {
     float radius;
     float RR;
     vec4 color;
+    vec4 plane;
     // polygon
     flat uint index; // atom
     flat uint label;
@@ -41,6 +42,7 @@ out vec4 lightPos;
 out float radius;
 out float RR;
 out vec4 color;
+out vec4 plane;
 // polygon
 out flat uint index; // atom
 out flat uint label;
@@ -73,6 +75,7 @@ void main() {
     radius = vertex[0].radius;
     RR = vertex[0].RR;
     color = vertex[0].color;
+    plane = vertex[0].plane;
     index = vertex[0].index;
     label = vertex[0].label;
     circleStart = vertex[0].circleStart;

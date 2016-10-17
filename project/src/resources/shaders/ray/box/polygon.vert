@@ -54,6 +54,7 @@ out VertexData {
     float radius;
     float RR;
     vec4 color;
+    vec4 plane;
     // polygon
     flat uint index; // atom
     flat uint label;
@@ -85,8 +86,6 @@ void main() {
     vertex.label = params.y;
     vertex.circleStart = params.z;
     vertex.circleEnd = params.z + params.w;
-    // isolated torus clipping plane
-    //vertex.plane = gl_MultiTexCoord1;
 
     /*if (clipCavities) {
         if (label != outerLabel) {
@@ -176,6 +175,9 @@ void main() {
     }
     float minDistPos = max(minDist, 0.0);
 
+    // OBB base clip plane
+    vertex.plane = vec4(cap.xyz, -dot(cap.xyz, vertex.objPos.xyz + minDist * cap.xyz));
+
     float sx = (vertex.radius - minDist) / 2.0;
     float syz = sqrt(vertex.radius * vertex.radius - minDistPos * minDistPos);
 
@@ -224,8 +226,6 @@ void main() {
     }
 
     vertex.faceCount = of;
-
-    gl_Position = vec4(0.0, 0.0, 0.0, 1.0);
 }
 
 vec4 minCone(uint count, vec3 q);

@@ -55,6 +55,7 @@ in vec4 lightPos;
 in float radius;
 in float RR;
 in vec4 color;
+in vec4 plane;
 
 // sphere & surface
 in flat uint index;
@@ -105,7 +106,7 @@ void main() {
         /*if (index == 0)*/ { storeFragment(vec4(1.0, 0.0, 0.0, 1.0), 0.0, 0.0); discard; }
     }
     
-    /*if (index == 1668) {
+    /*if (index == 2001) {
         //discard;
         storeFragment(color, 10.0, 1.0); discard; // DEBUG
     } else {
@@ -166,6 +167,16 @@ void main() {
                     break;
                 }
             }
+        }
+    }
+
+    // clip by OBB base plane
+    if (label != outerLabel) {
+        if (dot(plane.xyz, intPos1) + plane.w < 0.0) {
+            outer = false;
+        }
+        if (dot(plane.xyz, intPos2) + plane.w < 0.0) {
+            inner = false;
         }
     }
 
