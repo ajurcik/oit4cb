@@ -31,7 +31,7 @@ uniform bool silhouettes;
 uniform bool bfmod;
 
 // cavity coloring
-uniform uint surfaceLabel;
+uniform uint outerLabel;
 uniform uint cavityColoring;
 uniform vec3 cavityColor1;
 uniform vec3 cavityColor2;
@@ -40,8 +40,8 @@ uniform vec3 cavityColor2;
 uniform float tunnelAOThreshold;
 uniform vec3 tunnelColor;
 
-// clipping by isolated tori
-uniform uint maxSphereIsolatedTori;
+// clipping by cavities
+uniform uint maxSphereCavities;
 
 // debug
 uniform bool obb;
@@ -56,17 +56,14 @@ in vec4 color;
 // sphere & surface
 in flat uint index;
 in flat uint label;
-in flat uint circleStart;
-in flat uint circleEnd;
 
 // area
 in flat float area;
 
 uniform usamplerBuffer neighborsCountTex;
 uniform samplerBuffer smallCirclesTex;
-//uniform usamplerBuffer smallCirclesVisibleTex;
-uniform usamplerBuffer sphereIsolatedCountsTex;
-uniform samplerBuffer sphereIsolatedVSTex;
+uniform usamplerBuffer sphereCavityCountsTex;
+uniform samplerBuffer sphereCavityPlanesTex;
 uniform sampler3D aoVolumeTex;
 
 layout(std430) buffer ABuffer {
@@ -144,26 +141,6 @@ void main() {
     vec3 intPos1 = sphereint1 + objPos.xyz;
     vec3 intPos2 = sphereint2 + objPos.xyz;
 
-    // clip by isolated torus visibility spheres
-    if (!sas) {
-        uint isolatedCount = texelFetch(sphereIsolatedCountsTex, int(index)).r;
-        for (uint i = 0; i < isolatedCount; i++) {
-            vec4 vs = texelFetch(sphereIsolatedVSTex, int(index * maxSphereIsolatedTori + i));
-            if (squaredLength(intPos1 - vs.xyz) < vs.w * vs.w) {
-                outer = false;
-                if (!inner) {
-                    break;
-                }
-            }
-            if (squaredLength(intPos2 - vs.xyz) < vs.w * vs.w) {
-                inner = false;
-                if (!outer) {
-                    break;
-                }
-            }
-        }
-    }
-
     if (!inner && !outer) {
         //storeFragment(vec4(1.0, 1.0, 0.0, 0.5), 10.0, 1.0); discard; // DEBUG
         discard;
@@ -209,6 +186,27 @@ void main() {
             }
         }
     }
+
+    // remove cavities
+    if (label == outerLabel) {
+        uint cavityCount = texelFetch(sphereCavityCountsTex, int(index)).r;
+        for (uint i = 0; i < cavityCount; i++) {
+            // TODO SAS
+            vec4 cp = texelFetch(sphereCavityPlanesTex, int(index * maxSphereCavities + i));
+            if (dot(cp.xyz, intPos1 - objPos.xyz) + cp.w > 0.0) {
+                outer = false;
+                if (!inner) {
+                    break;
+                }
+            }
+            if (dot(cp.xyz, intPos2 - objPos.xyz) + cp.w > 0.0) {
+                inner = false;
+                if (!outer) {
+                    break;
+                }
+            }
+        }
+    }
     
     if (!inner && !outer) {
         //storeFragment(vec4(1.0, 1.0, 0.0, 0.5), 10.0, 1.0); discard; // DEBUG
@@ -217,7 +215,7 @@ void main() {
 
     vec3 eye = -normalize(ray);
     if (outer) {
-        if (label == surfaceLabel) {
+        if (label == outerLabel) {
             storeIntersection(intPos1, normal1, eye, color, 0.2, 0.8, false);
         } else {
             storeIntersection(intPos1, normal1, eye, color /*vec4(1.0, 1.0, 1.0, 0.5)*/, 0.2, 0.8 /*0.4*/, bfmod);
@@ -225,7 +223,7 @@ void main() {
     }
 
     if (inner) {
-        if (label == surfaceLabel) {
+        if (label == outerLabel) {
             storeIntersection(intPos2, normal2, eye, color /*vec4(1.0, 1.0, 1.0, 0.5)*/, 0.2, 0.8 /*0.4*/, bfmod);
         } else {
             storeIntersection(intPos2, normal2, eye, color, 0.2, 0.8, false);
@@ -240,7 +238,7 @@ float squaredLength(vec3 v) {
 }
 
 void storeIntersection(vec3 position, vec3 normal, vec3 eye, vec4 color, float Ka, float Kd, bool bfmod) {
-    if (label != surfaceLabel) {
+    if (label != outerLabel) {
         // color cavity
         if (cavityColoring == MONO) {
             color.rgb = cavityColor1;
@@ -250,7 +248,7 @@ void storeIntersection(vec3 position, vec3 normal, vec3 eye, vec4 color, float K
     }
 
     float aoFactor = texture3D(aoVolumeTex, (position + lambda * normal) / volumeSize).r;
-    if (label == surfaceLabel && aoFactor > tunnelAOThreshold && !bfmod) {
+    if (label == outerLabel && aoFactor > tunnelAOThreshold && !bfmod) {
         //color.rgb = tunnelColor;
         aoFactor = uintBitsToFloat(-2);
     }

@@ -323,7 +323,7 @@ public class Debug {
     
     public void writeTriangles(GL4 gl, int trianglesArrayBuffer, int count) throws IOException {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(new File(debugDir, "triangles.txt")))) {
-            // write tori
+            // write triangles
             gl.glBindBuffer(GL_SHADER_STORAGE_BUFFER, trianglesArrayBuffer);
             ByteBuffer triangleArray = gl.glMapBuffer(GL_SHADER_STORAGE_BUFFER, GL_READ_ONLY);
             for (int i = 0; i < count; i++) {
@@ -360,7 +360,7 @@ public class Debug {
     
     public void writePolygons(GL4 gl, int spheresArrayBuffer, int count) throws IOException {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(new File(debugDir, "polygons.txt")))) {
-            // write tori
+            // write polygons
             gl.glBindBuffer(GL_SHADER_STORAGE_BUFFER, spheresArrayBuffer);
             ByteBuffer polygonsArray = gl.glMapBuffer(GL_SHADER_STORAGE_BUFFER, GL_READ_ONLY);
             for (int i = 0; i < count; i++) {
@@ -393,7 +393,7 @@ public class Debug {
                 writer.append(String.format("%4d (%2d): ", i, counts[i]));
                 for (int j = 0; j < counts[i]; j++) {
                     Vector4f vs = getVec4(vsData, (i * Scene.MAX_SPHERE_ISOLATED_TORI + j) * Scene.SIZEOF_VEC4);
-                    writer.append(String.format("vs: [%f, %f, %f, %f], ", vs.x, vs.y, vs.z, vs.w));
+                    writer.append(String.format("vs: [%f %f %f %f], ", vs.x, vs.y, vs.z, vs.w));
                 }
                 writer.newLine();
             }
@@ -401,36 +401,50 @@ public class Debug {
         }
     }
     
-    public void writeSphereCavityPlanes(GL4 gl, int sphereCavityCountsBuffer, int sphereCavityCirclesBuffer,
-            int sphereCavityPlanesBuffer, int atomCount) throws IOException {
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(new File(debugDir, "sphere-cavities.txt")))) {
+    public void writeSphereCapPlanes(GL4 gl, int sphereCapCountsBuffer, int sphereCapPlanesBuffer, int atomCount) throws IOException {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(new File(debugDir, "sphere-caps.txt")))) {
             // read counts
-            gl.glBindBuffer(GL_SHADER_STORAGE_BUFFER, sphereCavityCountsBuffer);
+            gl.glBindBuffer(GL_SHADER_STORAGE_BUFFER, sphereCapCountsBuffer);
             ByteBuffer data = gl.glMapBuffer(GL_SHADER_STORAGE_BUFFER, GL_READ_ONLY);
             int counts[] = new int[atomCount];
             data.asIntBuffer().get(counts);
             gl.glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
-            // write counts, circles and planes
-            gl.glBindBuffer(GL_SHADER_STORAGE_BUFFER, sphereCavityCirclesBuffer);
-            ByteBuffer circlesData = gl.glMapBuffer(GL_SHADER_STORAGE_BUFFER, GL_READ_ONLY);
-            gl.glBindBuffer(GL_SHADER_STORAGE_BUFFER, sphereCavityPlanesBuffer);
+            // write counts and planes
+            gl.glBindBuffer(GL_SHADER_STORAGE_BUFFER, sphereCapPlanesBuffer);
             ByteBuffer planesData = gl.glMapBuffer(GL_SHADER_STORAGE_BUFFER, GL_READ_ONLY);
             for (int i = 0; i < counts.length; i++) {
                 writer.append(String.format("%4d (%2d): ", i, counts[i]));
                 for (int j = 0; j < counts[i]; j++) {
-                    int circleOffset = (i * GPUGraph.MAX_SPHERE_POLYGON_COUNT + j) * 2 * Buffers.SIZEOF_INT;
-                    int circleStart = circlesData.getInt(circleOffset);
-                    int circleLen = circlesData.getInt(circleOffset + 4);
-                    writer.append(String.format("circle: [%d, %d], ", circleStart, circleLen));
                     Vector4f plane = getVec4(planesData, (i * GPUGraph.MAX_SPHERE_POLYGON_COUNT + j) * Scene.SIZEOF_VEC4);
-                    writer.append(String.format("plane: [%f, %f, %f, %f], ", plane.x, plane.y, plane.z, plane.w));
+                    writer.append(String.format("plane: [%f %f %f %f], ", plane.x, plane.y, plane.z, plane.w));
                 }
                 writer.newLine();
             }
             // unbind buffers
-            gl.glBindBuffer(GL_SHADER_STORAGE_BUFFER, sphereCavityCirclesBuffer);
             gl.glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
-            gl.glBindBuffer(GL_SHADER_STORAGE_BUFFER, sphereCavityPlanesBuffer);
+        }
+    }
+    
+    public void writeCaps(GL4 gl, int capsArrayBuffer, int count) throws IOException {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(new File(debugDir, "caps.txt")))) {
+            // write counts and planes
+            gl.glBindBuffer(GL_SHADER_STORAGE_BUFFER, capsArrayBuffer);
+            ByteBuffer capsArray = gl.glMapBuffer(GL_SHADER_STORAGE_BUFFER, GL_READ_ONLY);
+            for (int i = 0; i < count; i++) {
+                Vector4f position = getVec4(capsArray, i * Scene.SIZEOF_CAP);
+                Vector4f plane = getVec4(capsArray, i * Scene.SIZEOF_CAP + 16);
+                int atomIdx = capsArray.getInt(i * Scene.SIZEOF_CAP + 32);
+                int label = capsArray.getInt(i * Scene.SIZEOF_CAP + 36);
+                int padding0 = capsArray.getInt(i * Scene.SIZEOF_CAP + 40);
+                int padding1 = capsArray.getInt(i * Scene.SIZEOF_CAP + 44);
+                writer.append(String.format("%4d: ", i));
+                writer.append(String.format("position: [%f %f %f %f], ", position.x, position.y, position.z, position.w));
+                writer.append(String.format("plane: [%f %f %f %f], ", plane.x, plane.y, plane.z, plane.w));
+                writer.append(String.format("atomIdx: %d, label: %d", atomIdx, label));
+                writer.append(String.format(", padding0: %d, padding1: %d", padding0, padding1));
+                writer.newLine();
+            }
+            // unbind buffers
             gl.glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
         }
     }

@@ -16,8 +16,10 @@ import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.vecmath.Point3f;
 import javax.vecmath.Vector3f;
 import javax.vecmath.Vector4f;
@@ -29,6 +31,8 @@ import javax.vecmath.Vector4f;
 public class Utils {
     
     public static final int INVALID_LOCATION = -1;
+
+    private static final Map<Integer, Set<String>> invalidUniforms = new HashMap<>();
     
     private static final Vector4f TRANSPARENT_YELLOW = new Vector4f(1f, 1f, 0f, 0.3f);
     private static final IntBuffer COUNTER_DATA = Buffers.newDirectIntBuffer(1);
@@ -391,55 +395,43 @@ public class Utils {
     }
     
     public static void setSampler(GL4 gl, int program, String name, int unit) {
-        int location = gl.glGetUniformLocation(program, name);
-        if (location == INVALID_LOCATION) {
-            System.err.println("Warning: sampler " + name + " not found");
-        } else {
+        int location = getUniformLocation(gl, program, name);
+        if (location != INVALID_LOCATION) {
             gl.glUniform1i(location, unit);
         }
     }
     
     public static void setUniform(GL4 gl, int program, String name, int value) {
-        int location = gl.glGetUniformLocation(program, name);
-        if (location == INVALID_LOCATION) {
-            System.err.println("Warning: uniform " + name + " not found");
-        } else {
+        int location = getUniformLocation(gl, program, name);
+        if (location != INVALID_LOCATION) {
             gl.glUniform1ui(location, value);
         }
     }
     
     public static void setUniform(GL4 gl, int program, String name, int x, int y) {
-        int location = gl.glGetUniformLocation(program, name);
-        if (location == INVALID_LOCATION) {
-            System.err.println("Warning: uniform " + name + " not found");
-        } else {
+        int location = getUniformLocation(gl, program, name);
+        if (location != INVALID_LOCATION) {
             gl.glUniform2ui(location, x, y);
         }
     }
     
     public static void setUniform(GL4 gl, int program, String name, float value) {
-        int location = gl.glGetUniformLocation(program, name);
-        if (location == INVALID_LOCATION) {
-            System.err.println("Warning: uniform " + name + " not found");
-        } else {
+        int location = getUniformLocation(gl, program, name);
+        if (location != INVALID_LOCATION) {
             gl.glUniform1f(location, value);
         }
     }
     
     public static void setUniform(GL4 gl, int program, String name, float x, float y, float z) {
-        int location = gl.glGetUniformLocation(program, name);
-        if (location == INVALID_LOCATION) {
-            System.err.println("Warning: uniform " + name + " not found");
-        } else {
+        int location = getUniformLocation(gl, program, name);
+        if (location != INVALID_LOCATION) {
             gl.glUniform3f(location, x, y, z);
         }
     }
     
     public static void setUniform(GL4 gl, int program, String name, float x, float y, float z, float w) {
-        int location = gl.glGetUniformLocation(program, name);
-        if (location == INVALID_LOCATION) {
-            System.err.println("Warning: uniform " + name + " not found");
-        } else {
+        int location = getUniformLocation(gl, program, name);
+        if (location != INVALID_LOCATION) {
             gl.glUniform4f(location, x, y, z, w);
         }
     }
@@ -450,6 +442,23 @@ public class Utils {
     
     public static void setUniform(GL4 gl, int program, String name, Color color) {
         setUniform(gl, program, name, color.getRed() / 255f, color.getGreen() / 255f, color.getBlue() / 255f);
+    }
+    
+    private static int getUniformLocation(GL4 gl, int program, String name) {
+        int location = gl.glGetUniformLocation(program, name);
+        if (location == INVALID_LOCATION) {
+            Set<String> uniforms = invalidUniforms.get(program);
+            if (uniforms == null) {
+                uniforms = new HashSet<>();
+                invalidUniforms.put(program, uniforms);
+            }
+            if (!uniforms.contains(name)) {
+                // report only once
+                uniforms.add(name);
+                System.err.println("Warning: uniform " + name + " not found");
+            }
+        }
+        return location;
     }
     
     public static void drawAxes(GL2 gl, float size) {

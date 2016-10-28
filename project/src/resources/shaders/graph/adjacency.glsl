@@ -1,11 +1,13 @@
 #version 430 core
 
+#define MAX_SPHERE_EDGES 64 // FIXME should be set by app
+
 const uint INVALID_VERTEX = 0xffffffff;
 
 uniform uint edgeCount;
 
 layout(std430) buffer Edges {
-    uvec4 edges[];
+    uvec4 edges[]; // TODO struct
 };
 
 layout(std430) buffer Adjacency {
@@ -13,7 +15,7 @@ layout(std430) buffer Adjacency {
 };
 
 layout(std430) buffer Circles {
-    uvec4 circles[][32];
+    uvec4 circles[][MAX_SPHERE_EDGES]; // TODO struct
 };
 
 layout(std430) buffer CirclesLength {

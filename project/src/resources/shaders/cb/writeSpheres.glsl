@@ -1,5 +1,7 @@
 #version 430 core
 
+#define WRITTEN 1
+
 struct sphere {
     vec4 position;
     uint index;
@@ -8,9 +10,17 @@ struct sphere {
     uint circleLength;
 };
 
+struct cap {
+    vec4 position;
+    vec4 plane;
+    uint atomIdx;
+    uint label;
+    uint padding0; // std430 aligns structs using biggest element
+    uint padding1;
+};
+
 uniform uint atomCount;
 uniform uint circleCount;
-uniform uint maxSphereCavityCount;
 uniform uint outerLabel;
 
 uniform samplerBuffer atomsTex;
@@ -23,17 +33,17 @@ layout(std430) buffer Spheres {
     sphere spheres[];
 };
 
+layout(std430) buffer Caps {
+    cap caps[];
+};
+
+layout(std430) buffer PatchCounts {
+    uint patchCounts[];
+};
+
 layout(std430) buffer CountersBuffer {
-    uint polygonCount;
-    uint cavityCount;
-};
-
-layout(std430) buffer CavityCounts {
-    uint cavityCounts[];
-};
-
-layout(std430) buffer CavityCircles {
-    uvec2 cavityCircles[];
+    uint sphereCount;
+    uint capCount;
 };
 
 layout (local_size_x = 64) in;
@@ -49,21 +59,37 @@ void main() {
         // get sphere index
         uint start = texelFetch(circlesStartTex, int(index)).x;
         uvec4 edge = texelFetch(circlesTex, int(start));
-        // write polygon
-        uint atomIdx = edge.w;
         uint label = texelFetch(labelsTex, int(edge.x)).r; // v0
-        uint polygonIdx = atomicAdd(polygonCount, 1);
-        // position, atom and circle
-        spheres[polygonIdx].position = texelFetch(atomsTex, int(atomIdx));
-        spheres[polygonIdx].index = atomIdx;
-        spheres[polygonIdx].label = label;
-        spheres[polygonIdx].circleStart = start;
-        spheres[polygonIdx].circleLength = len;
-        // write cap if cavity patch
-        if (label != outerLabel) {
-            uint cavityIdx = atomicAdd(cavityCounts[atomIdx], 1);
-            cavityCircles[atomIdx * maxSphereCavityCount + cavityIdx] = uvec2(start, len);
-            atomicAdd(cavityCount, 1);
+        
+        // remove duplicate outer polygons
+        uint atomIdx = edge.w;
+        if (label == outerLabel) {
+            //uint status = atomicExchange(patchCounts[atomIdx], WRITTEN);
+            uint status = atomicAdd(patchCounts[atomIdx], 1);
+            if (status >= WRITTEN) {
+                // polygon was already written
+                return;
+            }
+        }
+
+        if (label == outerLabel) {
+            // write polygon
+            uint sphereIdx = atomicAdd(sphereCount, 1);
+            // position, atom, label and circle
+            spheres[sphereIdx].position = texelFetch(atomsTex, int(atomIdx));
+            spheres[sphereIdx].index = atomIdx;
+            spheres[sphereIdx].label = label;
+            spheres[sphereIdx].circleStart = start;
+            spheres[sphereIdx].circleLength = len;
+        } else {
+            // write cap (cavity patch)
+            uint capIdx = atomicAdd(capCount, 1);
+            // position, cap start+len, atom and label
+            caps[capIdx].position = texelFetch(atomsTex, int(atomIdx));
+            caps[capIdx].plane.x = uintBitsToFloat(start);
+            caps[capIdx].plane.y = uintBitsToFloat(len);
+            caps[capIdx].atomIdx = atomIdx;
+            caps[capIdx].label = label;
         }
     }
 }

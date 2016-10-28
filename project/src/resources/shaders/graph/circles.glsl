@@ -1,15 +1,19 @@
 #version 430 core
 
+#define MAX_SPHERE_EDGES 64 // FIXME should be set by app
+
 const uint INVALID_VERTEX = 0xffffffff;
 
 uniform uint circleCount;
+uniform uint maxSphereEdges;
+uniform uint maxSpherePolygons;
 
 layout(std430) buffer Counts {
     uint totalCircleCount;
 };
 
 layout(std430) buffer Circles {
-    uvec4 circles[][32];
+    uvec4 circles[][MAX_SPHERE_EDGES];
 };
 
 layout(std430) buffer CirclesCount {
@@ -43,7 +47,7 @@ void main() {
 
     // find all circles
     uint count = 1;
-    uint start[8];
+    uint start[16]; // FIXME it seems that there are too many circles for atom 260 in 1AF6
     start[0] = 0;
     
     uint current = circles[index][0].y;
@@ -78,8 +82,8 @@ void main() {
     start[count] = circleLength;
 
     // mark circle starts
-    uint circlesOffset = index * 32;
-    uint polygonsOffset = index * 8;
+    uint circlesOffset = index * maxSphereEdges;
+    uint polygonsOffset = index * maxSpherePolygons;
     
     circlesCount[index] = count;    
     

@@ -41,7 +41,7 @@ uniform float tunnelAOThreshold;
 uniform vec3 tunnelColor;
 
 // clipping by isolated tori
-uniform uint maxSphereIsolatedTori;
+//uniform uint maxSphereIsolatedTori;
 
 // clipping by cavities
 uniform uint maxSphereCavities;
@@ -55,22 +55,19 @@ in vec4 lightPos;
 in float radius;
 in float RR;
 in vec4 color;
-in vec4 plane;
 
 // sphere & surface
 in flat uint index;
 in flat uint label;
-in flat uint circleStart;
-in flat uint circleEnd;
+
+// plane
+in vec4 plane;
 
 // area
 in flat float area;
 
 uniform usamplerBuffer neighborsCountTex;
 uniform samplerBuffer smallCirclesTex;
-//uniform usamplerBuffer smallCirclesVisibleTex;
-uniform usamplerBuffer sphereIsolatedCountsTex;
-uniform samplerBuffer sphereIsolatedVSTex;
 uniform usamplerBuffer sphereCavityCountsTex;
 uniform samplerBuffer sphereCavityPlanesTex;
 uniform sampler3D aoVolumeTex;
@@ -101,12 +98,12 @@ float squaredLength(vec3 v);
 void storeIntersection(vec3 position, vec3 normal, vec3 eye, vec4 color, float Ka, float Kd, bool bfmod);
 
 void main() {
-    // splat visualization, ray counting
+    // BV visualization, ray counting
     if (obb) {
-        /*if (index == 0)*/ { storeFragment(vec4(1.0, 0.0, 0.0, 1.0), 0.0, 0.0); discard; }
+        /*if (index == 0)*/ { storeFragment(vec4(1.0, 1.0, 0.0, 1.0), 0.0, 0.0); discard; }
     }
     
-    /*if (index == 2001) {
+    /*if (index == 1668) {
         //discard;
         storeFragment(color, 10.0, 1.0); discard; // DEBUG
     } else {
@@ -150,34 +147,12 @@ void main() {
     vec3 intPos1 = sphereint1 + objPos.xyz;
     vec3 intPos2 = sphereint2 + objPos.xyz;
 
-    // clip by isolated torus visibility spheres
-    /*if (!sas) {
-        uint isolatedCount = texelFetch(sphereIsolatedCountsTex, int(index)).r;
-        for (uint i = 0; i < isolatedCount; i++) {
-            vec4 vs = texelFetch(sphereIsolatedVSTex, int(index * maxSphereIsolatedTori + i));
-            if (squaredLength(intPos1 - vs.xyz) < vs.w * vs.w) {
-                outer = false;
-                if (!inner) {
-                    break;
-                }
-            }
-            if (squaredLength(intPos2 - vs.xyz) < vs.w * vs.w) {
-                inner = false;
-                if (!outer) {
-                    break;
-                }
-            }
-        }
-    }*/
-
-    // clip by OBB base plane
-    if (label != outerLabel) {
-        if (dot(plane.xyz, intPos1) + plane.w < 0.0) {
-            outer = false;
-        }
-        if (dot(plane.xyz, intPos2) + plane.w < 0.0) {
-            inner = false;
-        }
+    // clip by cap plane, TODO SAS
+    if (dot(plane.xyz, intPos1 - objPos.xyz) + plane.w < 0.0) {
+        outer = false;
+    }
+    if (dot(plane.xyz, intPos2 - objPos.xyz) + plane.w < 0.0) {
+        inner = false;
     }
 
     if (!inner && !outer) {
@@ -226,27 +201,6 @@ void main() {
         }
     }
     
-    // remove cavities
-    if (label == outerLabel) {
-        uint cavityCount = texelFetch(sphereCavityCountsTex, int(index)).r;
-        for (uint i = 0; i < cavityCount; i++) {
-            // TODO SAS
-            vec4 cp = texelFetch(sphereCavityPlanesTex, int(index * maxSphereCavities + i));
-            if (dot(cp.xyz, intPos1 - objPos.xyz) + cp.w > 0.0) {
-                outer = false;
-                if (!inner) {
-                    break;
-                }
-            }
-            if (dot(cp.xyz, intPos2 - objPos.xyz) + cp.w > 0.0) {
-                inner = false;
-                if (!outer) {
-                    break;
-                }
-            }
-        }
-    }
-
     if (!inner && !outer) {
         //storeFragment(vec4(1.0, 1.0, 0.0, 0.5), 10.0, 1.0); discard; // DEBUG
         discard;

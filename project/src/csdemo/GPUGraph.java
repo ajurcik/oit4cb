@@ -46,10 +46,10 @@ public class GPUGraph {
     private static final int SIZEOF_CIRCLE = 4 * Buffers.SIZEOF_INT;
     
     private static final int MAX_VERTEX_COUNT = Scene.MAX_TRIANGLES;
-    public static final int MAX_LABEL_COUNT = 64;
+    public static final int MAX_LABEL_COUNT = 1024;
     private static final int MAX_CIRCLE_COUNT = Scene.MAX_TORI;
-    private static final int MAX_CIRCLE_EDGE_COUNT = 32;
-    public static final int MAX_SPHERE_POLYGON_COUNT = 8;
+    private static final int MAX_CIRCLE_EDGE_COUNT = 64;
+    public static final int MAX_SPHERE_POLYGON_COUNT = 16;
     
     // buffer indices for shaders
     private static final int EDGES_BUFFER_INDEX = 0;
@@ -220,9 +220,21 @@ public class GPUGraph {
         Utils.setUniform(gl, adjacencyProgram, "edgeCount", torusCount);
         
         gl.glBeginQuery(GL_TIME_ELAPSED, adjacencyElapsedQuery);
-        gl.glDispatchCompute((torusCount + 63) / 64, 1, 1);
-        gl.glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+        gl.glDispatchCompute((torusCount + 63) / 64, 1, 1); // adjacency program
+        gl.glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT | GL_BUFFER_UPDATE_BARRIER_BIT);
         gl.glEndQuery(GL_TIME_ELAPSED);
+        
+        int lengths[] = new int[MAX_CIRCLE_COUNT];
+        gl.glBindBuffer(GL_SHADER_STORAGE_BUFFER, circlesLengthBuffer);
+        IntBuffer lengthsData = gl.glMapBuffer(GL_SHADER_STORAGE_BUFFER, GL_READ_ONLY).asIntBuffer();
+        lengthsData.get(lengths);
+        gl.glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
+        gl.glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+        for (int i = 0; i < lengths.length; i++) {
+            if (lengths[i] >= 32) {
+                int brk = 1;
+            }
+        }
         
         gl.glUseProgram(componentsProgram);
         
@@ -240,13 +252,13 @@ public class GPUGraph {
         Utils.setUniform(gl, componentsProgram, "vertexCount", vertexCount);
         
         gl.glBeginQuery(GL_TIME_ELAPSED, componentsElapsedQuery);
-        gl.glDispatchCompute(1, 1, 1);
+        gl.glDispatchCompute(1, 1, 1); // components program
         gl.glMemoryBarrier(GL_BUFFER_UPDATE_BARRIER_BIT | GL_SHADER_STORAGE_BARRIER_BIT | GL_TEXTURE_UPDATE_BARRIER_BIT);
         gl.glEndQuery(GL_TIME_ELAPSED);
         
         // get largest label
         gl.glBindBuffer(GL_SHADER_STORAGE_BUFFER, labelsBuffer);
-        gl.glGetBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, MAX_LABEL_COUNT * Buffers.SIZEOF_INT, SURFACE_LABEL_DATA);
+        gl.glGetBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, (MAX_LABEL_COUNT + 1) * Buffers.SIZEOF_INT, SURFACE_LABEL_DATA);
         gl.glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
         SURFACE_LABEL_DATA.get(surfaceLabels);
         SURFACE_LABEL_DATA.rewind();
@@ -265,9 +277,11 @@ public class GPUGraph {
         
         Utils.setCounter(gl, countersBuffer, 0, sphereCount); // totalCircleCount
         Utils.setUniform(gl, circlesProgram, "circleCount", sphereCount);
+        Utils.setUniform(gl, circlesProgram, "maxSphereEdges", MAX_CIRCLE_EDGE_COUNT);
+        Utils.setUniform(gl, circlesProgram, "maxSpherePolygons", MAX_SPHERE_POLYGON_COUNT);
         
         gl.glBeginQuery(GL_TIME_ELAPSED, circlesElapsedQuery);
-        gl.glDispatchCompute((torusCount + 63) / 64, 1, 1);
+        gl.glDispatchCompute((torusCount + 63) / 64, 1, 1); // circles program
         gl.glMemoryBarrier(GL_BUFFER_UPDATE_BARRIER_BIT | GL_SHADER_STORAGE_BARRIER_BIT | GL_TEXTURE_FETCH_BARRIER_BIT);
         gl.glEndQuery(GL_TIME_ELAPSED);
         
